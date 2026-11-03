@@ -15,39 +15,41 @@ Deno.serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) return json({ error: "Autenticação obrigatória." }, 401);
 
     const url = Deno.env.get("SUPABASE_URL");
-    const publishable = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default;
-    const secret = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default;
-    if (!url || !publishable || !secret) return json({ error: "Configuração interna do Supabase indisponível." }, 500);
+    const publishable = getPublishableKey();
+    if (!url || !publishable) return json({ error: "Configuração interna do Supabase indisponível." }, 500);
 
-    const userClient = createClient(url, publishable, {
+    const client = createClient(url, publishable, {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false },
     });
-    const admin = createClient(url, secret, { auth: { persistSession: false } });
 
-    const { data: userData, error: userError } = await userClient.auth.getUser();
+    const { data: userData, error: userError } = await client.auth.getUser();
     if (userError || !userData.user) return json({ error: "Sessão inválida." }, 401);
 
     const body = await req.json().catch(() => ({}));
     const tenantId = String(body?.tenant_id || "").trim();
     if (!tenantId) return json({ error: "Empresa não informada." }, 400);
 
-    const { data: member } = await admin
+    const { data: member, error: memberError } = await client
       .from("saas_members")
       .select("role,status")
       .eq("tenant_id", tenantId)
       .eq("user_id", userData.user.id)
       .eq("status", "active")
       .maybeSingle();
-    if (!member || member.role !== "owner") return json({ error: "Somente o proprietário pode contratar o plano." }, 403);
+    if (memberError || !member || member.role !== "owner") {
+      return json({ error: "Somente o proprietário pode contratar o plano." }, 403);
+    }
 
-    const { data: plan, error: planError } = await admin
+    const { data: plan, error: planError } = await client
       .from("saas_plans")
       .select("id,code,name,price_monthly")
       .eq("code", "royal-30")
       .eq("active", true)
       .single();
-    if (planError || !plan || Number(plan.price_monthly) !== 30) return json({ error: "Plano Royal 30 indisponível." }, 409);
+    if (planError || !plan || Number(plan.price_monthly) !== 30) {
+      return json({ error: "Plano Royal 30 indisponível." }, 409);
+    }
 
     const mpToken = Deno.env.get("MP_ACCESS_TOKEN");
     if (!mpToken) {
@@ -58,14 +60,24 @@ Deno.serve(async (req) => {
       }, 503);
     }
 
-    // O checkout real será criado aqui quando o MP_ACCESS_TOKEN for cadastrado.
-    // Nenhum segredo é retornado ao navegador ou persistido no repositório.
+    // O checkout Mercado Pago será habilitado na etapa de configuração dos secrets.
+    // A ativação da assinatura continuará exclusivamente server-side após webhook validado.
     return json({ error: "Integração Mercado Pago aguardando configuração final.", code: "MP_SETUP_PENDING" }, 503);
   } catch (error) {
     console.error("saas-billing", error);
     return json({ error: "Não foi possível iniciar a assinatura." }, 500);
   }
 });
+
+function getPublishableKey() {
+  const direct = Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+  if (direct) return direct;
+  try {
+    return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default || "";
+  } catch {
+    return "";
+  }
+}
 
 function json(payload: unknown, status = 200) {
   return new Response(JSON.stringify(payload), {
