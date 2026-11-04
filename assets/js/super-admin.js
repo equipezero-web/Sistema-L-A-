@@ -7,7 +7,7 @@ const show = (text, error = false) => { const el = $('#status'); if (!el) return
 let tenantsData=[],pendingAction=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const formatDate=v=>v?new Date(v).toLocaleDateString('pt-BR'):'—';
-function paymentAttention(t){return !!t.current_period_end&&new Date(t.current_period_end)<new Date()&&t.subscription_status!=='active'}
+function paymentAttention(t){return ['rejected','failed','refunded','charged_back'].includes(String(t.last_payment_status||'').toLowerCase())||!!t.current_period_end&&new Date(t.current_period_end)<new Date()&&!['active','authorized'].includes(String(t.subscription_status||'').toLowerCase())}
 function drawTenants(){
  const query=$('#tenantSearch').value.toLocaleLowerCase('pt-BR').trim(),filter=$('#tenantFilter').value;
  const visible=tenantsData.filter(t=>t.name.toLocaleLowerCase('pt-BR').includes(query)&&(filter==='all'||filter==='due'&&paymentAttention(t)||filter==='active'&&t.active||filter==='suspended'&&!t.active));
