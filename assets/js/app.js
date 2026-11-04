@@ -3,7 +3,28 @@ import { getSession, getAAL, signOut } from './auth.js';
 const $=s=>document.querySelector(s);const brl=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 async function boot(){const session=await getSession();if(!session){location.href='../auth/login.html';return}const aal=await getAAL();if(aal.currentLevel==='aal1'&&aal.nextLevel==='aal2'){location.href='../auth/login.html';return}const {data:m,error}=await supabase.from('saas_members').select('tenant_id,role,status').eq('user_id',session.user.id).eq('status','active');if(error){show('Não foi possível verificar o acesso da sua conta.');return}if(!m?.length){const{data:notice}=await supabase.rpc('saas_my_platform_notice');if(notice){$('#platformNotice').classList.remove('hidden');$('#noticeTitle').textContent=notice.title;$('#noticeBody').textContent=notice.message;$('#noticeDate').textContent=new Date(notice.created_at).toLocaleString('pt-BR');show('O acesso da empresa foi suspenso. Consulte o comunicado da plataforma.')}else show('Nenhuma empresa ativa vinculada a esta conta.');document.querySelectorAll('.side-nav a,.quick-grid a').forEach(a=>a.classList.add('hidden'));return}const member=m[0],tid=member.tenant_id;if(!['owner','admin','employee'].includes(member.role)){show('Permissão da conta não reconhecida.');return}const [{data:t,error:tenantError},{data:p},{data:s,error:settingsError}]=await Promise.all([supabase.from('saas_tenants').select('name,business_mode,business_type,active').eq('id',tid).single(),supabase.from('saas_profiles').select('full_name').eq('user_id',session.user.id).single(),supabase.from('saas_settings').select('*').eq('tenant_id',tid).single()]);if(tenantError||!t){show('Não foi possível carregar a empresa.');return}$('#companyName').textContent=t?.name||'Minha empresa';$('#businessType').textContent=t?.business_type||'Empresa';$('#userName').textContent=p?.full_name||session.user.email;$('#userRole').textContent=member.role==='owner'?'Proprietário':member.role==='admin'?'Administrador':'Funcionário';await platformNotice(tid,t.active);if(t.active===false){show('Esta empresa foi desativada pela administração da plataforma. Consulte o comunicado abaixo.');document.querySelectorAll('[data-module],.quick-grid a,.side-nav a').forEach(a=>{a.classList.add('hidden');a.setAttribute('aria-hidden','true')});return}if(settingsError){show('Não foi possível carregar as permissões dos módulos.');return}modules(s,t?.business_mode,member.role);startUsage(tid);await metrics(tid,member.role)}
 async function platformNotice(tid,active){const{data,error}=await supabase.from('saas_platform_notices').select('title,message,created_at').eq('tenant_id',tid).order('created_at',{ascending:false}).limit(1);if(error||!data?.length)return;const n=data[0];if(active&&n.title==='Loja desativada pela plataforma')return;$('#platformNotice').classList.remove('hidden');$('#noticeTitle').textContent=n.title;$('#noticeBody').textContent=n.message;$('#noticeDate').textContent=new Date(n.created_at).toLocaleString('pt-BR')}
-function startUsage(tid){const tick=async()=>{if(document.visibilityState!=='visible'||!document.hasFocus())return;await supabase.rpc('saas_record_usage',{p_tenant_id:tid})};tick();setInterval(tick,60000)}
+function startUsage(tid){
+ let busy=false,stopped=false,lastAttempt=0;
+ const tick=async()=>{
+  if(stopped||busy||document.visibilityState!=='visible'||!document.hasFocus()||Date.now()-lastAttempt<30000)return;
+  busy=true;lastAttempt=Date.now();
+  try{
+   const{error}=await supabase.rpc('saas_record_usage',{p_tenant_id:tid});
+   if(error&&/Acesso negado ou empresa desativada/i.test(error.message||'')){
+    stopped=true;
+    clearInterval(interval);
+    window.removeEventListener('focus',tick);
+    document.removeEventListener('visibilitychange',tick);
+    location.reload();
+   }
+  }catch(error){console.warn('Não foi possível confirmar o uso ativo',error)}
+  finally{busy=false}
+ };
+ const interval=setInterval(tick,60000);
+ window.addEventListener('focus',tick);
+ document.addEventListener('visibilitychange',tick);
+ void tick();
+}
 function modules(settings,mode,role){
   const flags={products:'products_enabled',services:'services_enabled',inventory:'inventory_enabled',appointments:'appointments_enabled',finance:'finance_enabled',ai:'ai_enabled'};
   const denied={
