@@ -4,7 +4,7 @@ import { getSession, getAAL, getMyProfile, signOut } from './auth.js';
 const $ = s => document.querySelector(s);
 const show = (text, error = false) => { const el = $('#status'); if (!el) return; el.textContent = text; el.className = `status show ${error ? 'error' : 'ok'}`; };
 
-let tenantsData=[],pendingAction=null;
+let tenantsData=[],pendingAction=null,auditOffset=0;const AUDIT_PAGE_SIZE=20;
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const formatDate=v=>v?new Date(v).toLocaleDateString('pt-BR'):'—';
 function paymentAttention(t){return ['rejected','failed','refunded','charged_back'].includes(String(t.last_payment_status||'').toLowerCase())||!!t.current_period_end&&new Date(t.current_period_end)<new Date()&&!['active','authorized'].includes(String(t.subscription_status||'').toLowerCase())}
@@ -25,7 +25,29 @@ async function loadTenants(){const{data,error}=await supabase.rpc('saas_platform
 $('#tenantSearch').addEventListener('input',drawTenants);
 $('#tenantFilter').addEventListener('change',drawTenants);
 $('#cancelAction').onclick=()=>$('#tenantDialog').close();
-$('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(['expel','restore'].includes(pendingAction.action)&&$('#expelConfirmName').value.trim()!==pendingAction.name){show('Digite exatamente o nome da empresa para confirmar a operação.',true);return}if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=pendingAction.action==='restore'?await supabase.rpc('saas_platform_restore_owner',{p_tenant_id:pendingAction.id,p_reason:reason}):pendingAction.action==='expel'?await supabase.rpc('saas_platform_expel_tenant',{p_tenant_id:pendingAction.id,p_reason:reason}):await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;$('#tenantDialog').close();pendingAction=null;await loadTenants();show('Ação registrada. O aviso foi disponibilizado ao proprietário; acessos expulsos não são restaurados automaticamente.')}catch(err){show(err.message,true)}finally{button.disabled=false}};
+$('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(['expel','restore'].includes(pendingAction.action)&&$('#expelConfirmName').value.trim()!==pendingAction.name){show('Digite exatamente o nome da empresa para confirmar a operação.',true);return}if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=pendingAction.action==='restore'?await supabase.rpc('saas_platform_restore_owner',{p_tenant_id:pendingAction.id,p_reason:reason}):pendingAction.action==='expel'?await supabase.rpc('saas_platform_expel_tenant',{p_tenant_id:pendingAction.id,p_reason:reason}):await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;$('#tenantDialog').close();pendingAction=null;await loadTenants();auditOffset=0;await loadAudit();show('Ação registrada. O aviso foi disponibilizado ao proprietário; acessos expulsos não são restaurados automaticamente.')}catch(err){show(err.message,true)}finally{button.disabled=false}};
+async function loadAudit(){
+ const status=$('#auditStatus'),list=$('#auditList');
+ status.textContent='Carregando histórico...';
+ const{data,error}=await supabase.rpc('saas_platform_audit',{p_limit:AUDIT_PAGE_SIZE,p_offset:auditOffset});
+ if(error){status.textContent='Não foi possível carregar a auditoria: '+error.message;return}
+ const items=Array.isArray(data?.items)?data.items:[],total=Number(data?.total||0);
+ list.replaceChildren();
+ const names={suspend:'Desativação',reactivate:'Reativação',expel:'Expulsão',restore:'Recuperação do proprietário'};
+ for(const a of items){
+  const item=document.createElement('article');item.className='royal-tenant';
+  const head=document.createElement('h3');head.textContent=(names[a.action]||a.action)+' · '+(a.tenant_name||'Empresa não identificada');
+  const meta=document.createElement('p');meta.textContent='Data: '+new Date(a.created_at).toLocaleString('pt-BR')+' · Responsável: '+(a.actor_name||'Administrador');
+  const reason=document.createElement('p');reason.textContent='Justificativa: '+(a.reason||'Não informada');
+  item.append(head,meta,reason);list.appendChild(item);
+ }
+ status.textContent=items.length?'':'Nenhum registro encontrado.';
+ $('#auditPrevious').disabled=auditOffset===0;
+ $('#auditNext').disabled=auditOffset+items.length>=total;
+ $('#auditPage').textContent=total?((auditOffset+1)+'–'+(auditOffset+items.length)+' de '+total):'0 registros';
+}
+$('#auditPrevious').onclick=()=>{auditOffset=Math.max(0,auditOffset-AUDIT_PAGE_SIZE);loadAudit()};
+$('#auditNext').onclick=()=>{auditOffset+=AUDIT_PAGE_SIZE;loadAudit()};
 async function boot() {
   const session = await getSession();
   if (!session) { location.href = '../auth/login.html'; return; }
@@ -42,7 +64,7 @@ async function boot() {
   if (subError) throw subError;
   $('#adminName').textContent = profile.full_name || session.user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
-  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();
+  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();
 }
 
 $('#logout')?.addEventListener('click', async () => { await signOut(); location.href = '../auth/login.html'; });
