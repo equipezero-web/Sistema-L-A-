@@ -1,5 +1,7 @@
 import { supabase } from './supabase.js';
 
+let usageStarted=false;
+function recordActiveUsage(tenantId){if(usageStarted)return;usageStarted=true;const tick=()=>{if(document.visibilityState==='visible'&&document.hasFocus())supabase.rpc('saas_record_usage',{p_tenant_id:tenantId}).then(()=>{}).catch(()=>{})};tick();setInterval(tick,60000)}
 export async function getBusinessContext(){
   const { data:{ user }, error:userError }=await supabase.auth.getUser();
   if(userError||!user) throw userError||new Error('Sessão não encontrada.');
@@ -8,7 +10,7 @@ export async function getBusinessContext(){
   if(!membership) throw new Error('Nenhuma empresa ativa vinculada à conta.');
   const { data:tenant,error:tenantError }=await supabase.from('saas_tenants').select('id,name,business_mode,business_type').eq('id',membership.tenant_id).single();
   if(tenantError) throw tenantError;
-  return { user, membership, tenant, canManage:['owner','admin'].includes(membership.role) };
+  recordActiveUsage(tenant.id);return { user, membership, tenant, canManage:['owner','admin'].includes(membership.role) };
 }
 
 export async function uploadTenantAsset(tenantId,file,folder='catalog'){
