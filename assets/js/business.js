@@ -1,15 +1,39 @@
 import { supabase } from './supabase.js';
 
 let usageStarted=false;
-function recordActiveUsage(tenantId){if(usageStarted)return;usageStarted=true;const tick=()=>{if(document.visibilityState==='visible'&&document.hasFocus())supabase.rpc('saas_record_usage',{p_tenant_id:tenantId}).then(()=>{}).catch(()=>{})};tick();setInterval(tick,60000)}
+function redirectToDashboard(){
+  const destination=new URL('../../app/index.html',import.meta.url).href;
+  if(location.href!==destination)location.replace(destination);
+}
+function recordActiveUsage(tenantId){
+  if(usageStarted)return;
+  usageStarted=true;
+  let inFlight=false,stopped=false;
+  const tick=async()=>{
+    if(stopped||inFlight||document.visibilityState!=='visible'||!document.hasFocus())return;
+    inFlight=true;
+    try{
+      const {error}=await supabase.rpc('saas_record_usage',{p_tenant_id:tenantId});
+      if(error&&/Acesso negado ou empresa desativada/i.test(error.message||'')){
+        stopped=true;
+        clearInterval(interval);
+        redirectToDashboard();
+      }
+    }catch(error){console.warn('Registro de uso indisponível:',error)}
+    finally{inFlight=false}
+  };
+  const interval=setInterval(tick,60000);
+  void tick();
+}
 export async function getBusinessContext(){
   const { data:{ user }, error:userError }=await supabase.auth.getUser();
   if(userError||!user) throw userError||new Error('Sessão não encontrada.');
   const { data:membership,error:memberError }=await supabase.from('saas_members').select('tenant_id,role,status').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle();
   if(memberError) throw memberError;
-  if(!membership) throw new Error('Nenhuma empresa ativa vinculada à conta.');
-  const { data:tenant,error:tenantError }=await supabase.from('saas_tenants').select('id,name,business_mode,business_type').eq('id',membership.tenant_id).single();
+  if(!membership){redirectToDashboard();throw new Error('Nenhuma empresa ativa vinculada à conta.');}
+  const { data:tenant,error:tenantError }=await supabase.from('saas_tenants').select('id,name,business_mode,business_type,active').eq('id',membership.tenant_id).single();
   if(tenantError) throw tenantError;
+  if(!tenant.active){redirectToDashboard();throw new Error('Empresa desativada pela plataforma.');}
   recordActiveUsage(tenant.id);return { user, membership, tenant, canManage:['owner','admin'].includes(membership.role) };
 }
 
