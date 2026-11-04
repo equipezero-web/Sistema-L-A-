@@ -1,0 +1,15 @@
+# Only deploy the public static application.
+.git
+.github
+.wrangler
+node_modules
+supabase
+wrangler.jsonc
+wrangler.toml
+package.json
+package-lock.json
+README.md
+.assetsignore
+index
+.env
+.env.*
