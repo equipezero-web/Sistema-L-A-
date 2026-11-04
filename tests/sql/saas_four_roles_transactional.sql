@@ -123,6 +123,23 @@ begin
  snap:=public.saas_ai_business_snapshot('bb100000-0000-4000-8000-000000000001'::uuid);
  if not (snap ? 'financial_30d') then raise exception 'FAIL ADMIN AI ACCESS';end if;
 end $manager$;
+-- Recheck employee data visibility after completed sales have generated real test revenue.
+select set_config('request.jwt.claim.sub','bb000000-0000-4000-8000-000000000003',true);
+select set_config('request.jwt.claims','{"sub":"bb000000-0000-4000-8000-000000000003","role":"authenticated","aal":"aal1"}',true);
+do $staff_after_sale$
+declare snap jsonb;role_snap jsonb;
+begin
+ if (select count(*) from public.saas_financial_entries where tenant_id='bb100000-0000-4000-8000-000000000001'::uuid)<>0 then
+  raise exception 'FAIL EMPLOYEE FINANCIAL TABLE ISOLATION';end if;
+ snap:=public.saas_ai_business_snapshot('bb100000-0000-4000-8000-000000000001'::uuid);
+ role_snap:=public.saas_ai_role_snapshot('bb100000-0000-4000-8000-000000000001'::uuid);
+ if snap ? 'financial_30d' or snap ? 'order_revenue_30d' or role_snap ? 'financial_30d' then
+  raise exception 'FAIL EMPLOYEE FINANCIAL SNAPSHOT AFTER SALE';end if;
+ if (snap->'top_products_30d'->0) ? 'revenue' or (role_snap->'top_services_30d'->0) ? 'revenue' then
+  raise exception 'FAIL EMPLOYEE RANKING REVENUE AFTER SALE';end if;
+ if (snap->>'completed_orders_30d')::integer<>1 then
+  raise exception 'FAIL EMPLOYEE OPERATIONAL METRICS AFTER SALE';end if;
+end $staff_after_sale$;
 select set_config('request.jwt.claim.sub','bb000000-0000-4000-8000-000000000004',true);
 select set_config('request.jwt.claims','{"sub":"bb000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',true);
 do $other_tenant$
