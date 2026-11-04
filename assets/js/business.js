@@ -49,8 +49,18 @@ export async function uploadTenantAsset(tenantId,file,folder='catalog'){
   return supabase.storage.from('saas-public-assets').getPublicUrl(path).data.publicUrl;
 }
 
-export async function listProducts(tenantId){const {data,error}=await supabase.from('saas_products').select('*').eq('tenant_id',tenantId).order('created_at',{ascending:false});if(error)throw error;return data||[]}
-export async function saveProduct(tenantId,p){if(!p.id){const{data,error}=await supabase.rpc('saas_create_product',{p_tenant_id:tenantId,p_name:p.name.trim(),p_description:p.description?.trim()||null,p_sku:p.sku?.trim()||null,p_price:Number(p.price||0),p_cost:Number(p.cost||0),p_initial_stock:Number(p.stock_quantity||0),p_image_url:p.image_url?.trim()||null,p_status:p.status||'active'});if(error)throw error;if(p.published)await setProductPublished(tenantId,data.id,true);return data}const row={tenant_id:tenantId,name:p.name.trim(),description:p.description?.trim()||null,sku:p.sku?.trim()||null,price:Number(p.price||0),cost:Number(p.cost||0),image_url:p.image_url?.trim()||null,status:p.status||'active',published:!!p.published};const{data,error}=await supabase.from('saas_products').update(row).eq('id',p.id).eq('tenant_id',tenantId).select().single();if(error)throw error;return data}
+const PRODUCT_PUBLIC_COLUMNS='id,tenant_id,name,description,sku,price,stock_quantity,image_url,status,created_at,updated_at,published';
+export async function listProducts(tenantId,role='employee'){
+ const {data,error}=await supabase.from('saas_products').select(PRODUCT_PUBLIC_COLUMNS).eq('tenant_id',tenantId).order('created_at',{ascending:false});
+ if(error)throw error;
+ const products=data||[];
+ if(!['owner','admin'].includes(role))return products;
+ const {data:costs,error:costError}=await supabase.rpc('saas_manager_product_costs',{p_tenant_id:tenantId});
+ if(costError)throw costError;
+ const byId=new Map((costs||[]).map(entry=>[entry.id,Number(entry.cost)]));
+ return products.map(product=>({...product,cost:byId.get(product.id)??0}));
+}
+export async function saveProduct(tenantId,p){if(!p.id){const{data,error}=await supabase.rpc('saas_create_product',{p_tenant_id:tenantId,p_name:p.name.trim(),p_description:p.description?.trim()||null,p_sku:p.sku?.trim()||null,p_price:Number(p.price||0),p_cost:Number(p.cost||0),p_initial_stock:Number(p.stock_quantity||0),p_image_url:p.image_url?.trim()||null,p_status:p.status||'active'});if(error)throw error;if(p.published)await setProductPublished(tenantId,data.id,true);return data}const row={tenant_id:tenantId,name:p.name.trim(),description:p.description?.trim()||null,sku:p.sku?.trim()||null,price:Number(p.price||0),cost:Number(p.cost||0),image_url:p.image_url?.trim()||null,status:p.status||'active',published:!!p.published};const{data,error}=await supabase.from('saas_products').update(row).eq('id',p.id).eq('tenant_id',tenantId).select(PRODUCT_PUBLIC_COLUMNS).single();if(error)throw error;return {...data,cost:row.cost}}
 export async function setProductPublished(tenantId,id,published){const{error}=await supabase.from('saas_products').update({published:!!published}).eq('tenant_id',tenantId).eq('id',id);if(error)throw error}
 export async function archiveProduct(tenantId,id){const{error}=await supabase.from('saas_products').update({status:'archived',published:false}).eq('tenant_id',tenantId).eq('id',id);if(error)throw error}
 export async function adjustInventory(productId,delta,reason){const{data,error}=await supabase.rpc('saas_adjust_inventory',{p_product_id:productId,p_quantity_delta:Number(delta),p_reason:reason,p_reference_type:'manual',p_reference_id:null});if(error)throw error;return data}
