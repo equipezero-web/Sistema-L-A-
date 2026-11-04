@@ -4,6 +4,28 @@ import { getSession, getAAL, getMyProfile, signOut } from './auth.js';
 const $ = s => document.querySelector(s);
 const show = (text, error = false) => { const el = $('#status'); if (!el) return; el.textContent = text; el.className = `status show ${error ? 'error' : 'ok'}`; };
 
+let tenantsData=[],pendingAction=null;
+const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const formatDate=v=>v?new Date(v).toLocaleDateString('pt-BR'):'—';
+function paymentAttention(t){return !!t.current_period_end&&new Date(t.current_period_end)<new Date()&&t.subscription_status!=='active'}
+function drawTenants(){
+ const query=$('#tenantSearch').value.toLocaleLowerCase('pt-BR').trim(),filter=$('#tenantFilter').value;
+ const visible=tenantsData.filter(t=>t.name.toLocaleLowerCase('pt-BR').includes(query)&&(filter==='all'||filter==='due'&&paymentAttention(t)||filter==='active'&&t.active||filter==='suspended'&&!t.active));
+ $('#tenantList').replaceChildren();
+ if(!visible.length){$('#tenantList').textContent='Nenhuma empresa encontrada.';return}
+ for(const t of visible){
+  const el=document.createElement('article');el.className='royal-tenant';
+  const due=paymentAttention(t);
+  el.innerHTML=`<div class="royal-tenant-head"><div><div class="eyebrow">Cliente da plataforma</div><h3>${esc(t.name)}</h3><small>${esc(t.slug)}</small></div><span class="royal-tag">${t.active?'Ativa':'Desativada'}</span></div><div class="royal-meta"><span>Assinatura: ${esc(t.subscription_status||'Não identificada')}</span><span>Vencimento: ${formatDate(t.current_period_end)}</span><span>${due?'Revisar cobrança':'Situação financeira sem alerta de vencimento'}</span><span>Uso registrado: ${Number(t.active_minutes||0)} min</span><span>Última atividade: ${t.last_activity?new Date(t.last_activity).toLocaleString('pt-BR'):'Sem registro'}</span></div><div class="royal-actions"><button class="btn ${t.active?'royal-danger':''}" data-id="${esc(t.id)}">${t.active?'Desativar loja / expulsar':'Reativar loja'}</button></div>`;
+  el.querySelector('button').onclick=()=>{pendingAction={id:t.id,name:t.name,active:!t.active};$('#dialogTitle').textContent=t.active?'Confirmar desativação da loja':'Confirmar reativação';$('#dialogDescription').textContent=`Esta ação afetará a loja de "${t.name}". O motivo será exibido ao cliente no painel.`;$('#actionReason').value='';$('#confirmAction').textContent=t.active?'Confirmar desativação':'Confirmar reativação';$('#tenantDialog').showModal()};
+  $('#tenantList').appendChild(el);
+ }
+}
+async function loadTenants(){const{data,error}=await supabase.rpc('saas_platform_tenants');if(error)throw error;tenantsData=data||[];drawTenants()}
+$('#tenantSearch').addEventListener('input',drawTenants);
+$('#tenantFilter').addEventListener('change',drawTenants);
+$('#cancelAction').onclick=()=>$('#tenantDialog').close();
+$('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;$('#tenantDialog').close();pendingAction=null;await loadTenants();show('Decisão registrada e aviso disponibilizado ao cliente.')}catch(err){show(err.message,true)}finally{button.disabled=false}};
 async function boot() {
   const session = await getSession();
   if (!session) { location.href = '../auth/login.html'; return; }
@@ -20,7 +42,7 @@ async function boot() {
   if (subError) throw subError;
   $('#adminName').textContent = profile.full_name || session.user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
-  $('#subscriptionCount').textContent = subscriptions ?? 0;
+  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();
 }
 
 $('#logout')?.addEventListener('click', async () => { await signOut(); location.href = '../auth/login.html'; });
