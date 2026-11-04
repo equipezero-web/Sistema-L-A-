@@ -4,7 +4,7 @@ import { getSession, getAAL, getMyProfile, signOut } from './auth.js';
 const $ = s => document.querySelector(s);
 const show = (text, error = false) => { const el = $('#status'); if (!el) return; el.textContent = text; el.className = `status show ${error ? 'error' : 'ok'}`; };
 
-let tenantsData=[],pendingAction=null,auditOffset=0;const AUDIT_PAGE_SIZE=20;
+let tenantsData=[],pendingAction=null,auditOffset=0,auditRequestId=0;const AUDIT_PAGE_SIZE=20;
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const formatDate=v=>v?new Date(v).toLocaleDateString('pt-BR'):'—';
 function paymentAttention(t){return ['rejected','failed','refunded','charged_back'].includes(String(t.last_payment_status||'').toLowerCase())||!!t.current_period_end&&new Date(t.current_period_end)<new Date()&&!['active','authorized'].includes(String(t.subscription_status||'').toLowerCase())}
@@ -21,15 +21,49 @@ function drawTenants(){
   if(!t.active&&t.last_access_action==='expel'){const restore=document.createElement('button');restore.className='btn';restore.textContent='Restaurar acesso do proprietário';restore.onclick=()=>{pendingAction={id:t.id,name:t.name,action:'restore'};$('#dialogTitle').textContent='Restaurar proprietário após expulsão';$('#dialogDescription').textContent='Esta operação só será permitida quando houver expulsão pendente. A loja será reativada e somente o vínculo do proprietário será restaurado. Os demais usuários continuarão suspensos. Informe o motivo e confirme o nome da empresa.';$('#actionReason').value='';$('#confirmAction').textContent='Confirmar restauração';$('#expelConfirmBox').hidden=false;$('#expelTargetName').textContent=t.name;$('#expelConfirmName').value='';$('#tenantDialog').showModal()};el.querySelector('.royal-actions').appendChild(restore)}if(t.active){const expel=document.createElement('button');expel.className='btn royal-danger';expel.textContent='Expulsar cliente';expel.onclick=()=>{pendingAction={id:t.id,name:t.name,action:'expel'};$('#dialogTitle').textContent='Confirmar expulsão do cliente';$('#dialogDescription').textContent=`A empresa "${t.name}" será desativada e seus membros perderão o acesso. Os dados serão preservados. Informe o motivo da expulsão.`;$('#actionReason').value='';$('#confirmAction').textContent='Confirmar expulsão';$('#expelConfirmBox').hidden=false;$('#expelTargetName').textContent=t.name;$('#expelConfirmName').value='';$('#tenantDialog').showModal()};el.querySelector('.royal-actions').appendChild(expel)}$('#tenantList').appendChild(el);
  }
 }
-async function loadTenants(){const{data,error}=await supabase.rpc('saas_platform_tenants');if(error)throw error;tenantsData=data||[];drawTenants()}
+async function loadTenants(){const{data,error}=await supabase.rpc('saas_platform_tenants');if(error)throw error;tenantsData=data||[];drawTenants();populateAuditTenants()}
 $('#tenantSearch').addEventListener('input',drawTenants);
 $('#tenantFilter').addEventListener('change',drawTenants);
 $('#cancelAction').onclick=()=>$('#tenantDialog').close();
 $('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(['expel','restore'].includes(pendingAction.action)&&$('#expelConfirmName').value.trim()!==pendingAction.name){show('Digite exatamente o nome da empresa para confirmar a operação.',true);return}if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=pendingAction.action==='restore'?await supabase.rpc('saas_platform_restore_owner',{p_tenant_id:pendingAction.id,p_reason:reason}):pendingAction.action==='expel'?await supabase.rpc('saas_platform_expel_tenant',{p_tenant_id:pendingAction.id,p_reason:reason}):await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;$('#tenantDialog').close();pendingAction=null;await loadTenants();auditOffset=0;await loadAudit();show('Ação registrada. O aviso foi disponibilizado ao proprietário; acessos expulsos não são restaurados automaticamente.')}catch(err){show(err.message,true)}finally{button.disabled=false}};
+function populateAuditTenants(){
+ const select=$('#auditTenant'),selected=select.value;
+ const all=document.createElement('option');all.value='';all.textContent='Todas as empresas';
+ select.replaceChildren(all);
+ for(const tenant of [...tenantsData].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'))){
+  const option=document.createElement('option');option.value=tenant.id;option.textContent=tenant.name;select.appendChild(option);
+ }
+ select.value=Array.from(select.options).some(option=>option.value===selected)?selected:'';
+}
+function auditFilters(){
+ return {
+  p_tenant_id:$('#auditTenant').value||null,
+  p_action:$('#auditAction').value||null,
+  p_from:$('#auditStart').value||null,
+  p_to:$('#auditEnd').value||null
+ };
+}
+function resetAuditPage(){auditOffset=0;void loadAudit()}
+for(const id of ['auditTenant','auditAction','auditStart','auditEnd']){
+ $('#'+id).addEventListener('change',resetAuditPage);
+}
+$('#auditClear').onclick=()=>{
+ for(const id of ['auditTenant','auditAction','auditStart','auditEnd'])$('#'+id).value='';
+ resetAuditPage();
+};
 async function loadAudit(){
  const status=$('#auditStatus'),list=$('#auditList');
+ const filters=auditFilters(),requestId=++auditRequestId;
+ $('#auditPrevious').disabled=true;$('#auditNext').disabled=true;
+ if(filters.p_from&&filters.p_to&&filters.p_from>filters.p_to){
+  list.replaceChildren();status.textContent='A data inicial não pode ser posterior à data final.';
+  $('#auditPage').textContent='Período inválido';return;
+ }
  status.textContent='Carregando histórico...';
- const{data,error}=await supabase.rpc('saas_platform_audit',{p_limit:AUDIT_PAGE_SIZE,p_offset:auditOffset});
+ const{data,error}=await supabase.rpc('saas_platform_audit_filtered',{
+  p_limit:AUDIT_PAGE_SIZE,p_offset:auditOffset,...filters
+ });
+ if(requestId!==auditRequestId)return;
  if(error){status.textContent='Não foi possível carregar a auditoria: '+error.message;return}
  const items=Array.isArray(data?.items)?data.items:[],total=Number(data?.total||0);
  list.replaceChildren();
@@ -37,17 +71,17 @@ async function loadAudit(){
  for(const a of items){
   const item=document.createElement('article');item.className='royal-tenant';
   const head=document.createElement('h3');head.textContent=(names[a.action]||a.action)+' · '+(a.tenant_name||'Empresa não identificada');
-  const meta=document.createElement('p');meta.textContent='Data: '+new Date(a.created_at).toLocaleString('pt-BR')+' · Responsável: '+(a.actor_name||'Administrador');
+  const meta=document.createElement('p');meta.textContent='Data: '+new Date(a.created_at).toLocaleString('pt-BR',{timeZone:'America/Recife'})+' · Responsável: '+(a.actor_name||'Administrador');
   const reason=document.createElement('p');reason.textContent='Justificativa: '+(a.reason||'Não informada');
   item.append(head,meta,reason);list.appendChild(item);
  }
- status.textContent=items.length?'':'Nenhum registro encontrado.';
+ status.textContent=items.length?'':'Nenhuma decisão corresponde aos filtros.';
  $('#auditPrevious').disabled=auditOffset===0;
  $('#auditNext').disabled=auditOffset+items.length>=total;
  $('#auditPage').textContent=total?((auditOffset+1)+'–'+(auditOffset+items.length)+' de '+total):'0 registros';
 }
-$('#auditPrevious').onclick=()=>{auditOffset=Math.max(0,auditOffset-AUDIT_PAGE_SIZE);loadAudit()};
-$('#auditNext').onclick=()=>{auditOffset+=AUDIT_PAGE_SIZE;loadAudit()};
+$('#auditPrevious').onclick=()=>{auditOffset=Math.max(0,auditOffset-AUDIT_PAGE_SIZE);void loadAudit()};
+$('#auditNext').onclick=()=>{auditOffset+=AUDIT_PAGE_SIZE;void loadAudit()};
 async function boot() {
   const session = await getSession();
   if (!session) { location.href = '../auth/login.html'; return; }
