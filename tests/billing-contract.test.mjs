@@ -66,8 +66,8 @@ async function billingCase({ role='owner', enabled=false, authorized=true, actio
   return {result,networkCalls,recorded,externalReference};
 }
 
-async function webhookCase({ matched=true, signed=true }={}){
-  let handler,rpcCalls=0;
+async function webhookCase({ matched=true, signed=true, invoiceSubscriptionMatches=true, notificationType='subscription_preapproval' }={}){
+  let handler,rpcCalls=0,appliedPayload=null;
   const secret='mock-webhook-secret',dataId='mp-preapproval-mock',requestId='request-mock',ts='1700000000';
   const manifest='id:'+dataId+';request-id:'+requestId+';ts:'+ts+';';
   const signature='ts='+ts+',v1='+createHmac('sha256',secret).update(manifest).digest('hex');
@@ -87,24 +87,29 @@ async function webhookCase({ matched=true, signed=true }={}){
       };
       return query;
     },
-    rpc:async()=>{rpcCalls++;return {error:null}}
+    rpc:async(_name,payload)=>{rpcCalls++;appliedPayload=payload;return {error:null}}
   });
   const fetch=async url=>({
     ok:true,
-    json:async()=>String(url).includes('/preapproval/')
-      ? {id:dataId,external_reference:tenant,status:'authorized'}
-      : {results:[{payment:{status:'approved',id:'payment-mock'}}]}
+    json:async()=>String(url).includes('/authorized_payments/search')
+      ? {results:[{
+          preapproval_id:invoiceSubscriptionMatches?dataId:'other-preapproval',
+          payment:{status:'approved',id:'payment-mock'}
+        }]}
+      : String(url).includes('/authorized_payments/')
+        ? {id:dataId,preapproval_id:invoiceSubscriptionMatches?'mp-preapproval-mock':'other-preapproval',payment:{status:'approved',id:'payment-mock'}}
+        : {id:'mp-preapproval-mock',external_reference:tenant,status:'authorized'}
   });
   vm.runInNewContext(javascript(webhook),{
     Deno,createClient,Response:MockResponse,URL,fetch,crypto:webcrypto,TextEncoder,console
   });
   const result=await handler({
     method:'POST',
-    url:'https://example.invalid/functions/v1/mercado-pago-webhook?type=subscription_preapproval&data.id='+dataId,
+    url:'https://example.invalid/functions/v1/mercado-pago-webhook?type='+notificationType+'&data.id='+dataId,
     headers:{get:key=>key==='x-signature'?(signed?signature:null):key==='x-request-id'?requestId:null},
-    json:async()=>({id:'event-mock',type:'subscription_preapproval',data:{id:dataId}})
+    json:async()=>({id:'event-mock',type:notificationType,data:{id:dataId}})
   });
-  return {result,rpcCalls};
+  return {result,rpcCalls,appliedPayload};
 }
 
 test('Billing requires authentication and owner role',async()=>{
@@ -142,4 +147,22 @@ test('Webhook validates signature and matching local subscription',async()=>{
   const unsigned=await webhookCase({signed:false});
   assert.equal(unsigned.result.status,401);
   assert.equal(unsigned.rpcCalls,0);
+});
+
+
+test('Subscription notification never treats an unrelated invoice as a paid renewal',async()=>{
+  const x=await webhookCase({invoiceSubscriptionMatches:false});
+  assert.equal(x.result.status,200);
+  assert.equal(x.rpcCalls,1);
+  assert.equal(x.appliedPayload.p_payment_id,null);
+  assert.equal(x.appliedPayload.p_payment_status,null);
+});
+
+test('Authorized-payment webhook requires matching subscription in invoice',async()=>{
+  const valid=await webhookCase({notificationType:'subscription_authorized_payment'});
+  assert.equal(valid.result.status,200);
+  assert.equal(valid.appliedPayload.p_payment_status,'approved');
+  const mismatch=await webhookCase({notificationType:'subscription_authorized_payment',invoiceSubscriptionMatches:false});
+  assert.equal(mismatch.result.status,500);
+  assert.equal(mismatch.rpcCalls,0);
 });
