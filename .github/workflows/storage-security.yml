@@ -1,0 +1,29 @@
+name: SaaS public assets Storage security
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_public_assets_hardening.sql'
+      - 'assets/js/business.js'
+      - 'app/aparencia.html'
+      - 'tests/storage-public-assets.test.mjs'
+      - '.github/workflows/storage-security.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_public_assets_hardening.sql'
+      - 'assets/js/business.js'
+      - 'app/aparencia.html'
+      - 'tests/storage-public-assets.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  storage-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/storage-public-assets.test.mjs tests/tenant-auth-rls-recursion.test.mjs tests/tenant-relational-integrity.test.mjs
