@@ -4,8 +4,8 @@
 -- Preserve the original privilege boundary (private SECURITY DEFINER).
 create or replace function private.saas_apply_provider_subscription(
  p_tenant_id uuid, p_provider text, p_provider_subscription_id text,
- p_provider_status text, p_payment_id text, p_payment_status text,
- p_period_end timestamptz
+ p_provider_status text, p_payment_id text default null, p_payment_status text default null,
+ p_period_end timestamptz default null
 ) returns void
 language plpgsql
 security definer
