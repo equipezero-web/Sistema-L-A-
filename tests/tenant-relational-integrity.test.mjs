@@ -35,5 +35,6 @@ test('Only tenant-aware unique indexes are introduced, no RLS or public grants a
 test('Nullable references preserve tenant_id on parent deletion',()=>{
  assert.equal((sql.match(/on delete set null \([a-z_]+\);/g)||[]).length,5);
  assert.equal((sql.match(/on delete cascade;/g)||[]).length,2);
- assert.doesNotMatch(sql,/on delete set null;/i);
+ const withoutComments=sql.replace(/^--.*$/gm,'');
+ assert.doesNotMatch(withoutComments,/on delete set null;/i);
 });
