@@ -1,0 +1,29 @@
+name: SaaS module role permissions
+on:
+  pull_request:
+    paths:
+      - 'app/produtos.html'
+      - 'app/servicos.html'
+      - 'app/estoque.html'
+      - 'tests/module-role-permissions.test.mjs'
+      - '.github/workflows/module-role-permissions.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/produtos.html'
+      - 'app/servicos.html'
+      - 'app/estoque.html'
+      - 'tests/module-role-permissions.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  permissions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/module-role-permissions.test.mjs tests/auth-role-session-guards.test.mjs tests/auth-dashboard-permissions.test.mjs
