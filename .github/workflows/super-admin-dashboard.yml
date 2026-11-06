@@ -1,0 +1,27 @@
+name: Super Admin dashboard — offline regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/super-admin.js'
+      - 'super-admin/index.html'
+      - 'tests/super-admin-dashboard.test.mjs'
+      - '.github/workflows/super-admin-dashboard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/super-admin.js'
+      - 'super-admin/index.html'
+      - 'tests/super-admin-dashboard.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/super-admin-dashboard.test.mjs
