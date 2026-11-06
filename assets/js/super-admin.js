@@ -7,7 +7,15 @@ const show = (text, error = false) => { const el = $('#status'); if (!el) return
 let tenantsData=[],pendingAction=null,auditOffset=0,auditRequestId=0;const AUDIT_PAGE_SIZE=20;
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const formatDate=v=>v?new Date(v).toLocaleDateString('pt-BR'):'—';
-function paymentAttention(t){return ['rejected','failed','refunded','charged_back'].includes(String(t.last_payment_status||'').toLowerCase())||!!t.current_period_end&&new Date(t.current_period_end)<new Date()&&!['active','authorized'].includes(String(t.subscription_status||'').toLowerCase())}
+function paymentAttention(t){
+ const status=String(t.subscription_status||'').toLowerCase();
+ const payment=String(t.last_payment_status||'').toLowerCase();
+ const expiry=t.current_period_end?new Date(t.current_period_end):null;
+ const expired=!!expiry&&Number.isFinite(expiry.getTime())&&expiry.getTime()<=Date.now();
+ return ['rejected','failed','refunded','charged_back'].includes(payment)
+   ||expired
+   ||(!!status&&!['active','authorized'].includes(status));
+}
 function drawTenants(){
  const query=$('#tenantSearch').value.toLocaleLowerCase('pt-BR').trim(),filter=$('#tenantFilter').value;
  const visible=tenantsData.filter(t=>t.name.toLocaleLowerCase('pt-BR').includes(query)&&(filter==='all'||filter==='due'&&paymentAttention(t)||filter==='active'&&t.active||filter==='suspended'&&!t.active));
@@ -25,7 +33,16 @@ async function loadTenants(){const{data,error}=await supabase.rpc('saas_platform
 $('#tenantSearch').addEventListener('input',drawTenants);
 $('#tenantFilter').addEventListener('change',drawTenants);
 $('#cancelAction').onclick=()=>$('#tenantDialog').close();
-$('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(['expel','restore'].includes(pendingAction.action)&&$('#expelConfirmName').value.trim()!==pendingAction.name){show('Digite exatamente o nome da empresa para confirmar a operação.',true);return}if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=pendingAction.action==='restore'?await supabase.rpc('saas_platform_restore_owner',{p_tenant_id:pendingAction.id,p_reason:reason}):pendingAction.action==='expel'?await supabase.rpc('saas_platform_expel_tenant',{p_tenant_id:pendingAction.id,p_reason:reason}):await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;$('#tenantDialog').close();pendingAction=null;await loadTenants();auditOffset=0;await loadAudit();show('Ação registrada. O aviso foi disponibilizado ao proprietário; acessos expulsos não são restaurados automaticamente.')}catch(err){show(err.message,true)}finally{button.disabled=false}};
+$('#tenantActionForm').onsubmit=async e=>{e.preventDefault();if(!pendingAction)return;const reason=$('#actionReason').value.trim();if(['expel','restore'].includes(pendingAction.action)&&$('#expelConfirmName').value.trim()!==pendingAction.name){show('Digite exatamente o nome da empresa para confirmar a operação.',true);return}if(reason.length<10)return show('Descreva o motivo com pelo menos 10 caracteres.',true);const button=$('#confirmAction');button.disabled=true;try{const{error}=pendingAction.action==='restore'?await supabase.rpc('saas_platform_restore_owner',{p_tenant_id:pendingAction.id,p_reason:reason}):pendingAction.action==='expel'?await supabase.rpc('saas_platform_expel_tenant',{p_tenant_id:pendingAction.id,p_reason:reason}):await supabase.rpc('saas_platform_set_tenant_active',{p_tenant_id:pendingAction.id,p_active:pendingAction.active,p_reason:reason});if(error)throw error;
+ $('#tenantDialog').close();pendingAction=null;
+ show('Ação aplicada e registrada. Atualizando empresas e auditoria...');
+ try{
+   await loadTenants();auditOffset=0;await loadAudit();
+   show('Ação registrada. O aviso foi disponibilizado ao proprietário; acessos expulsos não são restaurados automaticamente.');
+ }catch(refreshError){
+   show('A ação foi aplicada, mas não foi possível atualizar os dados na tela. Recarregue o painel.',true);
+ }
+ }catch(err){show(err.message||'Não foi possível executar a ação.',true)}finally{button.disabled=false}};
 function populateAuditTenants(){
  const select=$('#auditTenant'),selected=select.value;
  const all=document.createElement('option');all.value='';all.textContent='Todas as empresas';
@@ -92,13 +109,13 @@ async function boot() {
 
   const [{ count: tenants, error: tenantError }, { count: subscriptions, error: subError }] = await Promise.all([
     supabase.from('saas_tenants').select('id', { count: 'exact', head: true }),
-    supabase.from('saas_subscriptions').select('tenant_id', { count: 'exact', head: true }).eq('status', 'active')
+    supabase.from('saas_subscriptions').select('tenant_id', { count: 'exact', head: true }).eq('status', 'active').gt('current_period_end', new Date().toISOString())
   ]);
   if (tenantError) throw tenantError;
   if (subError) throw subError;
   $('#adminName').textContent = profile.full_name || session.user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
-  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();
+  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();document.body.classList.add('super-admin-ready');
 }
 
 $('#logout')?.addEventListener('click', async () => { await signOut(); location.href = '../auth/login.html'; });
