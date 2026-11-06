@@ -1,0 +1,30 @@
+name: Royal 30 billing lifecycle — offline verification
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/mercado-pago-webhook/**'
+      - 'app/plano.html'
+      - 'tests/billing-contract.test.mjs'
+      - 'tests/billing-lifecycle-ui.test.mjs'
+      - '.github/workflows/billing-lifecycle.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/mercado-pago-webhook/**'
+      - 'app/plano.html'
+      - 'tests/billing-contract.test.mjs'
+      - 'tests/billing-lifecycle-ui.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify billing and webhook with no external network or credentials
+        run: node --test tests/billing-contract.test.mjs tests/billing-lifecycle-ui.test.mjs
