@@ -1,0 +1,21 @@
+name: Platform RPC security
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_platform_rpc_explicit_grants.sql'
+      - 'tests/platform-rpc-grants.test.mjs'
+      - '.github/workflows/platform-rpc-security.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/platform-rpc-grants.test.mjs
