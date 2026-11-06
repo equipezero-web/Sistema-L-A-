@@ -1,0 +1,12 @@
+# L&A Royal SaaS — deployment-specific Supabase Edge Function policies
+# Public checkout requires a valid Supabase user JWT.
+[functions.saas-billing]
+verify_jwt = true
+
+# Mercado Pago sends a signed webhook without a Supabase JWT.
+# The function body validates x-signature via MP_WEBHOOK_SECRET.
+[functions.mercado-pago-webhook]
+verify_jwt = false
+
+[functions.royal-ai]
+verify_jwt = true
