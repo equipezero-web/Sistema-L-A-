@@ -1,0 +1,29 @@
+name: Public SaaS subscription access — offline safeguards
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_public_subscription_read_guard.sql'
+      - 'tests/public-subscription-read.test.mjs'
+      - '.github/workflows/public-subscription-access.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_public_subscription_read_guard.sql'
+      - 'tests/public-subscription-read.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-subscription-policies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate public subscription read policies offline
+        run: node --test tests/public-subscription-read.test.mjs
