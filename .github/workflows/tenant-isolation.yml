@@ -1,0 +1,26 @@
+name: SaaS tenant isolation — relational integrity
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_tenant_relational_integrity.sql'
+      - 'tests/tenant-relational-integrity.test.mjs'
+      - '.github/workflows/tenant-isolation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_tenant_relational_integrity.sql'
+      - 'tests/tenant-relational-integrity.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tenant-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate cross-tenant integrity contract and role protection
+        run: node --test tests/tenant-relational-integrity.test.mjs tests/module-role-permissions.test.mjs tests/auth-role-session-guards.test.mjs
