@@ -16,7 +16,7 @@ for(const path of paths){
   const moduleCode=match[1].replace(/\bimport\s*\{[^}]*\}\s*from\s*['"][^'"]+['"];?/g,'');
   modules.set(path,moduleCode);
   test('JavaScript syntax: '+path,()=>{
-    assert.doesNotThrow(()=>new vm.Script(moduleCode,{filename:path}));
+    assert.doesNotThrow(()=>new vm.Script('(async()=>{\n'+moduleCode+'\n})',{filename:path}));
   });
   test('Explicitly bound controls exist: '+path,()=>{
     const selected=[...moduleCode.matchAll(/(?:document\.)?querySelector\('#([A-Za-z][\w-]*)'\)/g)].map(x=>x[1]);
