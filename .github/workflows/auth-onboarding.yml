@@ -1,0 +1,35 @@
+name: Authentication and onboarding — no real accounts
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/app.js'
+      - 'auth/**'
+      - 'security/**'
+      - 'onboarding/**'
+      - 'tests/auth-*.test.mjs'
+      - 'supabase/sql/saas_first_login_onboarding_access.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/app.js'
+      - 'auth/**'
+      - 'security/**'
+      - 'onboarding/**'
+      - 'tests/auth-*.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Login and onboarding offline tests
+        run: node --test tests/auth-first-login.test.mjs tests/auth-inline-syntax.test.mjs
