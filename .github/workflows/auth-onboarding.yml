@@ -32,4 +32,4 @@ jobs:
         with:
           node-version: '22'
       - name: Login and onboarding offline tests
-        run: node --test tests/auth-first-login.test.mjs tests/auth-inline-syntax.test.mjs
+        run: node --test tests/auth-first-login.test.mjs tests/auth-inline-syntax.test.mjs tests/auth-email-totp.test.mjs
