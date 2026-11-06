@@ -40,6 +40,7 @@ async function scenario(role,{financeError=null,financeRows=[],orderCount=3}={})
  const context={
    supabase,
    document:{querySelector:node},
+   $:node,
    Date,Intl,
    brl:new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}),
    show(value){errorMessage=value}
