@@ -19,7 +19,7 @@ test('Catalog and inventory inline modules parse after removing import syntax',(
  for(const key of ['products','services','inventory','reports']){
   const code=source(files[key]);
   assert.ok(code, 'module absent: '+key);
-  assert.doesNotThrow(()=>new vm.Script(cleaned(code)),key);
+  assert.doesNotThrow(()=>new vm.Script('(async()=>{'+cleaned(code)+'})'),key);
  }
 });
 
