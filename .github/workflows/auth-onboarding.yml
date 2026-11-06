@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '22'
       - name: Login and onboarding offline tests
-        run: node --test tests/auth-first-login.test.mjs tests/auth-inline-syntax.test.mjs tests/auth-email-totp.test.mjs tests/auth-verified-factor.test.mjs
+        run: node --test tests/auth-first-login.test.mjs tests/auth-inline-syntax.test.mjs tests/auth-email-totp.test.mjs tests/auth-verified-factor.test.mjs tests/auth-onboarding-guard.test.mjs
       - name: Public GitHub Pages HTTP check (diagnostic only)
         continue-on-error: true
         run: |
