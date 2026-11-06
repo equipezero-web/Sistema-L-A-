@@ -1,7 +1,8 @@
 import { supabase } from './supabase.js';
 
 export async function signUpOwner({ fullName, email, phone, password }) {
-  return supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, phone } } });
+  const emailRedirectTo = new URL('../../auth/login.html', import.meta.url).href;
+  return supabase.auth.signUp({ email, password, options: { emailRedirectTo, data: { full_name: fullName, phone } } });
 }
 export async function signIn(email, password) { return supabase.auth.signInWithPassword({ email, password }); }
 export async function signOut() { return supabase.auth.signOut(); }
