@@ -29,7 +29,7 @@ Deno.serve(async(req:Request)=>{
   const {data:subscription,error:subscriptionError}=await sb.from('saas_subscriptions')
     .select('provider,provider_subscription_id,plan_id').eq('tenant_id',tenantId).maybeSingle();
   const {data:royalPlan,error:planError}=await sb.from('saas_plans')
-    .select('id').eq('code','royal-30').eq('active',true).maybeSingle();
+    .select('id').eq('code','royal-30').maybeSingle();
   if(subscriptionError||planError||!royalPlan||!subscription||
      subscription.provider!=='mercado_pago'||subscription.provider_subscription_id!==String(pre?.id||'')||
      subscription.plan_id!==royalPlan.id)throw new Error('unregistered or mismatched subscription');
