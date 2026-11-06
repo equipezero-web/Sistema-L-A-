@@ -27,7 +27,20 @@ function recordActiveUsage(tenantId){
 }
 export async function getBusinessContext(){
   const { data:{ user }, error:userError }=await supabase.auth.getUser();
-  if(userError||!user) throw userError||new Error('Sessão não encontrada.');
+  if(userError||!user){location.replace(new URL('../../auth/login.html',import.meta.url).href);throw userError||new Error('Sessão não encontrada.');}
+  const {data:aal,error:aalError}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aalError||!aal)throw aalError||new Error('Não foi possível confirmar a proteção da sessão.');
+  if(aal.currentLevel==='aal1'&&aal.nextLevel==='aal2'){
+    location.replace(new URL('../../auth/login.html',import.meta.url).href);
+    throw new Error('Confirme o segundo fator de autenticação para continuar.');
+  }
+  // A platform administrator must not accidentally operate inside a tenant dashboard.
+  const {data:access,error:accessError}=await supabase.rpc('saas_my_access_summary');
+  if(accessError||!access)throw accessError||new Error('Não foi possível verificar o perfil da conta.');
+  if(access.is_platform_super_admin===true){
+    location.replace(new URL('../../super-admin/index.html',import.meta.url).href);
+    throw new Error('Use o painel Super Admin para esta conta.');
+  }
   const { data:membership,error:memberError }=await supabase.from('saas_members').select('tenant_id,role,status').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle();
   if(memberError) throw memberError;
   if(!membership){redirectToDashboard();throw new Error('Nenhuma empresa ativa vinculada à conta.');}
