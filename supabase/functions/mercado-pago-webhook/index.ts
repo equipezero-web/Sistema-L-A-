@@ -20,8 +20,22 @@ Deno.serve(async(req:Request)=>{
  await sb.from('saas_billing_webhook_events').upsert({event_key:eventKey,provider:'mercado_pago',event_type:type,resource_id:dataId,status:'received',payload:body},{onConflict:'event_key'});
  try{
   let pre:any=null, invoice:any=null;
-  if(type==='subscription_authorized_payment'){invoice=await mpGet(`/authorized_payments/${encodeURIComponent(dataId)}`,mpToken);pre=await mpGet(`/preapproval/${encodeURIComponent(String(invoice.preapproval_id))}`,mpToken);}
-  else if(type==='subscription_preapproval'){pre=await mpGet(`/preapproval/${encodeURIComponent(dataId)}`,mpToken);const search=await mpGet(`/authorized_payments/search?preapproval_id=${encodeURIComponent(String(pre.id))}`,mpToken);const results=Array.isArray(search?.results)?search.results:[];invoice=results.sort((a:any,b:any)=>String(b.last_modified||b.date_created||'').localeCompare(String(a.last_modified||a.date_created||'')))[0]||null;}
+  if(type==='subscription_authorized_payment'){
+    invoice=await mpGet(`/authorized_payments/${encodeURIComponent(dataId)}`,mpToken);
+    if(!invoice?.preapproval_id)throw new Error('invoice has no subscription reference');
+    pre=await mpGet(`/preapproval/${encodeURIComponent(String(invoice.preapproval_id))}`,mpToken);
+    if(String(invoice.preapproval_id)!==String(pre?.id||''))throw new Error('invoice subscription mismatch');
+  }
+  else if(type==='subscription_preapproval'){
+    pre=await mpGet(`/preapproval/${encodeURIComponent(dataId)}`,mpToken);
+    if(String(pre?.id||'')!==dataId)throw new Error('unexpected provider subscription');
+    const search=await mpGet(`/authorized_payments/search?preapproval_id=${encodeURIComponent(String(pre.id))}`,mpToken);
+    const results=Array.isArray(search?.results)?search.results:[];
+    // The search response is not itself proof that every invoice belongs to this subscription.
+    // Discard unrelated invoices before selecting the most recently modified charge.
+    const matching=results.filter((item:any)=>String(item?.preapproval_id||'')===String(pre.id));
+    invoice=matching.sort((a:any,b:any)=>String(b.last_modified||b.date_created||'').localeCompare(String(a.last_modified||a.date_created||'')))[0]||null;
+  }
   else {await sb.from('saas_billing_webhook_events').update({status:'ignored',processed_at:new Date().toISOString()}).eq('event_key',eventKey);return json({ok:true,ignored:true});}
   const tenantId=String(pre?.external_reference||invoice?.external_reference||'');if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId))throw new Error('invalid external reference');
   // Trust a signed notification only for the exact subscription registered locally.
