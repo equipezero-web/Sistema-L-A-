@@ -1,0 +1,30 @@
+name: Billing contract — no real payments
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/saas-billing/**'
+      - 'supabase/functions/mercado-pago-webhook/**'
+      - 'tests/billing-contract.test.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/saas-billing/**'
+      - 'supabase/functions/mercado-pago-webhook/**'
+      - 'tests/billing-contract.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Contract tests (mock API, no secrets, no charges)
+        run: node --test tests/billing-contract.test.mjs
