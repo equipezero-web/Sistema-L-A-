@@ -52,10 +52,12 @@ export async function getBusinessContext(){
 
 export async function uploadTenantAsset(tenantId,file,folder='catalog'){
   if(!file) return null;
-  const allowed=['image/png','image/jpeg','image/webp','image/svg+xml'];
-  if(!allowed.includes(file.type)) throw new Error('Formato não permitido. Use PNG, JPG, WEBP ou SVG.');
-  if(file.size>5*1024*1024) throw new Error('A imagem deve ter no máximo 5 MB.');
-  const ext=(file.name.split('.').pop()||'img').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const extensions={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
+  const ext=extensions[file.type];
+  if(!ext) throw new Error('Formato não permitido. Use PNG, JPG ou WEBP.');
+  if(!Number.isFinite(file.size)||file.size<=0||file.size>5*1024*1024) throw new Error('A imagem deve ter entre 1 byte e 5 MB.');
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId)) throw new Error('Identificador da empresa inválido.');
+  if(!['branding','products','services','catalog'].includes(folder)) throw new Error('Pasta de imagem não permitida.');
   const path=`tenants/${tenantId}/${folder}/${crypto.randomUUID()}.${ext}`;
   const {error}=await supabase.storage.from('saas-public-assets').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
   if(error) throw error;
