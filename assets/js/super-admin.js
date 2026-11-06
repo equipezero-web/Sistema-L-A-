@@ -11,10 +11,10 @@ function paymentAttention(t){
  const status=String(t.subscription_status||'').toLowerCase();
  const payment=String(t.last_payment_status||'').toLowerCase();
  const expiry=t.current_period_end?new Date(t.current_period_end):null;
- const expired=!!expiry&&Number.isFinite(expiry.getTime())&&expiry.getTime()<=Date.now();
+ const validPeriod=!!expiry&&Number.isFinite(expiry.getTime())&&expiry.getTime()>Date.now();
  return ['rejected','failed','refunded','charged_back'].includes(payment)
-   ||expired
-   ||(!!status&&!['active','authorized'].includes(status));
+   ||status!=='active'
+   ||!validPeriod;
 }
 function drawTenants(){
  const query=$('#tenantSearch').value.toLocaleLowerCase('pt-BR').trim(),filter=$('#tenantFilter').value;
