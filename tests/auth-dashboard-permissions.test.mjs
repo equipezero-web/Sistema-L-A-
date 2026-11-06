@@ -45,8 +45,7 @@ async function scenario(role,{financeError=null,financeRows=[],orderCount=3}={})
    brl:new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}),
    show(value){errorMessage=value}
  };
- vm.runInNewContext(snippet+'\nmetrics("tenant-test",'+JSON.stringify(role)+')',context);
- await new Promise(resolve=>setImmediate(resolve));
+ await vm.runInNewContext(snippet+'\nmetrics("tenant-test",'+JSON.stringify(role)+')',context);
  return {operations,node,get errorMessage(){return errorMessage}};
 }
 
