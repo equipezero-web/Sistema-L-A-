@@ -22,7 +22,9 @@ begin
  select id into v_plan from public.saas_plans where code='royal-30' and active=true;
  if v_plan is null then raise exception 'royal-30 plan not found'; end if;
  v_active := lower(coalesce(p_provider_status,''))='authorized'
-   and lower(coalesce(p_payment_status,''))='approved';
+   and lower(coalesce(p_payment_status,''))='approved'
+   and p_period_end is not null
+   and p_period_end > now();
  v_local_status := case
   when v_active then 'active'
   when lower(coalesce(p_provider_status,'')) in ('cancelled','canceled') then 'cancelled'
@@ -75,4 +77,5 @@ begin
 end;
 $function$;
 
+-- Require an explicit future billing period to prevent a null-expiry active subscription.
 -- The RPC wrapper remains service-only. Do not broaden EXECUTE grants.
