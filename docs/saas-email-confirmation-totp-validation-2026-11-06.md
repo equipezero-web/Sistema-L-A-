@@ -14,12 +14,12 @@ Data: 06/11/2026 | Etapa #34
 ## Testes
 
 - Testes offline de URL de confirmação, retomada de sessão, cadastro inicial de TOTP, desafio com fator verificado, Super Admin, sessão já AAL2, query string não confiável e ausência de sessão.
-- `tests/auth-email-totp.test.mjs` executado pelo workflow `auth-onboarding.yml`, além da suíte da etapa #33.
+- `tests/auth-email-totp.test.mjs` executado pelo workflow `auth-onboarding.yml`, além da suíte da etapa #33. No CI foram **25 testes aprovados, 0 falhas**.
 - Nenhuma conta real foi criada; testes não enviam e-mail nem confirmam tokens Supabase verdadeiros.
 
 ## Pré-requisitos de publicação
 
-O repositório GitHub indica `has_pages=true`, mas o host `equipezero-web.github.io` não foi acessível por este ambiente de verificação. Não foi possível confirmar HTTP 200, carregamento JavaScript, layout mobile ou fluxo com usuário real.
+O repositório GitHub indica `has_pages=true`. Embora a consulta direta desta sessão não tenha alcançado o host, o GitHub Actions confirmou respostas **HTTP 200** para `/`, `/auth/login.html`, `/security/setup-2fa.html` e `/assets/js/auth.js` em uma checagem pública sem autenticação (execução `42239262122`). Isso confirma a disponibilidade HTTP desses recursos no momento da checagem; não comprova a versão após merge, o layout mobile nem a operação autenticada de ponta a ponta.
 
 Na URL Configuration do Supabase Auth (projeto `lthiztvnaxwrfyziypxd`), verificar:
 
