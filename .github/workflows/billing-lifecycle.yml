@@ -6,6 +6,8 @@ on:
       - 'app/plano.html'
       - 'tests/billing-contract.test.mjs'
       - 'tests/billing-lifecycle-ui.test.mjs'
+      - 'tests/billing-publication-recovery.test.mjs'
+      - 'supabase/sql/saas_subscription_preserve_publication.sql'
       - '.github/workflows/billing-lifecycle.yml'
   push:
     branches: [main]
@@ -27,4 +29,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify billing and webhook with no external network or credentials
-        run: node --test tests/billing-contract.test.mjs tests/billing-lifecycle-ui.test.mjs
+        run: node --test tests/billing-contract.test.mjs tests/billing-lifecycle-ui.test.mjs tests/billing-publication-recovery.test.mjs
