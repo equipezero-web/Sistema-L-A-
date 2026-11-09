@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js';
-import { getSession, getAAL, getMyProfile, signOut } from './auth.js';
+import { getVerifiedUser, getAAL, getMyProfile, signOut } from './auth.js';
 
 const $ = s => document.querySelector(s);
 const show = (text, error = false) => { const el = $('#status'); if (!el) return; el.textContent = text; el.className = `status show ${error ? 'error' : 'ok'}`; };
@@ -100,8 +100,8 @@ async function loadAudit(){
 $('#auditPrevious').onclick=()=>{auditOffset=Math.max(0,auditOffset-AUDIT_PAGE_SIZE);void loadAudit()};
 $('#auditNext').onclick=()=>{auditOffset+=AUDIT_PAGE_SIZE;void loadAudit()};
 async function boot() {
-  const session = await getSession();
-  if (!session) { location.href = '../auth/login.html'; return; }
+  const user = await getVerifiedUser();
+  if (!user) { location.href = '../auth/login.html'; return; }
   const profile = await getMyProfile();
   if (!profile?.is_platform_super_admin) { await signOut(); location.href = '../auth/login.html'; return; }
   const aal = await getAAL();
@@ -113,7 +113,7 @@ async function boot() {
   ]);
   if (tenantError) throw tenantError;
   if (subError) throw subError;
-  $('#adminName').textContent = profile.full_name || session.user.email || 'Super Admin';
+  $('#adminName').textContent = profile.full_name || user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
   $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();document.body.classList.add('super-admin-ready');
 }
