@@ -6,6 +6,12 @@ export async function signUpOwner({ fullName, email, phone, password }) {
 }
 export async function signIn(email, password) { return supabase.auth.signInWithPassword({ email, password }); }
 export async function signOut() { return supabase.auth.signOut(); }
+// Unlike getSession(), getUser() verifies the current access token with Supabase Auth.
+export async function getVerifiedUser() {
+  const {data,error}=await supabase.auth.getUser();
+  if(error)throw error;
+  return data?.user||null;
+}
 export async function getSession() { const { data, error } = await supabase.auth.getSession(); if (error) throw error; return data.session; }
 export async function getAAL() { const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(); if (error) throw error; return data; }
 export async function listMfaFactors() { const { data, error } = await supabase.auth.mfa.listFactors(); if (error) throw error; return data; }
@@ -15,9 +21,9 @@ export async function challengeTotp(factorId, code) { const { data, error } = aw
 export async function setMfaPreference(preference) { const { error } = await supabase.rpc('saas_set_mfa_preference', { p_preference: preference }); if (error) throw error; }
 export async function declineOptionalMfa() { return setMfaPreference('declined'); }
 export async function getMyProfile() {
-  const session = await getSession();
-  if (!session) return null;
-  const { data, error } = await supabase.from('saas_profiles').select('user_id,full_name,is_platform_super_admin,mfa_preference').eq('user_id', session.user.id).single();
+  const user = await getVerifiedUser();
+  if (!user) return null;
+  const { data, error } = await supabase.from('saas_profiles').select('user_id,full_name,is_platform_super_admin,mfa_preference').eq('user_id', user.id).single();
   if (error) throw error;
   return data;
 }
