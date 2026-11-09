@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
 const harness=readFileSync('scripts/verify-tenant-http.mjs','utf8')
- .replace(/^import assert from 'node:assert\/strict';\s*/,'');
+ .replace(/^import assert from 'node:assert\/strict';\s*/m,'');
 const ids={
  a:'10000000-0000-4000-8000-000000000001',
  b:'20000000-0000-4000-8000-000000000002',
