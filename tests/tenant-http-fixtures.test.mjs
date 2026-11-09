@@ -63,7 +63,7 @@ async function scenario({emptyOwn=false,leak=false,employee=false}={}){
 
 test('Two authorized fixture companies pass only with actual records',async()=>{
  const r=await scenario();
- assert.equal(r.exitCode,0);
+ assert.equal(r.exitCode,0,'Simulated happy path failed: '+JSON.stringify(r.logs));
  assert.equal(r.calls.filter(x=>x.url.includes('/auth/v1/user')).length,2);
  assert.equal(r.calls.filter(x=>x.url.includes('&limit=1')).length,8);
  assert.equal(r.calls.filter(x=>x.url.includes('rpc/saas_platform_tenants')).length,2);
@@ -78,7 +78,7 @@ test('Empty tenants cannot produce a false-positive isolation result',async()=>{
 test('Cross-tenant data leak is detected for verified existing UUIDs',async()=>{
  const r=await scenario({leak:true});
  assert.equal(r.exitCode,1);
- assert.ok(r.logs.some(x=>x.includes('outra empresa ficou visível')));
+ assert.ok(r.logs.some(x=>x.includes('outra empresa ficou visível')),'Unexpected leak-test error: '+JSON.stringify(r.logs));
 });
 test('Employee sessions cannot masquerade as owner/admin fixtures',async()=>{
  const r=await scenario({employee:true});
