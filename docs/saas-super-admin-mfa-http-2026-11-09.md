@@ -48,3 +48,8 @@ Isso aponta para um problema de inicialização/planejamento de workflow ou rest
 Verificação independente: o conteúdo exato de `scripts/verify-super-admin-mfa-http.mjs` foi executado em ambiente JavaScript isolado com HTTP simulado. Os cinco cenários retornaram os códigos esperados: sucesso=0; acesso AAL1 indevido=1; recusa AAL2=1; usuários diferentes=1; token AAL2 vencido=1. Isso **não substitui** a suíte GitHub Actions nem os testes reais via Supabase Auth.
 
 **Status:** PR #52 permanece sem merge enquanto GitHub Actions continuar falhando antes de iniciar os jobs. Nenhuma alteração foi aplicada ao banco de dados nessa correção de diagnóstico.
+
+
+## Evidência externa adicional: incidente oficial no GitHub em 2026-11-09
+
+O [GitHub Status](https://www.githubstatus.com/) informou **Major Outage** em Actions em 9 de novembro de 2026 e incidente de disponibilidade degradada em Actions/Checks API, com atualização às 18:24 UTC. A execução adicional [42674094752](https://github.com/equipezero-web/Sistema-L-A-/actions/runs/42674094752) também concluiu com falha e **0 jobs**. Isso fornece uma causa plausível e contemporânea, documentada pelo provedor, para o padrão observado; não prova isoladamente que cada falha foi causada pelo incidente. Evitar mudanças de billing ou workflows baseadas somente na suspeita anterior. Reexecutar e integrar apenas quando GitHub Actions produzir jobs e testes verdes. Documento de status oficial: https://www.githubstatus.com/.
