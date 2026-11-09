@@ -51,7 +51,7 @@ async function runCase({
   };
   const context={
     supabase,
-    getSession:async()=>session?{user:{id:'test-user',email:'new@example.invalid'}}:null,
+    getVerifiedUser:async()=>session?{id:'test-user',email:'new@example.invalid'}:null,
     getAAL:async()=>aal,signOut:async()=>{},
     document,location,
     Intl,Date,console,window:{},
