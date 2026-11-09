@@ -56,7 +56,7 @@ if(missing.length) {
   assert.ok(r.ok,'SELECT '+table+' falhou (HTTP '+r.status+')');
   assert.ok(Array.isArray(r.data)&&r.data.length===1,table+': a empresa de homologação precisa ter pelo menos um registro de teste.');
   assert.equal(r.data[0].tenant_id,tenant,table+': registro inconsistente com a empresa.');
-  assert.match(r.data[0].id,/^[\\da-f]{8}(-[\\da-f]{4}){3}-[\\da-f]{12}$/i);
+  assert.match(r.data[0].id,/^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$/i);
   return r.data[0].id;
  }
  async function crossRead(u,tenant,table,recordId){
