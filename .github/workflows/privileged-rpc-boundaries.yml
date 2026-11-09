@@ -1,0 +1,25 @@
+name: SaaS privileged RPC boundaries
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_privileged_rpc_private_wrappers.sql'
+      - 'tests/saas-privileged-rpc-wrappers.test.mjs'
+      - '.github/workflows/privileged-rpc-boundaries.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_privileged_rpc_private_wrappers.sql'
+      - 'tests/saas-privileged-rpc-wrappers.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  boundaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-privileged-rpc-wrappers.test.mjs tests/saas-rpc-read-boundaries.test.mjs tests/tenant-auth-rls-recursion.test.mjs
