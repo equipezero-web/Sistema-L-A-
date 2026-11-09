@@ -37,3 +37,14 @@ Este teste simulado roda no GitHub Actions; **as chamadas HTTP reais não são e
 Esta etapa **não configura nem eleva usuários de produção a Super Admin**, não manipula fatores MFA e não cria credenciais. Homologação HTTP real continua pendente das sessões específicas de teste. As verificações SQL/RLS e os controles atuais de AAL2 do PostgreSQL permanecem intactos. Ainda falta uma campanha separada de testes de mutação/Storage com tokens reais, com dados descartáveis.
 
 O checkout Mercado Pago permanece desabilitado.
+
+
+## Diagnóstico do GitHub Actions — 9 de novembro de 2026
+
+As execuções PR #52 [42671766503](https://github.com/equipezero-web/Sistema-L-A-/actions/runs/42671766503), [42672247263](https://github.com/equipezero-web/Sistema-L-A-/actions/runs/42672247263) e [42672647537](https://github.com/equipezero-web/Sistema-L-A-/actions/runs/42672647537) concluíram com falha **sem gerar qualquer job** (a API de jobs retorna lista vazia), portanto não há log de checkout, Node ou testes. Esse comportamento também ocorreu depois que os testes foram associados ao workflow de autenticação anteriormente funcional. A sintaxe YAML foi analisada localmente; inclui os gatilhos `pull_request`, `push`, `workflow_dispatch` e o job `auth`.
+
+Isso aponta para um problema de inicialização/planejamento de workflow ou restrição da conta/plataforma, **não prova erro no JavaScript**. A API de execução disponível pelo conector não expôs a anotação/código de startup que permitiria distinguir restrição de cobrança, política de Actions ou erro interno. A pessoa responsável pelo repositório deve abrir as execuções acima e conferir os banners/annotations; em seguida, revisar **Settings → Billing and licensing → Actions**, **Settings → Actions → General** e, se houver `startup_failure` sem explicação, encaminhar os três IDs ao suporte GitHub. Não altere faturamento sem autorização.
+
+Verificação independente: o conteúdo exato de `scripts/verify-super-admin-mfa-http.mjs` foi executado em ambiente JavaScript isolado com HTTP simulado. Os cinco cenários retornaram os códigos esperados: sucesso=0; acesso AAL1 indevido=1; recusa AAL2=1; usuários diferentes=1; token AAL2 vencido=1. Isso **não substitui** a suíte GitHub Actions nem os testes reais via Supabase Auth.
+
+**Status:** PR #52 permanece sem merge enquanto GitHub Actions continuar falhando antes de iniciar os jobs. Nenhuma alteração foi aplicada ao banco de dados nessa correção de diagnóstico.
