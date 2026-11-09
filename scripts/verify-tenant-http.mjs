@@ -1,5 +1,5 @@
 // Manual, read-only HTTP authorization smoke test.
-// Requires two dedicated test identities and their active tenant IDs.
+// Requires two dedicated owner/admin test identities with at least one row per audited table.
 // Do not run with customer credentials or production application users.
 // Usage: SAAS_TEST_A_TOKEN=... SAAS_TEST_A_TENANT_ID=... SAAS_TEST_B_TOKEN=...
 //        SAAS_TEST_B_TENANT_ID=... SUPABASE_URL=... SUPABASE_PUBLISHABLE_KEY=...
@@ -48,11 +48,22 @@ if(missing.length) {
   assert.ok(Array.isArray(r.data));
   return r.data;
  }
- async function crossRead(u,tenant,table){
+ // Require a real record in each test tenant before claiming isolation.
+ // Query foreign rows by their verified UUID, not an empty tenant filter.
+ async function ownRecord(u,tenant,table){
   const path='/rest/v1/'+table+'?select=id%2Ctenant_id&tenant_id=eq.'+uuid(tenant)+'&limit=1';
   const r=await call(u,path);
   assert.ok(r.ok,'SELECT '+table+' falhou (HTTP '+r.status+')');
-  assert.deepEqual(r.data,[],table+': registros da outra empresa ficaram visíveis!');
+  assert.ok(Array.isArray(r.data)&&r.data.length===1,table+': a empresa de homologação precisa ter pelo menos um registro de teste.');
+  assert.equal(r.data[0].tenant_id,tenant,table+': registro inconsistente com a empresa.');
+  assert.match(r.data[0].id,/^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$/i);
+  return r.data[0].id;
+ }
+ async function crossRead(u,tenant,table,recordId){
+  const path='/rest/v1/'+table+'?select=id%2Ctenant_id&id=eq.'+uuid(recordId)+'&tenant_id=eq.'+uuid(tenant);
+  const r=await call(u,path);
+  assert.ok(r.ok,'SELECT '+table+' cruzado falhou (HTTP '+r.status+')');
+  assert.deepEqual(r.data,[],table+': registro comprovadamente existente da outra empresa ficou visível!');
  }
  async function foreignCosts(u,tenant){
   const r=await call(u,'/rest/v1/rpc/saas_manager_product_costs',{
@@ -68,15 +79,24 @@ if(missing.length) {
  try{
   const [uidA,uidB]=await Promise.all([checkUser(a,'A'),checkUser(b,'B')]);
   assert.notEqual(uidA,uidB,'As contas de teste devem ser distintas.');
-  for (const [label,u,own,other] of [['A',a,a,b],['B',b,b,a]]){
+  const cases=[['A',a,a,b,uidA],['B',b,b,a,uidB]];
+  const tables=['saas_customers','saas_products','saas_orders','saas_financial_entries'];
+  const fixtures={};
+  for(const [label,u,own,,uid] of cases){
    const memberships=await memberRows(u,own.tenant);
-   assert.ok(memberships.some(r=>r.user_id===(label==='A'?uidA:uidB)),'Associação ativa de '+label+' não foi encontrada.');
+   assert.ok(memberships.some(r=>r.user_id===uid&&['owner','admin'].includes(r.role)),
+      'A conta '+label+' precisa ser proprietário ou administrador ativo da empresa de homologação.');
+   fixtures[label]={};
+   for(const table of tables) fixtures[label][table]=await ownRecord(u,own.tenant,table);
+  }
+  for (const [label,u,,other] of cases){
    assert.deepEqual(await memberRows(u,other.tenant),[],'Acesso aos membros de outra empresa.');
-   for(const table of ['saas_customers','saas_products','saas_orders','saas_financial_entries'])
-      await crossRead(u,other.tenant,table);
+   const otherLabel=label==='A'?'B':'A';
+   for(const table of tables)
+     await crossRead(u,other.tenant,table,fixtures[otherLabel][table]);
    await foreignCosts(u,other.tenant);
    await noPlatformAccess(u);
-   console.log(label+': autenticado; associação própria acessível; leituras/RPCs cruzadas negadas.');
+   console.log(label+': identidade validada; dados próprios presentes; registros existentes de outra empresa invisíveis.');
   }
   console.log('Homologação HTTP de leitura concluída com duas contas de teste.');
  } catch (err){
