@@ -73,5 +73,5 @@ test('Existing JS remains valid without importing original project credentials',
  assert.doesNotThrow(()=>new vm.Script(stripped(admin)));
  assert.doesNotThrow(()=>new vm.Script(stripped(portal)));
  assert.doesNotMatch(edge,/SUPABASE_SERVICE_ROLE_KEY\s*=/);
- assert.doesNotMatch(portal+/password123|admin@/i);
+ assert.doesNotMatch(portal,/password123|admin@/i);
 });
