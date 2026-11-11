@@ -1,0 +1,28 @@
+name: SaaS Settings and public store
+on:
+  pull_request:
+    paths:
+      - 'app/configuracoes.html'
+      - 'app/index.html'
+      - 'tests/saas-settings-public-store.test.mjs'
+      - '.github/workflows/saas-settings-public-store.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/configuracoes.html'
+      - 'app/index.html'
+      - 'tests/saas-settings-public-store.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  settings-store:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Settings page and public storefront gating
+        run: node --test tests/saas-settings-public-store.test.mjs
