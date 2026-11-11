@@ -22,7 +22,7 @@ function toast(text,error=false){
 }
 function go(section){
  const target=get(section);
- if(!target||!target.classList.contains('section'))return;
+ if(!target||!target.classList.contains('section')||target.hidden)return;
  document.querySelectorAll('#app .section').forEach(s=>s.classList.toggle('active',s===target));
  document.querySelectorAll('#app nav [data-sec]').forEach(b=>b.classList.toggle('active',b.dataset.sec===section));
  window.scrollTo({top:0,behavior:'smooth'});
@@ -101,6 +101,7 @@ function applyDesign(){
   sectionNode.hidden=!visible;
   const nav=document.querySelector('#app nav [data-sec="'+section+'"]');
   if(nav)nav.hidden=!visible;
+  document.querySelectorAll('#app [data-go="'+section+'"]').forEach(b=>b.hidden=!visible);
  }
  const footer=String(design.footerText||'').slice(0,140);
  if(footer){
@@ -132,6 +133,8 @@ function applyBrand(){
  get('hello').textContent='Olá! Bem-vindo à '+store.name;
  const link=get('backToStore');
  link.href='./?slug='+encodeURIComponent(slug)+'&view=catalogo';
+ const mobileLink=get('mobileBackToStore');
+ if(mobileLink)mobileLink.href=link.href;
  if(store.logo_url){
   try{
    const image=new URL(store.logo_url,location.href);
