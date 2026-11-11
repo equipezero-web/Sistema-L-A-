@@ -33,7 +33,7 @@ permissions:
   contents: read
 jobs:
   unit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
       - name: Responsive CSS, navigation and existing SaaS regression tests
         run: node --test tests/saas-mobile-responsive.test.mjs tests/saas-barber-designer.test.mjs tests/saas-original-barber-template.test.mjs tests/saas-barber-customer-auth.test.mjs
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
