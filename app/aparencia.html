@@ -1,1 +1,72 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aparência | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"></head><body class="dashboard"><main class="dash-main" style="margin-left:0;max-width:1200px;margin:auto"><header class="dash-top"><div><div class="eyebrow">Minha Loja</div><h1>Aparência e publicação</h1></div><a class="btn" href="./index.html">← Painel</a></header><div id="status" class="status"></div><section class="dash-grid"><article class="dash-card"><h2>Identidade visual</h2><form id="themeForm" class="form-grid"><label class="field full">Logo da empresa<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG ou WEBP. Máximo 5 MB.</small></label><input id="logoUrl" type="hidden"><label class="field">Cor principal<input id="primary" type="color"></label><label class="field">Cor secundária<input id="secondary" type="color"></label><label class="field">Fundo<input id="background" type="color"></label><label class="field">Texto<input id="textColor" type="color"></label><label class="field">Fonte<select id="font"><option>Inter</option><option>Poppins</option><option>Montserrat</option><option>Playfair Display</option><option>Roboto</option><option>Lato</option></select></label><label class="field">Layout<select id="layout"><option value="royal-classic">Royal Classic</option><option value="royal-modern">Royal Modern</option><option value="royal-minimal">Royal Minimal</option></select></label><label class="field full"><span><input id="published" type="checkbox" style="width:auto"> Loja publicada</span></label><div class="field full"><button class="btn primary" type="submit">Salvar aparência</button></div></form></article><article class="dash-card"><div class="eyebrow">Prévia</div><div id="preview" style="padding:28px;border-radius:20px;margin-top:12px;min-height:280px"><img id="previewLogo" alt="Logo" style="max-width:120px;max-height:90px;object-fit:contain;display:none"><h2 id="previewName">Sua empresa</h2><p>Esta prévia acompanha suas cores, fonte e layout.</p><button id="previewButton" class="btn" type="button">Ver catálogo</button></div><p><a id="publicLink" class="btn" target="_blank" rel="noopener">Abrir loja pública</a></p></article></section></main><script type="module" src="../assets/js/appearance.js"></script></body></html>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aparência | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"></head><body class="dashboard"><main class="dash-main" style="margin-left:0;max-width:1200px;margin:auto"><header class="dash-top"><div><div class="eyebrow">Minha Loja</div><h1>Aparência e publicação</h1></div><a class="btn" href="./index.html">← Painel</a></header><div id="status" class="status"></div><section class="dash-grid"><article class="dash-card"><h2>Identidade visual</h2><form id="themeForm" class="form-grid"><label class="field full">Logo da empresa<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG ou WEBP. Máximo 5 MB.</small></label><input id="logoUrl" type="hidden"><label class="field">Cor principal<input id="primary" type="color"></label><label class="field">Cor secundária<input id="secondary" type="color"></label><label class="field">Fundo<input id="background" type="color"></label><label class="field">Texto<input id="textColor" type="color"></label><label class="field">Fonte<select id="font"><option>Inter</option><option>Poppins</option><option>Montserrat</option><option>Playfair Display</option><option>Roboto</option><option>Lato</option></select></label><label class="field">Layout<select id="layout"><option value="royal-classic">Royal Classic</option><option value="royal-modern">Royal Modern</option><option value="royal-minimal">Royal Minimal</option></select></label><label class="field full"><span><input id="published" type="checkbox" style="width:auto"> Loja publicada</span></label><div class="field full"><button class="btn primary" type="submit">Salvar aparência</button></div></form></article><article class="dash-card"><div class="eyebrow">Prévia</div><div id="preview" style="padding:28px;border-radius:20px;margin-top:12px;min-height:280px"><img id="previewLogo" alt="Logo" style="max-width:120px;max-height:90px;object-fit:contain;display:none"><h2 id="previewName">Sua empresa</h2><p>Esta prévia acompanha suas cores, fonte e layout.</p><button id="previewButton" class="btn" type="button">Ver catálogo</button></div><p><a id="publicLink" class="btn" target="_blank" rel="noopener">Abrir loja pública</a></p></article></section>
+<section id="barberDesigner" class="dash-card" hidden style="margin:22px 0;max-width:1160px">
+  <div class="eyebrow">Editor visual da Barbearia</div>
+  <h2>Personalização completa do seu site</h2>
+  <p class="muted">Edite cada seção, fundo, tipografia, espaçamento, galeria e planos. As alterações são mostradas na prévia e, ao salvar, aparecem na loja publicada. Outros empresários não têm acesso às configurações desta empresa.</p>
+  <div class="royal-designer-tabs" role="tablist" aria-label="Áreas de personalização" style="display:flex;flex-wrap:wrap;gap:8px;margin:15px 0">
+    <button class="btn" type="button" data-editor="layout">Layout e fundo</button>
+    <button class="btn" type="button" data-editor="home">Início</button>
+    <button class="btn" type="button" data-editor="club">Barbearia</button>
+    <button class="btn" type="button" data-editor="plans">Planos</button>
+    <button class="btn" type="button" data-editor="profile">Perfil</button>
+  </div>
+  <form id="designerForm" class="form-grid">
+    <fieldset id="editor-layout" class="field full" style="border:0;padding:0">
+      <h3>Fundo, texto e dimensões</h3>
+      <div class="form-grid">
+        <label class="field">Imagem do fundo<input id="backgroundFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="field">Imagem de destaque<input id="heroFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="field">Tamanho da fonte<input id="fontSize" type="range" min="12" max="22" step="1" value="15"><output id="fontSizeOut">15px</output></label>
+        <label class="field">Espaçamento entre seções<input id="sectionGap" type="range" min="12" max="80" step="4" value="28"><output id="sectionGapOut">28px</output></label>
+        <label class="field">Arredondamento dos cards<input id="cardRadius" type="range" min="0" max="40" step="2" value="18"><output id="cardRadiusOut">18px</output></label>
+        <label class="field">Largura da página<input id="contentWidth" type="range" min="780" max="1500" step="20" value="1280"><output id="contentWidthOut">1280px</output></label>
+        <label class="field">Cor dos botões<input id="buttonColor" type="color" value="#D4AF37"></label>
+        <label class="field">Cor dos textos secundários<input id="mutedColor" type="color" value="#AAA99F"></label>
+        <label class="field">Fundo da navegação<input id="navigationBackground" type="color" value="#07182A"></label>
+        <label class="field">Fundo dos cards<input id="cardBackground" type="color" value="#0A1018"></label>
+      </div>
+    </fieldset>
+    <fieldset id="editor-home" class="field full" hidden style="border:0;padding:0">
+      <h3>Início e agendamento</h3>
+      <label class="field">Título principal<input id="heroTitle" maxlength="110" value="Seu estilo. Nossa assinatura."></label>
+      <label class="field">Descrição principal<textarea id="heroSubtitle" rows="3" maxlength="350"></textarea></label>
+      <label class="field">Título do agendamento<input id="bookingTitle" maxlength="80" value="Agendar atendimento"></label>
+      <label class="field">Texto do botão<input id="bookingButtonLabel" maxlength="60" value="Solicitar horário"></label>
+    </fieldset>
+    <fieldset id="editor-club" class="field full" hidden style="border:0;padding:0">
+      <h3>Ambiente e informações da Barbearia</h3>
+      <label class="field">Título desta seção<input id="clubTitle" maxlength="65" value="Barbearia"></label>
+      <label class="field">História e apresentação<textarea id="clubDescription" rows="5" maxlength="1600"></textarea></label>
+      <label class="field">Fotos do espaço<input id="galleryFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      <p class="muted">Adicione até 12 fotos, com legendas individuais.</p>
+      <div id="galleryEditor" style="display:grid;gap:8px"></div>
+    </fieldset>
+    <fieldset id="editor-plans" class="field full" hidden style="border:0;padding:0">
+      <h3>Planos da Barbearia</h3>
+      <label class="field">Título<input id="plansTitle" maxlength="65" value="Planos"></label>
+      <label class="field">Introdução<textarea id="plansDescription" rows="3" maxlength="400"></textarea></label>
+      <p class="muted">Cadastre os planos exibidos na loja. Esta seção é informativa: não cria cobranças ou assinaturas automaticamente.</p>
+      <div id="plansEditor" style="display:grid;gap:10px"></div>
+      <button id="addPlan" type="button" class="btn">+ Adicionar plano</button>
+    </fieldset>
+    <fieldset id="editor-profile" class="field full" hidden style="border:0;padding:0">
+      <h3>Perfil e outras áreas</h3>
+      <label class="field">Título de perfil<input id="profileTitle" maxlength="80" value="Perfil e atendimento"></label>
+      <label class="field">Descrição do perfil<textarea id="profileDescription" rows="3" maxlength="500"></textarea></label>
+      <label class="field">Título de agendamentos<input id="appointmentsTitle" maxlength="80" value="Agendamentos"></label>
+      <label class="field">Texto no rodapé<input id="footerText" maxlength="140"></label>
+      <div class="form-grid">
+        <label class="field"><input type="checkbox" id="showClub" checked> Mostrar seção Barbearia</label>
+        <label class="field"><input type="checkbox" id="showPlans" checked> Mostrar Planos</label>
+        <label class="field"><input type="checkbox" id="showProfile" checked> Mostrar Perfil</label>
+      </div>
+    </fieldset>
+    <div class="field full"><button type="submit" class="btn primary">Salvar personalização completa</button></div>
+  </form>
+  <p id="designerStatus" class="status" role="status" aria-live="polite"></p>
+  <div id="designerPreview" style="border-radius:18px;min-height:180px;padding:28px;border:1px solid #ffffff27;margin-top:18px">
+    <small>PRÉVIA DO SITE</small><h2 id="designerPreviewTitle">Seu estilo. Nossa assinatura.</h2>
+    <p id="designerPreviewSubtitle">Atendimento personalizado.</p>
+    <span id="designerPreviewBadge" style="display:inline-flex;padding:9px 14px;border-radius:12px;border:1px solid currentColor">Serviços · Planos · Perfil</span>
+  </div>
+</section></main><script type="module" src="../assets/js/appearance.js"></script></body></html>
