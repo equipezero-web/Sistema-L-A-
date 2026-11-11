@@ -23,7 +23,7 @@ async function scenario({
   slug = 'lapis-servidor', store = publishedStore, catalog = [publishedItem],
   storeError = null, catalogError = null
 } = {}) {
-  const nodes = new Map(), requests = [], warnings = [];
+  const nodes = new Map(), requests = [], warnings = [], redirects = [];
   const node = id => {
     if (!nodes.has(id)) nodes.set(id, {
       textContent: id === 'storeName' ? 'Carregando loja...' : '',
@@ -54,13 +54,14 @@ async function scenario({
     supabase, document: doc, window: browserWindow, URL, URLSearchParams,
     location: {
       search: slug === null ? '' : '?slug=' + encodeURIComponent(slug),
-      href: 'https://equipezero-web.github.io/Sistema-L-A-/store/'
+      href: 'https://equipezero-web.github.io/Sistema-L-A-/store/',
+      replace: url => redirects.push(url)
     },
     console: { warn: (...args) => warnings.push(args) }, Intl, Number
   };
   vm.runInNewContext(compiled, context, { filename: 'store/index.html' });
   await new Promise(resolve => setImmediate(resolve));
-  return { node, doc, requests, browserWindow, warnings };
+  return { node, doc, requests, browserWindow, warnings, redirects };
 }
 
 test('Public store module parses without SyntaxError', () => {
@@ -132,13 +133,13 @@ test('Fallback displays error when external module cannot load', () => {
   assert.match(html, /Não foi possível concluir o carregamento/);
 });
 
-test('Barbershop storefront uses its own presentation and existing public services',async()=>{
+test('Published barbershop opens the complete original client experience instead of generic cards',async()=>{
  const r=await scenario({store:{...publishedStore,template_code:'barbershop',business_type:'Barbearia'}});
- assert.equal(r.doc.body.dataset.template,'barbershop');
- assert.equal(r.node('storeModelLabel').textContent,'BARBEARIA');
- assert.match(r.node('storeIntro').textContent,/atendimento/);
- assert.match(r.node('catalog').innerHTML,/Serviço demonstrativo/);
- assert.match(r.node('templateNotice').textContent,/agendamento online ainda não está habilitado/);
+ assert.deepEqual(r.redirects,[
+   'https://equipezero-web.github.io/Sistema-L-A-/store/barbearia.html?slug=lapis-servidor'
+ ]);
+ assert.deepEqual(r.requests,['saas_public_stores']);
+ assert.equal(r.browserWindow.__laPublicStoreSettled,true);
 });
 test('Virtual store receives its own storefront identity',async()=>{
  const r=await scenario({store:{...publishedStore,template_code:'virtual_store'}});
