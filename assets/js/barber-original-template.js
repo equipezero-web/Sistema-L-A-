@@ -101,7 +101,9 @@ function applyDesign(){
   sectionNode.hidden=!visible;
   const nav=document.querySelector('#app nav [data-sec="'+section+'"]');
   if(nav)nav.hidden=!visible;
-  document.querySelectorAll('#app [data-go="'+section+'"]').forEach(b=>b.hidden=!visible);
+  document.querySelectorAll('#app [data-go]').forEach(b=>{
+   if(b.dataset.go===section)b.hidden=!visible;
+  });
  }
  const footer=String(design.footerText||'').slice(0,140);
  if(footer){
