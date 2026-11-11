@@ -206,6 +206,7 @@ get('bookingForm').addEventListener('submit',async event=>{
   updateSummary();
   message('Solicitação registrada. Aguarde o contato da empresa.');
   await refreshSlots();
+  message('Solicitação registrada. Aguarde a confirmação da empresa.');
  }catch(e){
   message(e.message||'Não foi possível registrar a solicitação. Tente novamente.',true);
  }finally{button.disabled=false}
