@@ -247,7 +247,8 @@ begin
     where r.tenant_id=v_tenant and r.created_at>now()-interval '24 hours')>=80
  then raise exception 'Limite temporário de solicitações atingido.';end if;
  v_slots:=public.saas_barber_available_slots(p_slug,p_service_id,p_day,p_employee_id);
- if p_time is null or not (v_slots->'slots' ? to_char(p_time,'HH24:MI')) then
+ if p_time is null or extract(second from p_time)<>0
+    or not (v_slots->'slots' ? to_char(p_time,'HH24:MI')) then
    raise exception 'Horário indisponível. Atualize os horários e escolha outro.';
  end if;
  select * into v_hours from public.saas_barber_hours where tenant_id=v_tenant;
