@@ -1,0 +1,30 @@
+name: SaaS single-tenant trial integrity
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_single_tenant_trial_access_58.sql'
+      - 'app/plano.html'
+      - 'app/configuracoes.html'
+      - 'tests/saas-single-tenant-trial.test.mjs'
+      - '.github/workflows/saas-single-tenant-trial.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_single_tenant_trial_access_58.sql'
+      - 'app/plano.html'
+      - 'app/configuracoes.html'
+      - 'tests/saas-single-tenant-trial.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate single-tenant trial and billing separation
+        run: node --test tests/saas-single-tenant-trial.test.mjs tests/saas-settings-public-store.test.mjs
