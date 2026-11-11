@@ -25,5 +25,11 @@
 <h2>Usuários cadastrados</h2>
 <div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Status</th><th>Criado em</th><th>Ações</th></tr></thead><tbody id="rows">
 <tr><td colspan="4">Carregando contas...</td></tr></tbody></table></div>
-</section></main>
+</section>
+<dialog id="resetDialog" class="royal-modal"><form id="resetForm" class="modal-card">
+<div class="modal-title"><h2>Redefinir senha da recepção</h2><button type="button" id="resetClose" class="icon-btn">×</button></div>
+<p id="resetAccount"></p>
+<div class="field"><label for="resetPassword">Nova senha</label><input id="resetPassword" type="password" required minlength="12" maxlength="72" autocomplete="new-password"></div>
+<div class="modal-actions"><button type="button" class="btn" id="resetCancel">Cancelar</button><button type="submit" class="btn primary">Salvar nova senha</button></div>
+</form></dialog></main>
 <script type="module" src="../assets/js/reception-admin.js"></script></body></html>
