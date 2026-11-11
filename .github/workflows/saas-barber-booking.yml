@@ -1,0 +1,40 @@
+name: SaaS Barber Online Booking
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_barber_public_requests_62.sql'
+      - 'store/reservar.html'
+      - 'store/index.html'
+      - 'app/agenda.html'
+      - 'assets/js/public-barber-booking.js'
+      - 'assets/js/agenda.js'
+      - 'assets/js/business.js'
+      - 'tests/saas-barber-booking.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+      - '.github/workflows/saas-barber-booking.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_barber_public_requests_62.sql'
+      - 'store/reservar.html'
+      - 'store/index.html'
+      - 'app/agenda.html'
+      - 'assets/js/public-barber-booking.js'
+      - 'assets/js/agenda.js'
+      - 'assets/js/business.js'
+      - 'tests/saas-barber-booking.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  booking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test appointment booking, front-end states and public catalog
+        run: node --test tests/saas-barber-booking.test.mjs tests/saas-public-store-loading.test.mjs
