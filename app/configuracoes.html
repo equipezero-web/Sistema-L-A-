@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configurações | L&A Royal SaaS</title>
+<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<main class="module-shell">
+<header class="module-head">
+<div><a href="./index.html" class="back">← Painel</a><div class="eyebrow">Administração da empresa</div>
+<h1>Configurações</h1><p id="company" class="muted">Carregando empresa...</p></div>
+</header>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<section class="card">
+<h2>Módulos da empresa</h2>
+<p class="muted">Defina quais ferramentas aparecem para a sua equipe. Os limites de função e a assinatura continuam sendo verificados pelo servidor.</p>
+<form id="settingsForm" class="form-grid" hidden>
+<label class="field"><span><input id="products_enabled" type="checkbox" style="width:auto"> Produtos</span></label>
+<label class="field"><span><input id="services_enabled" type="checkbox" style="width:auto"> Serviços</span></label>
+<label class="field"><span><input id="inventory_enabled" type="checkbox" style="width:auto"> Estoque</span></label>
+<label class="field"><span><input id="appointments_enabled" type="checkbox" style="width:auto"> Agenda</span></label>
+<label class="field"><span><input id="finance_enabled" type="checkbox" style="width:auto"> Financeiro</span></label>
+<label class="field"><span><input id="ai_enabled" type="checkbox" style="width:auto"> Royal AI</span></label>
+<div class="field full"><button id="saveSettings" class="btn primary" type="submit">Salvar configurações</button></div>
+</form>
+</section>
+<section class="card" style="margin-top:18px">
+<h2>Loja para os clientes</h2>
+<p id="storeState" class="muted">Verificando publicação...</p>
+<p id="storeLinkBox" hidden><a id="storeLink" class="btn primary" target="_blank" rel="noopener noreferrer">Abrir loja pública</a></p>
+<div class="nav-actions">
+<a class="btn" href="./aparencia.html">Personalizar minha loja</a>
+<a class="btn" href="./plano.html">Plano e assinatura</a>
+</div>
+<p class="muted">Os clientes acessam a vitrine pública pelo link da sua loja; não entram neste painel administrativo. A vitrine atual exibe itens e preços, mas ainda não oferece checkout de compras pelo cliente.</p>
+</section>
+</main>
+<script type="module">
+import {supabase} from '../assets/js/supabase.js';
+import {getBusinessContext} from '../assets/js/business.js';
+const fields=['products_enabled','services_enabled','inventory_enabled','appointments_enabled','finance_enabled','ai_enabled'];
+const get=id=>document.getElementById(id);
+const status=get('status'),form=get('settingsForm'),save=get('saveSettings');
+let context=null,businessMode=null;
+function message(text,error=false){status.textContent=text;status.className='status show '+(error?'error':'ok')}
+function enforceMode(){
+ if(businessMode==='products'){
+   get('services_enabled').checked=false;get('services_enabled').disabled=true;
+ }else if(businessMode==='services'){
+   for(const id of ['products_enabled','inventory_enabled']){get(id).checked=false;get(id).disabled=true}
+ }
+}
+async function boot(){
+ try{
+  context=await getBusinessContext();
+  if(context.membership.role!=='owner'){
+    location.replace('./index.html');return;
+  }
+  businessMode=context.tenant.business_mode;
+  get('company').textContent=context.tenant.name;
+  const tenantId=context.tenant.id;
+  const [{data:settings,error},{data:subscription,error:subError},{data:theme,error:themeError},{data:tenant,error:slugError}]=await Promise.all([
+   supabase.from('saas_settings').select(fields.join(',')).eq('tenant_id',tenantId).single(),
+   supabase.rpc('saas_subscription_access',{p_tenant_id:tenantId}),
+   supabase.from('saas_store_themes').select('published').eq('tenant_id',tenantId).single(),
+   supabase.from('saas_tenants').select('slug').eq('id',tenantId).single()
+  ]);
+  if(error)throw error;
+  for(const id of fields)get(id).checked=settings[id]===true;
+  enforceMode();
+  form.hidden=false;
+  if(subError||themeError||slugError){
+    get('storeState').textContent='Não foi possível confirmar a publicação da loja. Consulte Minha Loja ou Plano e assinatura.';
+  }else if(subscription?.active===true&&theme?.published===true&&tenant?.slug){
+    const url=new URL('../store/?slug='+encodeURIComponent(tenant.slug),import.meta.url);
+    get('storeLink').href=url.href;
+    get('storeLinkBox').hidden=false;
+    get('storeState').textContent='Loja publicada. Compartilhe o link da vitrine com seus clientes.';
+  }else{
+    get('storeState').textContent='Sua loja ainda não está publicada. A assinatura precisa estar ativa e a publicação deve ser habilitada em Minha Loja.';
+  }
+  message('Configurações carregadas.');
+ }catch(e){message(e.message||'Não foi possível abrir as configurações.',true)}
+}
+form.addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(!context||context.membership.role!=='owner'){message('Somente o proprietário pode alterar as configurações.',true);return}
+ save.disabled=true;
+ try{
+  enforceMode();
+  const values=Object.fromEntries(fields.map(id=>[id,get(id).checked]));
+  const {data,error}=await supabase.from('saas_settings')
+    .update(values).eq('tenant_id',context.tenant.id)
+    .select('tenant_id').single();
+  if(error)throw error;
+  if(!data)throw new Error('Não foi possível confirmar a alteração.');
+  message('Configurações salvas. Volte ao painel para visualizar os módulos atualizados.');
+ }catch(e){message(e.message||'Não foi possível salvar as configurações.',true)}
+ finally{save.disabled=false}
+});
+void boot();
+</script>
+</body>
+</html>
