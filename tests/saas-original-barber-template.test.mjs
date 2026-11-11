@@ -77,6 +77,11 @@ function createDom(){
   title:'Original',
   getElementById:get,
   createElement:tag=>node(tag),
+  querySelector(query){
+   const match=query.match(/^#app nav \[data-sec="([^"]+)"\]$/);
+   if(match)return navSections.find(item=>item.dataset.sec===match[1])||null;
+   throw Error('Unknown DOM query '+query);
+  },
   documentElement:{style:{setProperty(){}}},
   querySelectorAll(query){
    if(query==='#app nav [data-sec]')return navSections;
