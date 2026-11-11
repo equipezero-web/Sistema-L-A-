@@ -172,3 +172,17 @@ $new$;
  execute new_definition;
 end;
 $patch$;
+
+-- Clientes com login precisam enxergar exatamente o catálogo já autorizado para
+-- visitantes anônimos. A proteção anterior dependia de SELECT em saas_tenants,
+-- indisponível para usuários que não são membros administrativos.
+drop policy if exists saas_platform_active_guard on public.saas_public_catalog_items;
+create policy saas_platform_active_guard on public.saas_public_catalog_items
+ for all to authenticated
+ using (
+   private.saas_public_store_visible(tenant_id) or
+   exists(select 1 from public.saas_tenants t where t.id=tenant_id and t.active=true)
+ )
+ with check (
+   exists(select 1 from public.saas_tenants t where t.id=tenant_id and t.active=true)
+ );
