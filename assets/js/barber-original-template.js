@@ -44,6 +44,12 @@ function applyBrand(){
  // Match a tenant's configured theme without compromising contrast/readability.
  const bg=/^#[a-f0-9]{6}$/i.test(store.background_color||'')?store.background_color:'#030507';
  root.setProperty('--template-background',bg);
+ const secondary=/^#[a-f0-9]{6}$/i.test(store.secondary_color||'')?store.secondary_color:'#07182A';
+ const text=/^#[a-f0-9]{6}$/i.test(store.text_color||'')?store.text_color:'#F8F5EC';
+ root.setProperty('--template-secondary',secondary);
+ root.setProperty('--template-text',text);
+ root.setProperty('--white',text);
+ root.setProperty('--black',bg);
  get('tenantHeroLabel').textContent=store.name.toLocaleUpperCase('pt-BR');
  get('tenantInitial').textContent=store.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
  get('topAvatar').textContent=get('tenantInitial').textContent;
@@ -207,7 +213,7 @@ async function init(){
  if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
   throw new Error('Link da barbearia inválido.');
  const shop=await supabase.from('saas_public_stores')
-  .select('tenant_id,name,slug,template_code,business_type,logo_url,primary_color,background_color')
+  .select('tenant_id,name,slug,template_code,business_type,logo_url,primary_color,secondary_color,background_color,text_color')
   .eq('slug',slug).maybeSingle();
  if(shop.error)throw shop.error;
  if(!shop.data||shop.data.template_code!=='barbershop')
