@@ -1,1 +1,112 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Loja | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"><style>.store-head{padding:48px 0 28px}.store-logo{max-width:130px;max-height:90px;object-fit:contain}.catalog{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:60px}.store-card{border:1px solid #9994;border-radius:18px;overflow:hidden;background:#fff1}.store-card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0001}.store-card .body{padding:18px}.store-card h3{margin:0 0 8px}.store-card p{opacity:.72;min-height:42px}.store-card strong{font-size:1.25rem}.pill{font-size:.72rem;padding:5px 9px;border:1px solid currentColor;border-radius:999px;opacity:.75}@media(max-width:800px){.catalog{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.catalog{grid-template-columns:1fr}}</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><p id="storeStatus"></p></header><section id="catalog" class="catalog"></section></main><script type="module">import{supabase}from'../assets/js/supabase.js';const q=new URLSearchParams(location.search),slug=q.get('slug'),nameEl=document.querySelector('#storeName'),typeEl=document.querySelector('#storeType'),statusEl=document.querySelector('#storeStatus'),catalog=document.querySelector('#catalog'),logo=document.querySelector('#logo'),money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});if(!slug){nameEl.textContent='Loja não informada';statusEl.textContent='Use um endereço de loja válido.'}else{const{data:s,error}=await supabase.from('saas_public_stores').select('*').eq('slug',slug).maybeSingle();if(error||!s){nameEl.textContent='Loja indisponível';statusEl.textContent='Esta empresa não está publicada ou não foi encontrada.'}else{document.title=s.name;document.body.style.background=s.background_color;document.body.style.color=s.text_color;document.body.style.fontFamily=s.font_style+',Arial,sans-serif';document.documentElement.style.setProperty('--gold',s.primary_color);nameEl.textContent=s.name;typeEl.textContent=s.business_type||'';if(s.logo_url){logo.src=s.logo_url;logo.hidden=false}const{data:items,error:ie}=await supabase.from('saas_public_catalog_items').select('*').eq('tenant_id',s.tenant_id).order('name');if(ie){statusEl.textContent='Não foi possível carregar o catálogo.'}else if(!items?.length){statusEl.textContent='Nenhum produto ou serviço publicado no momento.'}else{statusEl.textContent=`${items.length} item(ns) disponível(is)`;catalog.innerHTML=items.map(i=>`<article class="store-card"><${i.image_url?'img src="'+i.image_url.replaceAll('"','&quot;')+'" alt=""':'div style="aspect-ratio:4/3;display:grid;place-items:center;background:#0001">Sem imagem</div'}><div class="body"><span class="pill">${i.item_type==='product'?'Produto':'Serviço'}</span><h3>${esc(i.name)}</h3><p>${esc(i.description||'')}</p><strong>${money.format(Number(i.price||0))}</strong>${i.item_type==='service'&&i.duration_minutes?`<small style="display:block;margin-top:7px">${i.duration_minutes} min</small>`:''}${i.item_type==='product'&&!i.in_stock?'<small style="display:block;margin-top:7px">Indisponível</small>':''}</div></article>`).join('')}}}}function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</script></body></html>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Loja | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"><style>.store-head{padding:48px 0 28px}.store-logo{max-width:130px;max-height:90px;object-fit:contain}.catalog{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:60px}.store-card{border:1px solid #9994;border-radius:18px;overflow:hidden;background:#fff1}.store-card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0001}.store-card .body{padding:18px}.store-card h3{margin:0 0 8px}.store-card p{opacity:.72;min-height:42px}.store-card strong{font-size:1.25rem}.store-placeholder{width:100%;aspect-ratio:4/3;display:grid;place-items:center;background:#0001}.store-detail{display:block;margin-top:7px}.pill{font-size:.72rem;padding:5px 9px;border:1px solid currentColor;border-radius:999px;opacity:.75}@media(max-width:800px){.catalog{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.catalog{grid-template-columns:1fr}}</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><p id="storeStatus"></p></header><section id="catalog" class="catalog"></section></main><script>
+window.__laPublicStoreSettled = false;
+window.setTimeout(function () {
+  if (window.__laPublicStoreSettled) return;
+  var name = document.getElementById('storeName');
+  var status = document.getElementById('storeStatus');
+  if (name && name.textContent === 'Carregando loja...') {
+    name.textContent = 'Loja temporariamente indisponível';
+  }
+  if (status) status.textContent = 'Não foi possível concluir o carregamento. Verifique sua conexão e atualize a página.';
+}, 12000);
+</script><script type="module">import { supabase } from '../assets/js/supabase.js';
+
+const params = new URLSearchParams(location.search);
+const slug = params.get('slug');
+const nameEl = document.getElementById('storeName');
+const typeEl = document.getElementById('storeType');
+const statusEl = document.getElementById('storeStatus');
+const catalogEl = document.getElementById('catalog');
+const logoEl = document.getElementById('logo');
+const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]
+  );
+}
+function safeImageUrl(value) {
+  if (!value) return null;
+  try {
+    const url = new URL(value, location.href);
+    return url.protocol === 'https:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+function renderItem(item) {
+  const image = safeImageUrl(item.image_url);
+  const imageMarkup = image
+    ? '<img loading="lazy" src="' + escapeHtml(image) + '" alt="">'
+    : '<div class="store-placeholder">Sem imagem</div>';
+  const kind = item.item_type === 'product' ? 'Produto' : 'Serviço';
+  const details = item.item_type === 'service' && item.duration_minutes
+    ? '<small class="store-detail">' + escapeHtml(item.duration_minutes) + ' min</small>'
+    : item.item_type === 'product' && !item.in_stock
+      ? '<small class="store-detail">Indisponível</small>'
+      : '';
+  return '<article class="store-card">' + imageMarkup
+    + '<div class="body"><span class="pill">' + kind + '</span>'
+    + '<h3>' + escapeHtml(item.name) + '</h3>'
+    + '<p>' + escapeHtml(item.description || '') + '</p>'
+    + '<strong>' + money.format(Number(item.price || 0)) + '</strong>'
+    + details + '</div></article>';
+}
+
+async function loadStore() {
+  try {
+    if (!slug || !/^[a-z0-9][a-z0-9-]{0,79}$/.test(slug)) {
+      nameEl.textContent = 'Loja não informada';
+      statusEl.textContent = 'Use um endereço de loja válido.';
+      return;
+    }
+
+    const { data: store, error: storeError } = await supabase
+      .from('saas_public_stores')
+      .select('tenant_id,name,business_type,logo_url,primary_color,background_color,text_color,font_style')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (storeError) throw new Error('Não foi possível consultar a loja pública.');
+    if (!store) {
+      nameEl.textContent = 'Loja indisponível';
+      statusEl.textContent = 'Esta empresa não está publicada ou não foi encontrada.';
+      return;
+    }
+
+    document.title = store.name + ' | L&A Royal Store';
+    document.body.style.background = store.background_color || '#FFFFFF';
+    document.body.style.color = store.text_color || '#111111';
+    document.body.style.fontFamily = (store.font_style || 'Inter') + ',Arial,sans-serif';
+    document.documentElement.style.setProperty('--gold', store.primary_color || '#C9A227');
+    nameEl.textContent = store.name;
+    typeEl.textContent = store.business_type || '';
+    if (safeImageUrl(store.logo_url)) {
+      logoEl.src = safeImageUrl(store.logo_url);
+      logoEl.hidden = false;
+    }
+
+    const { data: items, error: itemsError } = await supabase
+      .from('saas_public_catalog_items')
+      .select('item_type,name,description,price,image_url,duration_minutes,in_stock')
+      .eq('tenant_id', store.tenant_id)
+      .order('name');
+
+    if (itemsError) throw new Error('Não foi possível carregar o catálogo.');
+    if (!items?.length) {
+      statusEl.textContent = 'Nenhum produto ou serviço publicado no momento.';
+      return;
+    }
+    catalogEl.innerHTML = items.map(renderItem).join('');
+    statusEl.textContent = items.length + ' item(ns) disponível(is)';
+  } catch (error) {
+    if (nameEl.textContent === 'Carregando loja...') nameEl.textContent = 'Loja temporariamente indisponível';
+    statusEl.textContent = error?.message || 'Não foi possível carregar a loja. Atualize a página e tente novamente.';
+    console.warn('Falha ao carregar a loja pública:', error);
+  } finally {
+    window.__laPublicStoreSettled = true;
+  }
+}
+
+void loadStore();
+</script></body></html>
