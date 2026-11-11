@@ -105,22 +105,28 @@ test('New factor enrolls, verifies and navigates only after AAL2',async()=>{
 
 test('Super Admin with a verified factor must complete MFA challenge',async()=>{
   const app=await scenario({superAdmin:true,factors:[{id:'verified-super',status:'verified'}]});
-  assert.equal(app.node('skip').classList.contains('hidden'),true);
+  assert.doesNotMatch(setup,/id="skip"|Agora não/);
+  assert.equal(app.node('title').textContent,'Ative a verificação em duas etapas');
   assert.equal(app.location.href,'');
   await app.click('confirm');
   assert.equal(app.challengeCalls,1);
   assert.equal(app.location.href,'../super-admin/index.html');
 });
 
-test('Already-verified Super Admin with AAL2 proceeds without reenrollment',async()=>{
+test('Already-verified Super Admin with AAL2 persists preference before moving on',async()=>{
   const app=await scenario({superAdmin:true,factors:[{id:'verified',status:'verified'}],level:'aal2'});
+  assert.equal(app.preference,'enabled');
   assert.equal(app.location.href,'../super-admin/index.html');
   assert.equal(app.enrollCalls,0);
 });
 
-test('Query string alone cannot force required MFA for a non-admin account',async()=>{
-  const app=await scenario({search:'?required=1'});
-  assert.equal(app.node('skip').classList.contains('hidden'),false);
+test('Query string alone cannot elevate regular user to Super Admin',async()=>{
+  const app=await scenario({
+    search:'?required=1',level:'aal2',
+    factors:[{id:'verified-regular',status:'verified'}]
+  });
+  assert.equal(app.preference,'enabled');
+  assert.equal(app.location.href,'../app/plano.html');
 });
 
 test('Without a session, 2FA redirects to login without making profile calls',async()=>{
