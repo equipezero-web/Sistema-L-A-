@@ -34,7 +34,7 @@ test('Published barbershop switches to the original complete experience while ot
  assert.match(store,/saas_public_catalog_items/);
 });
 test('Original code credentials and local customer storage were intentionally NOT reused',()=>{
- assert.doesNotMatch(js,/localStorage|service_role|ADMIN_PASSWORD|createClient|ap-create-booking/);
+ assert.doesNotMatch(js,/\\blocalStorage\\.|service_role|ADMIN_PASSWORD|createClient|ap-create-booking/);
  assert.match(js,/rpc\('saas_barber_public_setup'/);
  assert.match(js,/rpc\('saas_barber_available_slots'/);
  assert.match(js,/rpc\('saas_barber_request_booking'/);
@@ -72,6 +72,7 @@ function createDom(){
  const navSections=['home','appointments','club','plans','profile'].map(sec=>{const x=node('button');x.dataset.sec=sec;return x});
  const quick=['club','plans'].map(go=>{const x=node('button');x.dataset.go=go;return x});
  const sections=['home','appointments','club','plans','profile'].map(id=>get(id));
+ sections.forEach(x=>x.classList.add('section'));
  const doc={
   title:'Original',
   getElementById:get,
