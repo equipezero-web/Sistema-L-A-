@@ -25,7 +25,7 @@ const bookingLink = document.getElementById('bookingLink');
 const publicModels = {
   barbershop: {
     badge:'BARBEARIA', intro:'Seu próximo atendimento começa aqui. Conheça os serviços, valores e duração de cada experiência.',
-    notice:'O agendamento online ainda não está habilitado nesta versão da página.'
+    notice:'Veja os serviços da barbearia. A experiência completa de agendamento está disponível no site principal da empresa.'
   },
   virtual_store: {
     badge:'LOJA VIRTUAL', intro:'Explore nossa seleção de produtos e encontre o que combina com você.',
@@ -94,6 +94,14 @@ async function loadStore() {
     if (!store) {
       nameEl.textContent = 'Loja indisponível';
       statusEl.textContent = 'Esta empresa não está publicada ou não foi encontrada.';
+      return;
+    }
+
+    // Select the company's original full client experience, not the generic catalog.
+    // Other templates remain on the existing safe catalog until their backend adapters are ready.
+    if (store.template_code === 'barbershop'
+       && new URLSearchParams(location.search).get('view') !== 'catalogo') {
+      location.replace(new URL('./barbearia.html?slug=' + encodeURIComponent(slug), location.href).href);
       return;
     }
 
