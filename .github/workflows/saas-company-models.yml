@@ -1,0 +1,36 @@
+name: SaaS Company Models Integration
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_business_templates_61.sql'
+      - 'onboarding/index.html'
+      - 'app/configuracoes.html'
+      - 'store/index.html'
+      - 'tests/saas-business-templates.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+      - 'tests/saas-settings-public-store.test.mjs'
+      - '.github/workflows/saas-company-models.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_business_templates_61.sql'
+      - 'onboarding/index.html'
+      - 'app/configuracoes.html'
+      - 'store/index.html'
+      - 'tests/saas-business-templates.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+      - 'tests/saas-settings-public-store.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  templates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify onboarding, public views and tenant model isolation
+        run: node --test tests/saas-business-templates.test.mjs tests/saas-public-store-loading.test.mjs tests/saas-settings-public-store.test.mjs

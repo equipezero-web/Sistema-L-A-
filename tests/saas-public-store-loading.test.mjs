@@ -34,7 +34,7 @@ async function scenario({
   const doc = {
     title: 'Loja | L&A Royal SaaS',
     getElementById: node,
-    body: { style: {} },
+    body: { style: {}, dataset: {} },
     documentElement: { style: { setProperty() {} } }
   };
   const supabase = {
@@ -130,4 +130,32 @@ test('Fallback displays error when external module cannot load', () => {
   assert.match(html, /window\.setTimeout\(function \(\)/);
   assert.match(html, /window\.__laPublicStoreSettled/);
   assert.match(html, /Não foi possível concluir o carregamento/);
+});
+
+test('Barbershop storefront uses its own presentation and existing public services',async()=>{
+ const r=await scenario({store:{...publishedStore,template_code:'barbershop',business_type:'Barbearia'}});
+ assert.equal(r.doc.body.dataset.template,'barbershop');
+ assert.equal(r.node('storeModelLabel').textContent,'BARBEARIA');
+ assert.match(r.node('storeIntro').textContent,/atendimento/);
+ assert.match(r.node('catalog').innerHTML,/Serviço demonstrativo/);
+ assert.match(r.node('templateNotice').textContent,/agendamento online ainda não está habilitado/);
+});
+test('Virtual store receives its own storefront identity',async()=>{
+ const r=await scenario({store:{...publishedStore,template_code:'virtual_store'}});
+ assert.equal(r.doc.body.dataset.template,'virtual_store');
+ assert.equal(r.node('storeModelLabel').textContent,'LOJA VIRTUAL');
+ assert.match(r.node('storeIntro').textContent,/produtos/);
+});
+test('Instagram package storefront does not falsely claim submitted orders',async()=>{
+ const r=await scenario({store:{...publishedStore,template_code:'instagram_orders'}});
+ assert.equal(r.doc.body.dataset.template,'instagram_orders');
+ assert.match(r.node('templateNotice').textContent,/geração de pedidos.*integração/);
+});
+test('Business communication never exposes a public customer catalog or internal messages',async()=>{
+ const r=await scenario({store:{...publishedStore,template_code:'business_communication'}});
+ assert.equal(r.doc.body.dataset.template,'business_communication');
+ assert.equal(r.node('catalog').hidden,true);
+ assert.match(r.node('storeStatus').textContent,/Acesso restrito/);
+ assert.deepEqual(r.requests,['saas_public_stores']);
+ assert.equal(r.browserWindow.__laPublicStoreSettled,true);
 });

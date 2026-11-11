@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Loja | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"><style>.store-head{padding:48px 0 28px}.store-logo{max-width:130px;max-height:90px;object-fit:contain}.catalog{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:60px}.store-card{border:1px solid #9994;border-radius:18px;overflow:hidden;background:#fff1}.store-card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0001}.store-card .body{padding:18px}.store-card h3{margin:0 0 8px}.store-card p{opacity:.72;min-height:42px}.store-card strong{font-size:1.25rem}.store-placeholder{width:100%;aspect-ratio:4/3;display:grid;place-items:center;background:#0001}.store-detail{display:block;margin-top:7px}.pill{font-size:.72rem;padding:5px 9px;border:1px solid currentColor;border-radius:999px;opacity:.75}@media(max-width:800px){.catalog{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.catalog{grid-template-columns:1fr}}</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><p id="storeStatus"></p></header><section id="catalog" class="catalog"></section></main><script>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Loja | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"><style>.store-head{padding:48px 0 28px}.store-logo{max-width:130px;max-height:90px;object-fit:contain}.catalog{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:60px}.store-card{border:1px solid #9994;border-radius:18px;overflow:hidden;background:#fff1}.store-card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0001}.store-card .body{padding:18px}.store-card h3{margin:0 0 8px}.store-card p{opacity:.72;min-height:42px}.store-card strong{font-size:1.25rem}.store-placeholder{width:100%;aspect-ratio:4/3;display:grid;place-items:center;background:#0001}.store-detail{display:block;margin-top:7px}.store-intro{max-width:680px;line-height:1.6;opacity:.86}.template-pill{display:inline-flex;padding:7px 14px;border-radius:99px;border:1px solid var(--gold);color:var(--gold);margin:12px 0;font-size:.8rem;font-weight:700}.template-note{font-size:.88rem;opacity:.8;margin:8px 0 24px}.store-head{position:relative}.store-head:before{content:"";position:absolute;inset:0 0 auto;z-index:-1;height:100%;background:radial-gradient(circle at 70% 10%,var(--gold),transparent 60%);opacity:.07;pointer-events:none}.catalog .store-card{transition:transform .2s ease,border-color .2s ease}.catalog .store-card:hover{transform:translateY(-3px);border-color:var(--gold)}body[data-template="barbershop"] .catalog{grid-template-columns:repeat(2,minmax(0,1fr));max-width:960px}body[data-template="barbershop"] .store-card img{aspect-ratio:16/9}body[data-template="barbershop"] .store-card .pill{color:var(--gold)}body[data-template="instagram_orders"] .catalog .store-card{border-color:var(--gold);background:linear-gradient(150deg,#143a6625,#0000)}body[data-template="virtual_store"] .catalog .store-card img{aspect-ratio:1/1}body[data-template="business_communication"] .store-head{max-width:680px;margin:0 auto;text-align:center;padding-top:90px}.pill{font-size:.72rem;padding:5px 9px;border:1px solid currentColor;border-radius:999px;opacity:.75}@media(max-width:800px){.catalog{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.catalog,body[data-template="barbershop"] .catalog{grid-template-columns:1fr}}</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><p id="storeStatus"></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
 window.__laPublicStoreSettled = false;
 window.setTimeout(function () {
   if (window.__laPublicStoreSettled) return;
@@ -18,6 +18,28 @@ const typeEl = document.getElementById('storeType');
 const statusEl = document.getElementById('storeStatus');
 const catalogEl = document.getElementById('catalog');
 const logoEl = document.getElementById('logo');
+const modelLabel = document.getElementById('storeModelLabel');
+const introEl = document.getElementById('storeIntro');
+const noticeEl = document.getElementById('templateNotice');
+const publicModels = {
+  barbershop: {
+    badge:'BARBEARIA', intro:'Seu próximo atendimento começa aqui. Conheça os serviços, valores e duração de cada experiência.',
+    notice:'O agendamento online ainda não está habilitado nesta versão da página.'
+  },
+  virtual_store: {
+    badge:'LOJA VIRTUAL', intro:'Explore nossa seleção de produtos e encontre o que combina com você.',
+    notice:'O pagamento e a finalização de compras na vitrine serão disponibilizados após a integração do checkout.'
+  },
+  instagram_orders: {
+    badge:'PACOTES PARA INSTAGRAM', intro:'Consulte as opções disponibilizadas pela empresa, com preços e informações claras.',
+    notice:'A geração de pedidos diretamente pelo site ainda está em integração. Nunca informe sua senha do Instagram.'
+  },
+  business_communication: {
+    badge:'PORTAL EMPRESARIAL', intro:'Gestão de clientes, projetos e comunicação interna em um ambiente reservado aos integrantes autorizados.',
+    notice:'O CRM e as conversas da equipe são privados e não aparecem publicamente.'
+  }
+};
+
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function escapeHtml(value) {
@@ -63,7 +85,7 @@ async function loadStore() {
 
     const { data: store, error: storeError } = await supabase
       .from('saas_public_stores')
-      .select('tenant_id,name,business_type,logo_url,primary_color,background_color,text_color,font_style')
+      .select('tenant_id,name,business_type,template_code,logo_url,primary_color,background_color,text_color,font_style')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -79,6 +101,23 @@ async function loadStore() {
     document.body.style.color = store.text_color || '#111111';
     document.body.style.fontFamily = (store.font_style || 'Inter') + ',Arial,sans-serif';
     document.documentElement.style.setProperty('--gold', store.primary_color || '#C9A227');
+    const model = Object.prototype.hasOwnProperty.call(publicModels,store.template_code)
+      ? store.template_code : 'generic';
+    document.body.dataset.template = model;
+    const definition=publicModels[model];
+    if (definition) {
+      modelLabel.textContent=definition.badge;
+      modelLabel.hidden=false;
+      introEl.textContent=definition.intro;
+      noticeEl.textContent=definition.notice;
+    }
+    if (model==='business_communication') {
+      nameEl.textContent=store.name;
+      typeEl.textContent=store.business_type || 'Comunicação empresarial';
+      statusEl.textContent='Acesso restrito aos membros autorizados da empresa.';
+      catalogEl.hidden=true;
+      return;
+    }
     nameEl.textContent = store.name;
     typeEl.textContent = store.business_type || '';
     if (safeImageUrl(store.logo_url)) {

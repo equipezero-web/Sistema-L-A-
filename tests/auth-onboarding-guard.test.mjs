@@ -13,7 +13,7 @@ async function scenario({session=true,access={has_any_membership:false,has_owned
   const get = selector => {
     if (!elements.has(selector)) {
       const listeners = {};
-      const fields = {companyName:'Empresa Teste',slug:'empresa-teste',businessType:'Loja',businessMode:'products',primaryColor:'#d4af37',secondaryColor:'#f1d477',backgroundColor:'#08090c',textColor:'#f8fafc',fontStyle:'Inter',layoutId:'royal-classic'};
+      const fields = {companyName:'Empresa Teste',slug:'empresa-teste',businessType:'Loja',businessMode:'products',templateCode:'virtual_store',primaryColor:'#d4af37',secondaryColor:'#f1d477',backgroundColor:'#08090c',textColor:'#f8fafc',fontStyle:'Inter',layoutId:'royal-classic'};
       elements.set(selector, {value:fields[selector.slice(1)]||'',disabled:true,textContent:'',className:'',
         listeners,addEventListener(type,fn){listeners[type]=fn}});
     }
@@ -24,7 +24,7 @@ async function scenario({session=true,access={has_any_membership:false,has_owned
   let resolveCreation;
   const supabase = {rpc:async name => {
     if (name==='saas_my_access_summary') {accessCalls++;return {data:access,error:accessError};}
-    if (name==='saas_onboard_company') {
+    if (name==='saas_onboard_company_template') {
       creationCalls++;
       if(slowCreate) return new Promise(resolve=>{resolveCreation=()=>resolve({data:{id:'tenant'},error:creationError})});
       return {data:{id:'tenant'},error:creationError};
@@ -105,4 +105,12 @@ test('another tab creating a tenant before submit prevents duplicated onboarding
   assert.equal(app.accessCalls,1);
   await app.submit();
   assert.equal(app.accessCalls,2);
+});
+
+test('template selection is written atomically as part of new company signup',async()=>{
+ const app=await scenario();
+ assert.equal(app.get('#templateCode').value,'virtual_store');
+ await app.submit();
+ assert.equal(app.creationCalls,1);
+ assert.match(source,/p_template_code: templateCode\.value/);
 });

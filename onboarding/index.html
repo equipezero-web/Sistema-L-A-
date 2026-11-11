@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Criar empresa | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"></head><body><main class="onboarding-wrap"><div class="brand">L&A <span>ROYAL</span></div><div class="steps"><div class="step active"></div><div class="step active"></div><div class="step"></div></div><section class="card"><div class="eyebrow">Configuração empresarial</div><h1>Crie a identidade da sua empresa</h1><p class="muted">Você pode configurar e visualizar sua identidade. A publicação da loja é liberada após ativar o plano Royal 30 de R$ 30/mês.</p><div id="status" class="status"></div><form id="companyForm" class="form-grid"><div class="field full"><label>Nome da empresa</label><input id="companyName" required></div><div class="field"><label>Endereço público (slug)</label><input id="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="63" placeholder="minha-empresa"></div><div class="field"><label>Segmento</label><input id="businessType" required placeholder="Ex.: Barbearia"></div><div class="field full"><label>O que sua empresa oferece?</label><select id="businessMode"><option value="products">Produtos</option><option value="services">Serviços</option><option value="products_services">Produtos + Serviços</option></select></div><div class="field"><label>Cor principal</label><input id="primaryColor" type="color" value="#d4af37"></div><div class="field"><label>Cor secundária</label><input id="secondaryColor" type="color" value="#f1d477"></div><div class="field"><label>Fundo</label><input id="backgroundColor" type="color" value="#08090c"></div><div class="field"><label>Texto</label><input id="textColor" type="color" value="#f8fafc"></div><div class="field"><label>Fonte</label><select id="fontStyle"><option>Inter</option><option>Poppins</option><option>Montserrat</option><option>Playfair Display</option><option>Roboto</option><option>Lato</option></select></div><div class="field"><label>Layout</label><select id="layoutId"><option value="royal-classic">Royal Classic</option><option value="royal-modern">Royal Modern</option><option value="royal-minimal">Royal Minimal</option></select></div><div class="field full"><button id="createCompany" class="btn primary" type="submit" disabled>Verificando acesso...</button></div></form></section></main><script type="module">
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Criar empresa | L&A Royal SaaS</title><link rel="stylesheet" href="../assets/css/main.css"></head><body><main class="onboarding-wrap"><div class="brand">L&A <span>ROYAL</span></div><div class="steps"><div class="step active"></div><div class="step active"></div><div class="step"></div></div><section class="card"><div class="eyebrow">Configuração empresarial</div><h1>Crie a identidade da sua empresa</h1><p class="muted">Você pode configurar e visualizar sua identidade. A publicação da loja é liberada após ativar o plano Royal 30 de R$ 30/mês.</p><div id="status" class="status"></div><form id="companyForm" class="form-grid"><div class="field full"><label>Nome da empresa</label><input id="companyName" required></div><div class="field"><label>Endereço público (slug)</label><input id="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="63" placeholder="minha-empresa"></div><div class="field"><label>Segmento</label><input id="businessType" required placeholder="Ex.: Barbearia"></div><div class="field full"><label>Modelo de sistema</label><select id="templateCode" required><option value="" selected disabled>Selecione o sistema que sua empresa utilizará</option><option value="barbershop">Barbearia — agendamentos e atendimento</option><option value="virtual_store">Loja Virtual — catálogo e vendas</option><option value="instagram_orders">Pedidos para Instagram — pacotes e pedidos</option><option value="business_communication">Comunicação Empresarial — CRM e equipe</option><option value="generic">Sistema geral — produtos e serviços</option></select><small>Baseado nos modelos originais enviados. Cada empresa terá sua própria identidade e dados separados.</small></div><div class="field full"><label>O que sua empresa oferece?</label><select id="businessMode"><option value="products">Produtos</option><option value="services">Serviços</option><option value="products_services">Produtos + Serviços</option></select></div><div class="field"><label>Cor principal</label><input id="primaryColor" type="color" value="#d4af37"></div><div class="field"><label>Cor secundária</label><input id="secondaryColor" type="color" value="#f1d477"></div><div class="field"><label>Fundo</label><input id="backgroundColor" type="color" value="#08090c"></div><div class="field"><label>Texto</label><input id="textColor" type="color" value="#f8fafc"></div><div class="field"><label>Fonte</label><select id="fontStyle"><option>Inter</option><option>Poppins</option><option>Montserrat</option><option>Playfair Display</option><option>Roboto</option><option>Lato</option></select></div><div class="field"><label>Layout</label><select id="layoutId"><option value="royal-classic">Royal Classic</option><option value="royal-modern">Royal Modern</option><option value="royal-minimal">Royal Minimal</option></select></div><div class="field full"><button id="createCompany" class="btn primary" type="submit" disabled>Verificando acesso...</button></div></form></section></main><script type="module">
 import { getSession } from '../assets/js/auth.js';
 import { supabase } from '../assets/js/supabase.js';
 
@@ -10,6 +10,21 @@ const companyName = $('#companyName');
 const slug = $('#slug');
 const businessType = $('#businessType');
 const businessMode = $('#businessMode');
+const templateCode = $('#templateCode');
+const templateDefaults = {
+  barbershop: { type:'Barbearia', mode:'services' },
+  virtual_store: { type:'Comércio eletrônico', mode:'products' },
+  instagram_orders: { type:'Serviços para Instagram', mode:'services' },
+  business_communication: { type:'Gestão empresarial', mode:'products_services' },
+  generic: { type:'Comércio e serviços', mode:'products_services' }
+};
+templateCode.addEventListener('change', () => {
+  const preset=templateDefaults[templateCode.value];
+  if (!preset) return;
+  businessType.value=preset.type;
+  businessMode.value=preset.mode;
+});
+
 const primaryColor = $('#primaryColor');
 const secondaryColor = $('#secondaryColor');
 const backgroundColor = $('#backgroundColor');
@@ -84,7 +99,8 @@ companyForm.addEventListener('submit', async event => {
       location.replace('../app/index.html');
       return;
     }
-    const { data, error } = await supabase.rpc('saas_onboard_company', {
+    const { data, error } = await supabase.rpc('saas_onboard_company_template', {
+      p_template_code: templateCode.value,
       p_name: companyName.value.trim(),
       p_slug: slug.value.trim(),
       p_business_mode: businessMode.value,
