@@ -1,0 +1,31 @@
+name: SaaS Barber Customer Authentication
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_barber_customer_auth_66.sql'
+      - 'store/barbearia.html'
+      - 'assets/js/barber-original-template.js'
+      - 'tests/saas-barber-customer-auth.test.mjs'
+      - 'tests/saas-original-barber-template.test.mjs'
+      - '.github/workflows/saas-barber-customer-auth.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_barber_customer_auth_66.sql'
+      - 'store/barbearia.html'
+      - 'assets/js/barber-original-template.js'
+      - 'tests/saas-barber-customer-auth.test.mjs'
+      - 'tests/saas-original-barber-template.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  customer-auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-barber-customer-auth.test.mjs tests/saas-original-barber-template.test.mjs tests/saas-barber-designer.test.mjs
