@@ -172,8 +172,15 @@ button:not(:disabled):not(.toggle):not(.complete-btn):active,.choice:active {tra
 
 
 /* SaaS: identity is scoped to the currently published company. */
-:root{--template-primary:#D4AF37;--template-background:#030507;--template-text:#F8F5EC}
+:root{--template-primary:#D4AF37;--template-secondary:#07182A;--template-background:#030507;--template-text:#F8F5EC}
 .barber-public{min-height:100dvh}
+html,body{background:var(--template-background)!important;color:var(--template-text)!important}
+.barber-public .sidebar,.barber-public .topbar{background:linear-gradient(150deg,var(--template-secondary),var(--template-background))!important}
+.barber-public .card,.barber-public .panel{background:linear-gradient(145deg,color-mix(in srgb,var(--template-secondary) 70%,var(--template-background)),var(--template-background))!important;border-color:color-mix(in srgb,var(--template-primary) 24%,transparent)!important}
+.barber-public .section-title,.barber-public h1,.barber-public h2,.barber-public h3{color:var(--template-text)!important}
+.barber-public .nav button.active{border-color:var(--template-primary)!important;color:var(--template-primary)!important}
+.barber-public .slot{border-color:color-mix(in srgb,var(--template-primary) 30%,transparent)}
+
 .barber-public .primary,.barber-public button.primary{background:var(--template-primary)!important;border-color:var(--template-primary)!important;color:#080b10!important}
 .barber-public .pill,.barber-public .gold-text,.barber-public .brand{color:var(--template-primary)!important}
 .barber-public .choice.selected,.barber-public .slot.selected{border-color:var(--template-primary)!important;box-shadow:0 0 0 2px var(--template-primary) inset!important}
