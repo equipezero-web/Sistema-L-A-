@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#030507">
+<meta name="description" content="Conheça os serviços e solicite um horário nesta barbearia.">
+<title>Barbearia | L&A Royal</title>
+<style>
+:root {
+  color-scheme: dark;
+  --black:#030507; --black-soft:#070A0E;
+  --panel:#0A1018; --panel2:#0D1724; --panel3:#111E2D;
+  --navy:#07182A; --navy-2:#0A223A; --navy-3:#103454;
+  --gold:#D4AF37; --gold-strong:#E2BD4B; --gold-light:#F4DC8A;
+  --white:#F8F5EC; --muted:#AAA99F;
+  --border:rgba(212,175,55,.22);
+  --danger:#FF6B6B; --success:#46C98B;
+}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 80% 0,#123b5b 0,transparent 30%),var(--bg);color:var(--white);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial}button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.logo{width:116px;height:116px;object-fit:contain;border-radius:18px}.brand{letter-spacing:.22em;font-weight:800}.silver{color:var(--silver)}.muted{color:var(--muted)}
+#landing{min-height:100vh;display:grid;place-items:center;padding:30px;overflow:hidden;position:relative}.landing-card{width:min(980px,100%);text-align:center;padding:48px 24px}.landing-card h1{font-size:clamp(34px,7vw,72px);margin:20px 0 8px;letter-spacing:.12em}.smoke{min-height:112px;display:grid;place-items:center;margin:28px auto;max-width:720px}.smoke>div{animation:smoke 8s ease both;font-size:clamp(18px,3vw,27px);color:#d9dcdf;text-shadow:0 0 22px #fff3}@keyframes smoke{0%{opacity:0;filter:blur(14px);transform:translateY(16px) scale(.98)}18%,75%{opacity:1;filter:blur(0);transform:none}100%{opacity:0;filter:blur(14px);transform:translateY(-14px) scale(1.02)}}.primary,.ghost{border:1px solid var(--silver);border-radius:999px;padding:13px 20px}.primary{background:linear-gradient(135deg,#ffe45c,#ffc400);color:#07121c;font-weight:800}.ghost{background:#05090d;color:#fff}.landing-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:#000c;backdrop-filter:blur(12px);display:grid;place-items:center;padding:20px;z-index:50}.auth{width:min(520px,100%);background:linear-gradient(180deg,#0b2942,#05090d);border:1px solid #35383d;border-radius:28px;padding:28px;box-shadow:var(--shadow)}.auth h2{margin:10px 0 4px}.grid{display:grid;gap:14px}.field label{display:block;color:#c9cdd1;margin-bottom:6px;font-size:13px}.field input,.field select{width:100%;background:#08090a;color:#fff;border:1px solid #30343a;border-radius:14px;padding:13px;outline:none}.field input:focus,.field select:focus{border-color:#cdd1d5;box-shadow:0 0 0 3px #fff1}.auth .primary{width:100%;margin-top:8px}.auth-foot{text-align:center;margin-top:14px}.link{color:#fff;text-decoration:underline;cursor:pointer}
+#app{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:260px;background:#04111d;border-right:1px solid var(--line);padding:22px 16px;z-index:20;display:flex;flex-direction:column}.side-brand{display:flex;align-items:center;gap:12px;padding:0 8px 22px}.side-brand img{width:56px;height:56px;object-fit:contain;border-radius:12px}.nav{display:grid;gap:7px}.nav button{display:flex;gap:11px;align-items:center;border:0;border-radius:13px;padding:13px 14px;color:#b9bdc2;background:transparent;text-align:left}.nav button:hover,.nav button.active{background:linear-gradient(90deg,#173b57,#0b2942);color:#ffd21c}.logout{margin-top:auto}.main{margin-left:260px;padding:28px;max-width:1500px}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.avatar{width:42px;height:42px;border-radius:50%;background:#222;border:1px solid #555;display:grid;place-items:center;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.hero{padding:30px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(135deg,#0d304d,#05090d 62%);box-shadow:var(--shadow)}.hero h1{font-size:clamp(28px,5vw,54px);margin:0 0 10px}.quick{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:linear-gradient(180deg,#0b2942,#06131f);border:1px solid var(--line);border-radius:var(--r);padding:20px}.card h3{margin:0 0 8px}.section{display:none}.section.active{display:block}.section-title{font-size:30px;margin:0 0 6px}.booking{margin-top:18px}.step{margin-bottom:18px}.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.choice{border:1px solid #30343a;background:#0b0c0e;color:#ddd;border-radius:16px;padding:13px;text-align:left}.choice.selected{border-color:#ffd21c;background:#12324b;color:#fff;box-shadow:inset 0 0 0 1px #fff4}.service-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.service{display:flex;justify-content:space-between;gap:14px}.summary{position:sticky;bottom:16px;background:#111e;border:1px solid #45494e;backdrop-filter:blur(12px);border-radius:18px;padding:15px;display:flex;justify-content:space-between;gap:14px;align-items:center}.summary .primary:disabled{opacity:.35;cursor:not-allowed}.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:9px}.slot{border:1px solid #333;background:#0a0b0c;color:#fff;border-radius:12px;padding:10px}.slot.selected{background:#ffd21c;color:#07121c}.slot:disabled{opacity:.25;text-decoration:line-through}.appt{display:flex;justify-content:space-between;gap:12px;align-items:center}.pill{padding:5px 10px;border:1px solid #3b3e43;border-radius:999px;color:#cdd1d5;font-size:12px}.plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.price{font-size:34px;font-weight:900}.benefits{padding-left:18px;color:#d3d6da}.benefits li{margin:9px 0}.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.profile-photo{display:flex;align-items:center;gap:18px}.profile-photo .avatar{width:86px;height:86px}.switch{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:15px 0;border-top:1px solid #24272b}.toggle{width:48px;height:28px;border-radius:99px;background:#333;border:0;position:relative}.toggle:after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#aaa;left:4px;top:4px;transition:.2s}.toggle.on{background:#e2e5e7}.toggle.on:after{left:24px;background:#050505}.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.gallery div{aspect-ratio:4/3;border-radius:18px;background:linear-gradient(135deg,#2c3035,#0b0c0d);display:grid;place-items:center;color:#aeb3b8}.toast{position:fixed;right:22px;bottom:22px;background:#f1f1f1;color:#111;padding:13px 17px;border-radius:13px;box-shadow:var(--shadow);z-index:90}
+@media(max-width:900px){.sidebar{width:76px;padding:16px 9px}.side-brand .brand,.nav span{display:none}.side-brand{padding:0 0 18px;justify-content:center}.side-brand img{width:50px;height:50px}.nav button{justify-content:center;font-size:20px}.main{margin-left:76px;padding:18px}.cards,.plan-grid{grid-template-columns:1fr}.profile-grid{grid-template-columns:1fr}.service-list{grid-template-columns:1fr}}
+@media(max-width:560px){.sidebar{inset:auto 0 0 0;width:auto;height:70px;border-right:0;border-top:1px solid var(--line);padding:7px;background:#04111df2;backdrop-filter:blur(10px)}.side-brand,.logout{display:none}.nav{grid-template-columns:repeat(5,1fr);gap:2px}.nav button{padding:9px 4px}.main{margin-left:0;padding:16px 14px 92px}.topbar{margin-bottom:14px}.hero{padding:22px}.summary{bottom:82px;align-items:flex-start;flex-direction:column}.summary .primary{width:100%}.gallery{grid-template-columns:1fr 1fr}}
+
+.admin-shell{min-height:100vh}.admin-sidebar{position:fixed;inset:0 auto 0 0;width:270px;background:#070809;border-right:1px solid var(--line);padding:22px 16px;z-index:30;display:flex;flex-direction:column}.admin-main{margin-left:270px;padding:28px}.metric{font-size:30px;font-weight:900;margin-top:8px}.admin-table{width:100%;border-collapse:collapse}.admin-table th,.admin-table td{padding:12px;border-bottom:1px solid #282b2f;text-align:left;vertical-align:middle}.admin-table th{color:#aeb3b8;font-size:12px;text-transform:uppercase;letter-spacing:.08em}.mini-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #555;background:#202226}.staff-row{display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center}.staff-row .mini-avatar{width:64px;height:64px}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-actions button{padding:8px 12px}.chartbar{height:9px;background:#25282c;border-radius:99px;overflow:hidden;margin-top:7px}.chartbar i{display:block;height:100%;background:linear-gradient(90deg,#d39e00,#ffd21c);border-radius:99px}.upload-tile{min-height:160px;border:1px dashed #555;border-radius:18px;display:grid;place-items:center;overflow:hidden}.upload-tile img{width:100%;height:180px;object-fit:cover}.admin-note{padding:12px 14px;border:1px solid #42464b;border-radius:14px;background:#111315}.status-pending{color:#ffd37a}.status-done{color:#a9ffbd}@media(max-width:900px){.admin-sidebar{width:76px;padding:16px 9px}.admin-sidebar .brand,.admin-sidebar .nav span{display:none}.admin-sidebar .nav button{justify-content:center}.admin-main{margin-left:76px;padding:18px}}@media(max-width:560px){.admin-sidebar{inset:auto 0 0 0;width:auto;height:70px;border-right:0;border-top:1px solid var(--line);padding:7px}.admin-sidebar .side-brand,.admin-sidebar .logout{display:none}.admin-sidebar .nav{grid-template-columns:repeat(5,1fr)}.admin-main{margin-left:0;padding:16px 14px 92px}.admin-table{font-size:12px}.admin-table th,.admin-table td{padding:8px 5px}}
+
+/* FIX: rolagem do cadastro/login */
+#authModal{
+  overflow-y:auto;
+  overflow-x:hidden;
+  align-items:start;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+#authModal .auth{
+  margin:auto;
+  max-height:calc(100dvh - 40px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+@media(max-width:560px){
+  #authModal{
+    display:block;
+    padding:12px;
+  }
+  #authModal .auth{
+    width:100%;
+    max-height:calc(100dvh - 24px);
+    margin:0 auto;
+    padding:20px 16px 28px;
+    border-radius:20px;
+  }
+}
+
+
+.reception-shell{min-height:100vh;background:radial-gradient(circle at 80% 0,#123b5b 0,transparent 30%),var(--bg)}
+.reception-sidebar{position:fixed;inset:0 auto 0 0;width:270px;background:#04111d;border-right:1px solid var(--line);padding:22px 16px;z-index:30;display:flex;flex-direction:column}
+.reception-main{margin-left:270px;padding:28px}.reception-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.reception-appt{position:relative;overflow:hidden}.reception-appt .appt-time{font-size:28px;font-weight:900;color:#ffd21c}.reception-appt.done{opacity:.72}
+.reception-appt.done:after{content:"✓";position:absolute;right:18px;top:14px;font-size:38px;color:#66e08a;font-weight:900}
+.reception-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.complete-btn{position:relative;overflow:visible}
+.complete-btn.burst{animation:jmClickImpact .42s cubic-bezier(.2,.8,.2,1)}
+.complete-btn.burst:before,.complete-btn.burst:after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;border:3px solid #ffd21c;border-radius:50%;pointer-events:none;animation:jmBurst .48s ease-out forwards}
+.complete-btn.burst:after{animation-delay:.04s;border-color:#fff}
+@keyframes jmClickImpact{0%{transform:scale(1)}35%{transform:scale(.84)}65%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes jmBurst{0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(8);box-shadow:0 0 20px 8px #ffd21c44}}
+@media(max-width:900px){.reception-sidebar{width:76px;padding:16px 9px}.reception-sidebar .brand,.reception-sidebar .nav span{display:none}.reception-main{margin-left:76px;padding:18px}}
+@media(max-width:560px){.reception-sidebar{inset:auto 0 0 0;width:auto;height:70px;border-right:0;border-top:1px solid var(--line);padding:7px}.reception-sidebar .side-brand,.reception-sidebar .logout{display:none}.reception-sidebar .nav{grid-template-columns:repeat(3,1fr)}.reception-main{margin-left:0;padding:16px 14px 92px}}
+
+
+.profile-logout-mobile{display:none}
+@media(max-width:560px){
+#profile .profile-grid{display:block}
+#profile .profile-grid>.card,#profile .profile-grid>div>.card{margin-bottom:12px;padding:16px;border-radius:18px}
+#profile .profile-photo{flex-direction:column;align-items:center;text-align:center;gap:10px}
+#profile .profile-photo .avatar{width:92px;height:92px}
+#profile .grid{gap:10px!important;margin-top:10px!important}
+#profile .field input,#profile .field select{padding:12px;border-radius:12px;font-size:14px}
+#profile .switch{align-items:flex-start;padding:13px 0;gap:10px}
+#profile .switch>div{min-width:0;flex:1}
+#profile .switch .ghost{padding:8px 10px;font-size:12px;max-width:128px;white-space:normal}
+#profile .primary{width:100%}
+.profile-logout-mobile{display:block;width:100%;margin-top:14px;border-color:#ff6b6b!important;color:#ff8a8a!important;background:#180b0d!important}
+}
+
+
+/* PALETA GLOBAL ADRIANO PAULO — preto, dourado e azul-escuro */
+html,body{background:radial-gradient(circle at 12% 0%,rgba(10,34,58,.42),transparent 31%),radial-gradient(circle at 90% 16%,rgba(212,175,55,.09),transparent 27%),#030507!important;color:#F8F5EC!important}
+body,main,.page,.app,.site-shell,.dashboard,.dashboard-content,.admin-app,.reception-app,.client-app{background-color:#030507!important}
+header,.header,.topbar,.navbar,.nav,.app-header{background:linear-gradient(180deg,rgba(7,24,42,.98),rgba(3,5,7,.97))!important;border-color:rgba(212,175,55,.24)!important;box-shadow:0 12px 38px rgba(0,0,0,.34)!important}
+.hero{background:radial-gradient(circle at 50% 8%,rgba(212,175,55,.14),transparent 34%),radial-gradient(circle at 12% 82%,rgba(10,34,58,.52),transparent 38%),linear-gradient(180deg,#030507 0%,#07101A 58%,#030507 100%)!important}
+.card,.service-card,.stat-card,.metric-card,.booking-card,.profile-card,.plan-card,.appointment-card,.ranking-card,.chart-card,.panel,.box,.modal-content,.login-card,.admin-card,.reception-card,.client-card,.table-wrap{background:linear-gradient(145deg,rgba(13,23,36,.98),rgba(6,10,15,.99))!important;border-color:rgba(31,77,121,.48)!important;box-shadow:0 18px 45px rgba(0,0,0,.3),inset 0 1px 0 rgba(212,175,55,.05)!important}
+.card:hover,.service-card:hover,.plan-card:hover,.appointment-card:hover{border-color:rgba(212,175,55,.54)!important}
+.sidebar,aside,.admin-sidebar,.reception-sidebar{background:linear-gradient(180deg,#07182A 0%,#06111D 56%,#030507 100%)!important;border-color:rgba(212,175,55,.22)!important}
+.sidebar a,.sidebar button,.side-link,.nav-item{color:#C9CED5!important}
+.sidebar a:hover,.sidebar button:hover,.side-link:hover,.nav-item:hover{background:rgba(16,52,84,.5)!important;color:#F4DC8A!important}
+.sidebar .active,.side-link.active,.nav-item.active,.bottom-nav .active,.tab.active,.filter-btn.active{background:linear-gradient(135deg,rgba(212,175,55,.21),rgba(10,34,58,.66))!important;color:#F4DC8A!important;border-color:rgba(212,175,55,.46)!important}
+h1,h2,h3,.section-title,.brand-name,.brand-title{color:#F8F5EC!important}
+h1 span,h2 span,.gold,.highlight,.eyebrow,.stat-value,.metric-value,.price,.ranking-number{color:#D4AF37!important}
+p,.muted,.subtitle,.description,small{color:#AAA99F!important}
+.btn-gold,.primary-btn,button.primary,.cta,button[type=submit],.complete-btn{background:linear-gradient(135deg,#E2BD4B,#B88A20)!important;color:#050607!important;border-color:#E2BD4B!important;box-shadow:0 10px 28px rgba(212,175,55,.17)!important}
+.btn-gold:hover,.primary-btn:hover,button.primary:hover,.cta:hover,button[type=submit]:hover,.complete-btn:hover{background:linear-gradient(135deg,#F4DC8A,#D4AF37)!important;color:#030507!important}
+.btn-outline,.secondary-btn,button.secondary{background:rgba(7,24,42,.66)!important;color:#F4DC8A!important;border-color:rgba(212,175,55,.47)!important}
+input,select,textarea,.input,.select{background:#07101A!important;color:#F8F5EC!important;border-color:rgba(31,77,121,.68)!important}
+input:focus,select:focus,textarea:focus{border-color:#D4AF37!important;box-shadow:0 0 0 3px rgba(212,175,55,.12)!important;outline:none!important}
+input::placeholder,textarea::placeholder{color:#777F89!important}
+table,thead,tbody,tr,td,th{border-color:rgba(31,77,121,.32)!important}
+thead,th{background:#07182A!important;color:#F4DC8A!important}
+tbody tr:nth-child(even){background:rgba(10,34,58,.19)!important}
+tbody tr:hover{background:rgba(16,52,84,.3)!important}
+.badge,.status,.chip,.tag{background:rgba(10,34,58,.66)!important;color:#D9E7F5!important;border-color:rgba(31,77,121,.6)!important}
+.status.completed,.badge.completed,.status.done,.badge.done{background:rgba(70,201,139,.12)!important;color:#72E1AA!important;border-color:rgba(70,201,139,.35)!important}
+.status.pending,.badge.pending{background:rgba(212,175,55,.13)!important;color:#F4DC8A!important;border-color:rgba(212,175,55,.4)!important}
+.modal,.modal-overlay,.overlay{background:rgba(1,3,5,.84)!important;backdrop-filter:blur(10px)}
+.tabs,.filters,.segmented{background:#06111D!important;border-color:rgba(31,77,121,.44)!important}
+.bottom-nav{background:rgba(7,24,42,.98)!important;border-color:rgba(212,175,55,.22)!important;box-shadow:0 -12px 34px rgba(0,0,0,.34)!important}
+hr,.divider{border-color:rgba(31,77,121,.36)!important}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#030507}::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#103454,#B88A20);border-radius:999px;border:2px solid #030507}
+::selection{background:rgba(212,175,55,.34);color:#fff}
+
+
+/* ADRIANO PAULO — acabamento refinado e interação discreta (v15) */
+:root {--ap-corner:17px;--ap-card-corner:22px;--ap-motion:cubic-bezier(.22,1,.36,1)}
+button,.choice,.nav button,a.ghost,.filter-btn,.tab {touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:not(.toggle):not(.complete-btn),a.ghost,.choice,.nav button {
+  border-radius:var(--ap-corner);
+  transition:background-color .2s ease,border-color .2s ease,color .2s ease,
+             box-shadow .22s ease,transform .22s var(--ap-motion),filter .2s ease;
+}
+.primary,.ghost,button.primary,button.ghost,.nav button,.choice {
+  border-radius:var(--ap-corner) !important;
+}
+.primary,.ghost,button.primary,button.ghost {min-height:42px}
+.card,.service-card,.stat-card,.metric-card,.booking-card,.profile-card,.plan-card,
+.appointment-card,.ranking-card,.chart-card,.panel,.box,.table-wrap {
+  border-radius:var(--ap-card-corner) !important;
+  transition:border-color .25s ease,box-shadow .25s ease;
+}
+.auth,.login-card,.admin-card,.reception-card,.client-card,.modal-content {
+  border-radius:24px !important;
+}
+.choice {border:1px solid rgba(212,175,55,.2);background:linear-gradient(155deg,#0c1925,#070c11)}
+.choice.selected {border-color:rgba(212,175,55,.82) !important;background:linear-gradient(155deg,rgba(212,175,55,.14),#081522) !important;box-shadow:inset 0 0 0 1px rgba(212,175,55,.12) !important}
+.summary,.step,.quick,.landing-actions {border-radius:20px}
+.summary {box-shadow:0 12px 28px rgba(0,0,0,.18)}
+.switch:has(button) {border-radius:16px;padding-left:12px;padding-right:12px;transition:background .2s ease}
+:where(.card,.panel,.auth):focus-within {border-color:rgba(212,175,55,.48) !important}
+:where(button,a,.choice,input,select,textarea):focus-visible {
+  outline:2px solid var(--gold) !important;outline-offset:3px;
+}
+button:disabled {cursor:not-allowed;opacity:.58;transform:none !important}
+@media (hover:hover) {
+  button:not(:disabled):not(.toggle):not(.complete-btn):hover,a.ghost:hover,.choice:hover {
+    transform:translateY(-1px);
+    box-shadow:0 7px 18px rgba(0,0,0,.22),0 1px 0 rgba(244,220,138,.09);
+  }
+  button.primary:not(:disabled):hover {box-shadow:0 8px 22px rgba(212,175,55,.21) !important}
+  .card:has(button):hover,.panel:has(button):hover {border-color:rgba(212,175,55,.4) !important;box-shadow:0 16px 35px rgba(0,0,0,.26),inset 0 1px 0 rgba(212,175,55,.07) !important}
+  .switch:has(button):hover {background:rgba(212,175,55,.04)}
+}
+button:not(:disabled):not(.toggle):not(.complete-btn):active,.choice:active {transform:scale(.985)}
+@media (max-width:560px) {
+  :root {--ap-corner:15px;--ap-card-corner:19px}
+  .card,.panel {box-shadow:0 10px 24px rgba(0,0,0,.22) !important}
+  .switch:has(button) {padding-left:8px;padding-right:8px}
+}
+@media (prefers-reduced-motion:reduce) {
+  button,.choice,.card,.panel,.switch,a.ghost {transition:none !important;animation:none !important}
+}
+
+
+/* SaaS: identity is scoped to the currently published company. */
+:root{--template-primary:#D4AF37;--template-background:#030507;--template-text:#F8F5EC}
+.barber-public{min-height:100dvh}
+.barber-public .primary,.barber-public button.primary{background:var(--template-primary)!important;border-color:var(--template-primary)!important;color:#080b10!important}
+.barber-public .pill,.barber-public .gold-text,.barber-public .brand{color:var(--template-primary)!important}
+.barber-public .choice.selected,.barber-public .slot.selected{border-color:var(--template-primary)!important;box-shadow:0 0 0 2px var(--template-primary) inset!important}
+.barber-public .side-brand img{object-fit:contain}
+.saas-inline-status{margin:12px 0;color:#f3d78a;min-height:24px}
+.saas-inline-status.error{color:#ff9d9d}
+.saas-public-note{font-size:.83rem;color:#bac0c7}
+.saas-guest-dialog{border:1px solid var(--template-primary);border-radius:20px;color:#fff;background:#0d1420;width:min(460px,92vw);padding:28px;box-shadow:0 30px 100px #0009}
+.saas-guest-dialog::backdrop{background:#000b;backdrop-filter:blur(4px)}
+.saas-guest-dialog h2{margin-top:0}
+.saas-guest-dialog .field{margin:12px 0}
+.saas-guest-dialog input{width:100%;color:#fff;background:#050a11;border:1px solid #ffffff35;border-radius:11px;padding:13px}
+.saas-guest-dialog .dialog-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.saas-guest-dialog .checkbox-line{display:flex;align-items:flex-start;gap:12px;font-size:.84rem}
+.saas-guest-dialog .checkbox-line input{width:auto;margin:5px 0 0}
+.saas-guest-dialog .dialog-actions button{flex:1;min-height:42px}
+.barber-public #plans .card,.barber-public #appointments .card{max-width:780px}
+@media(max-width:560px){.saas-guest-dialog{padding:18px}.barber-public .service-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home">⌂ <span>Início</span></button><button data-sec="appointments">◷ <span>Agendamentos</span></button><button data-sec="club">◇ <span>Barbearia</span></button><button data-sec="plans">▣ <span>Planos</span></button><button data-sec="profile">○ <span>Perfil</span></button></nav><a class="ghost logout" id="backToStore" href="./">Voltar à loja</a></aside>
+<main class="main"><header class="topbar"><div><b id="hello">Olá</b><div class="muted">Seu próximo atendimento começa aqui.</div></div><div class="avatar" id="topAvatar">AP</div></header>
+<section class="section active" id="home">
+<div class="hero"><span class="pill" id="tenantHeroLabel">BARBEARIA</span><h1>Seu estilo.<br/><span class="gold-text">Nossa assinatura.</span></h1>
+<p class="muted">Atendimento personalizado em um único espaço. Selecione o serviço, a data e um horário disponível.</p>
+<div class="quick"><button type="button" class="primary" data-go="club">Conhecer a Barbearia</button><button type="button" class="ghost" data-go="plans">Ver planos</button></div></div>
+<div class="booking card"><h2>Agendar atendimento</h2>
+<div class="step"><h3>1. Escolha seus serviços</h3><div class="service-list" id="serviceChoices"></div></div>
+<div class="step"><h3>2. Escolha o profissional</h3><div class="service-list" id="employeeChoices"></div></div><div class="step"><h3>3. Selecione a data</h3><p class="muted"><span id="bookingHoursLabel">Consulte os horários de funcionamento abaixo.</span></p><div class="field" style="max-width:300px"><input id="datePick" type="date"/></div></div>
+<div class="step"><h3>4. Horários disponíveis</h3><div class="slots" id="slots"><span class="muted">Escolha os serviços e a data para ver os horários.</span></div></div>
+<div class="summary hidden" id="bookingSummary"><div><small class="muted">Total presencial</small><div class="price" id="total">R$ 0,00</div><small class="muted" id="durationTotal">Duração estimada</small></div><button class="primary" disabled="" id="bookBtn">Solicitar horário</button></div>
+<p class="muted" id="scheduleNotice" role="status"></p>
+</div>
+</section>
+<section class="section" id="appointments"><h1 class="section-title">Agendamentos</h1><p class="muted">Consulte o código de sua última solicitação nesta página. A confirmação é feita pela barbearia.</p><div class="cards" id="appointmentList" style="grid-template-columns:1fr"></div></section>
+<section class="section" id="club">
+<h1 class="section-title">Barbearia</h1>
+<div class="cards" id="shopInfoCards" style="grid-template-columns:1fr 1fr"></div>
+<h2>Nosso espaço</h2><p class="muted">Conheça a barbearia e os serviços disponíveis.</p>
+<div class="gallery" id="clientShopGallery"><div class="muted">As fotos do espaço aparecerão aqui.</div></div>
+<div class="card" style="margin-top:18px"><h3>Funcionamento</h3><p><strong>Segunda a sábado:</strong> 08h às 20h</p><p class="muted"><strong>Domingo:</strong> fechado</p><p class="muted">Atendimento mediante disponibilidade de horários.</p></div>
+</section>
+<section class="section" id="plans"><h1 class="section-title">Planos</h1><p class="muted">Confira as opções cadastradas pela barbearia.</p><div class="plan-grid" id="planGrid"></div></section>
+<section class="section" id="profile"><h1 class="section-title">Perfil e atendimento</h1><div class="card"><h3>Seus dados</h3><p class="muted">Nesta versão, você pode solicitar horários sem criar uma conta. Nome e telefone são enviados somente à barbearia para análise da solicitação.</p><p class="muted">Histórico privado, alteração de senha e autenticação do cliente serão disponibilizados quando o módulo de contas de clientes estiver integrado com segurança.</p><button type="button" class="primary" data-go="home">Solicitar atendimento</button></div></section>
+</main></div>
+<dialog id="saasGuestDialog" class="saas-guest-dialog" aria-labelledby="guestTitle">
+<form id="saasGuestForm">
+<h2 id="guestTitle">Solicitar atendimento</h2>
+<p class="saas-public-note">O horário escolhido será encaminhado à barbearia e ficará pendente até confirmação pelo responsável.</p>
+<div class="field"><label for="saasGuestName">Nome completo</label><input id="saasGuestName" minlength="2" maxlength="80" autocomplete="name" required></div>
+<div class="field"><label for="saasGuestPhone">WhatsApp ou telefone</label><input id="saasGuestPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(81) 99999-9999" required></div>
+<label class="checkbox-line"><input id="saasGuestConsent" type="checkbox" required><span>Autorizo a barbearia a usar meu nome e telefone para responder a esta solicitação de horário.</span></label>
+<p id="saasGuestStatus" class="saas-inline-status" role="status" aria-live="polite"></p>
+<div class="dialog-actions"><button id="saasGuestCancel" type="button" class="ghost">Cancelar</button><button id="saasGuestSend" type="submit" class="primary">Enviar solicitação</button></div>
+</form>
+</dialog>
+<div id="saasToast" role="status" aria-live="polite" class="saas-inline-status" style="position:fixed;bottom:16px;left:16px;right:16px;max-width:500px;z-index:90;pointer-events:none"></div>
+<script type="module" src="../assets/js/barber-original-template.js"></script>
+</body></html>
