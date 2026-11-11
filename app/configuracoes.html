@@ -78,8 +78,12 @@ async function boot(){
     get('storeLink').href=url.href;
     get('storeLinkBox').hidden=false;
     get('storeState').textContent='Loja publicada. Compartilhe o link da vitrine com seus clientes.';
+  }else if(subscription?.active===true){
+    get('storeState').textContent=subscription?.access_type==='trial'
+      ?'Acesso de homologação temporário ativo. Vá em Minha Loja para publicar sua vitrine de teste.'
+      :'Assinatura ativa. Vá em Minha Loja para publicar sua vitrine.';
   }else{
-    get('storeState').textContent='Sua loja ainda não está publicada. A assinatura precisa estar ativa e a publicação deve ser habilitada em Minha Loja.';
+    get('storeState').textContent='Sua loja ainda não está publicada. É necessária assinatura ou uma autorização temporária de teste para publicar.';
   }
   message('Configurações carregadas.');
  }catch(e){message(e.message||'Não foi possível abrir as configurações.',true)}
