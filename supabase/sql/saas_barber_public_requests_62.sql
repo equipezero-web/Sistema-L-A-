@@ -168,7 +168,7 @@ create or replace function public.saas_barber_available_slots(
 as $fn$
 declare
  v_tenant uuid;v_hours public.saas_barber_hours;v_service public.saas_services;
- v_start_time time;v_start timestamptz;v_end timestamptz;
+ v_cursor timestamp;v_closing timestamp;v_start timestamptz;v_end timestamptz;
  v_staff_count integer;v_slots jsonb:='[]'::jsonb;
 begin
  select s.tenant_id into v_tenant from public.saas_public_stores s
@@ -194,15 +194,16 @@ begin
    select 1 from public.saas_employees
    where id=p_employee_id and tenant_id=v_tenant and status='active'
  ) then return jsonb_build_object('slots','[]'::jsonb);end if;
- v_start_time:=v_hours.opens_at;
- while (v_start_time + make_interval(mins=>v_service.duration_minutes)) <= v_hours.closes_at loop
-   v_start:=(p_day+v_start_time) at time zone v_hours.timezone;
+ v_cursor:=p_day+v_hours.opens_at;
+ v_closing:=p_day+v_hours.closes_at;
+ while v_cursor + make_interval(mins=>v_service.duration_minutes) <= v_closing loop
+   v_start:=v_cursor at time zone v_hours.timezone;
    v_end:=v_start+make_interval(mins=>v_service.duration_minutes);
    if v_start>now()+interval '30 minutes' and
       private.saas_barber_slot_free(v_tenant,p_employee_id,v_start,v_end) then
-      v_slots:=v_slots || to_jsonb(to_char(v_start_time,'HH24:MI'));
+      v_slots:=v_slots || to_jsonb(to_char(v_cursor,'HH24:MI'));
    end if;
-   v_start_time:=v_start_time+make_interval(mins=>v_hours.step_minutes);
+   v_cursor:=v_cursor+make_interval(mins=>v_hours.step_minutes);
  end loop;
  return jsonb_build_object('slots',v_slots,'timezone',v_hours.timezone);
 end;
@@ -292,6 +293,16 @@ begin
  not exists(select 1 from public.saas_public_stores
    where tenant_id=v_request.tenant_id and template_code='barbershop')
  then raise exception 'A publicação da empresa está indisponível.';end if;
+ if not exists (
+    select 1 from public.saas_services s
+    where s.id=v_request.service_id and s.tenant_id=v_request.tenant_id
+      and s.status='active' and s.published=true
+ ) then raise exception 'Este serviço não está mais disponível.';end if;
+ if v_request.employee_id is not null and not exists (
+    select 1 from public.saas_employees e
+    where e.id=v_request.employee_id and e.tenant_id=v_request.tenant_id
+      and e.status='active'
+ ) then raise exception 'Profissional indisponível. Solicite um novo horário.';end if;
  if not private.saas_barber_slot_free(
     v_request.tenant_id,v_request.employee_id,v_request.starts_at,v_request.ends_at,v_request.id)
  then raise exception 'Horário ocupado. Rejeite a solicitação e escolha outro.';end if;
