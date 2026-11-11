@@ -44,7 +44,7 @@ export async function getBusinessContext(){
   const { data:membership,error:memberError }=await supabase.from('saas_members').select('tenant_id,role,status').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle();
   if(memberError) throw memberError;
   if(!membership){redirectToDashboard();throw new Error('Nenhuma empresa ativa vinculada à conta.');}
-  const { data:tenant,error:tenantError }=await supabase.from('saas_tenants').select('id,name,business_mode,business_type,active').eq('id',membership.tenant_id).single();
+  const { data:tenant,error:tenantError }=await supabase.from('saas_tenants').select('id,name,slug,business_mode,business_type,template_code,active').eq('id',membership.tenant_id).single();
   if(tenantError) throw tenantError;
   if(!tenant.active){redirectToDashboard();throw new Error('Empresa desativada pela plataforma.');}
   recordActiveUsage(tenant.id);return { user, membership, tenant, canManage:['owner','admin'].includes(membership.role) };
