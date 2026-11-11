@@ -1,0 +1,32 @@
+name: SaaS CRUD dialog regression
+on:
+  pull_request:
+    paths:
+      - 'app/servicos.html'
+      - 'app/clientes.html'
+      - 'app/funcionarios.html'
+      - 'app/produtos.html'
+      - 'tests/saas-crud-dialogs.test.mjs'
+      - '.github/workflows/saas-crud-dialogs.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/servicos.html'
+      - 'app/clientes.html'
+      - 'app/funcionarios.html'
+      - 'app/produtos.html'
+      - 'tests/saas-crud-dialogs.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  crud-dialogs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify new, close, save and error states
+        run: node --test tests/saas-crud-dialogs.test.mjs
