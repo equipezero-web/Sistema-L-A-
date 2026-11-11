@@ -1,0 +1,26 @@
+name: SaaS Barber Private RPC Boundary
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_barber_private_api_boundary_63.sql'
+      - 'tests/saas-barber-private-rpc.test.mjs'
+      - '.github/workflows/saas-barber-private-rpc.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_barber_private_api_boundary_63.sql'
+      - 'tests/saas-barber-private-rpc.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate privilege boundaries and booking compatibility
+        run: node --test tests/saas-barber-private-rpc.test.mjs tests/saas-barber-booking.test.mjs
