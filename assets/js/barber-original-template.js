@@ -383,7 +383,7 @@ function renderHistory(code){
  const text=document.createElement('p');text.className='muted';
  text.textContent=code?
   'Pedido recebido e aguardando confirmação pela barbearia. Guarde este código e aguarde contato pelo telefone informado.':
-  'A consulta privada do histórico exige uma conta de cliente verificada. Você pode solicitar um horário na página Início, sem precisar criar uma conta.';
+  'Faça login ou cadastre-se para visualizar seus agendamentos. Se já estiver conectado, nenhum agendamento foi encontrado.';
  const note=document.createElement('small');note.className='muted';
  note.textContent='Esta página não mostra dados de outros clientes.';
  card.append(title,text,note);area.append(card);
