@@ -67,7 +67,7 @@ test('Owner can load settings without active subscription, but storefront remain
  const app=await run();
  assert.equal(app.element('settingsForm').hidden,false);
  assert.equal(app.element('storeLinkBox').hidden,true);
- assert.match(app.element('storeState').textContent,/assinatura precisa estar ativa/);
+ assert.match(app.element('storeState').textContent,/assinatura ou uma autorização temporária de teste/);
  assert.equal(app.element('services_enabled').checked,false);
  assert.equal(app.element('services_enabled').disabled,true);
 });
