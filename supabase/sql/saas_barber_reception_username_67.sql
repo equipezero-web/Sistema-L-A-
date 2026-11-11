@@ -90,6 +90,52 @@ $fn$;
 revoke all on function booking_private.saas_reception_allowed(uuid) from public,anon,authenticated;
 grant execute on function booking_private.saas_reception_allowed(uuid) to authenticated;
 
+-- Keep original owner/admin/employee behavior, add a narrow reception-only
+-- exception for confirmed booking insertion and verified completion.
+-- RLS still denies direct appointment writes to reception accounts.
+create or replace function public.saas_guard_operational_status()
+returns trigger language plpgsql set search_path=''
+as $fn$
+begin
+ if public.saas_has_tenant_role(new.tenant_id,
+    array['owner'::public.saas_member_role,'admin'::public.saas_member_role])
+    or public.saas_is_platform_super_admin() then return new;end if;
+
+ if tg_table_name='saas_appointments'
+    and booking_private.saas_reception_allowed(new.tenant_id) then
+   if tg_op='INSERT' and new.status::text='confirmed' then return new;end if;
+   if tg_op='UPDATE' and old.status::text in ('confirmed','pending')
+      and new.status::text='completed'
+      and (to_jsonb(new)-'status'-'updated_at') =
+          (to_jsonb(old)-'status'-'updated_at')
+   then return new;end if;
+   raise exception 'A recepção só pode confirmar solicitações e concluir atendimentos permitidos.';
+ end if;
+
+ if not public.saas_has_tenant_role(new.tenant_id,
+    array['employee'::public.saas_member_role])
+ then raise exception 'Sem permissão para alterar este registro.';end if;
+ if tg_op='INSERT' then
+   if new.status::text<>'pending' then
+    raise exception 'Funcionários só podem criar registros pendentes.';
+   end if;
+ else
+   if old.status::text<>'pending' or new.status is distinct from old.status then
+    raise exception 'Somente administradores podem alterar o status.';
+   end if;
+   if tg_table_name='saas_orders' and (
+     to_jsonb(new)->'total' is distinct from to_jsonb(old)->'total'
+     or to_jsonb(new)->'subtotal' is distinct from to_jsonb(old)->'subtotal'
+     or to_jsonb(new)->'discount' is distinct from to_jsonb(old)->'discount'
+   ) then raise exception 'Funcionários não podem alterar valores de pedidos existentes.';end if;
+   if tg_table_name='saas_appointments' and new.price is distinct from old.price then
+    raise exception 'Funcionários não podem alterar valores de agendamentos existentes.';
+   end if;
+ end if;
+ return new;
+end;
+$fn$;
+
 create or replace function booking_private.saas_reception_dashboard(p_slug text)
 returns jsonb language plpgsql stable security definer set search_path=''
 as $fn$
