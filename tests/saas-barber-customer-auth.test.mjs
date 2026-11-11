@@ -17,7 +17,7 @@ test('Registration uses verified Supabase account and an isolated customer mappi
 });
 test('Only a registered client with matching auth.uid may request a booking, and server contact is authoritative',()=>{
  assert.match(sql,/create trigger saas_barber_customer_request_guard before insert/);
- assert.match(sql,/v_user:={0,1}\(select auth\.uid\(\)\)/);
+ assert.match(sql,/v_user uuid:=\(select auth\.uid\(\)\)/);
  assert.match(sql,/new\.customer_user_id:=v_user/);
  assert.match(sql,/new\.guest_name:=v_name/);
  assert.match(sql,/new\.guest_phone:=regexp_replace/);
