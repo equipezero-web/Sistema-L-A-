@@ -82,4 +82,36 @@ async function metrics(tid,role){
   $('#metricBalance').textContent=brl.format(income-expense);
 }
 function show(x){const e=$('#status');e.textContent=x;e.className='status show error'}
-$('#menuToggle')?.addEventListener('click',()=>$('#sidebar').classList.toggle('open'));$('#logout')?.addEventListener('click',async()=>{await signOut();location.href='../index.html'});boot().catch(e=>show(e.message||'Erro ao carregar o painel.'));
+// Mobile drawer: accessible controls, outside tap, Escape, scrolling restored.
+const mobileMenu=$('#menuToggle'),mobileSidebar=$('#sidebar'),mobileBackdrop=$('#sidebarBackdrop');
+function closeMobileMenu(restoreFocus=false){
+ mobileSidebar?.classList.remove('open');
+ document.body.classList.remove('mobile-nav-open');
+ if(mobileBackdrop)mobileBackdrop.hidden=true;
+ mobileMenu?.setAttribute('aria-expanded','false');
+ mobileMenu?.setAttribute('aria-label','Abrir menu de navegação');
+ if(restoreFocus&&window.innerWidth<=900)mobileMenu?.focus();
+}
+function openMobileMenu(){
+ if(!mobileSidebar||!mobileMenu)return;
+ mobileSidebar.classList.add('open');
+ document.body.classList.add('mobile-nav-open');
+ if(mobileBackdrop)mobileBackdrop.hidden=false;
+ mobileMenu.setAttribute('aria-expanded','true');
+ mobileMenu.setAttribute('aria-label','Fechar menu de navegação');
+ mobileSidebar.querySelector('a:not(.hidden)')?.focus();
+}
+mobileMenu?.addEventListener('click',()=>{
+ if(mobileSidebar?.classList.contains('open'))closeMobileMenu(true);
+ else openMobileMenu();
+});
+mobileBackdrop?.addEventListener('click',()=>closeMobileMenu(true));
+mobileSidebar?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>closeMobileMenu()));
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&mobileSidebar?.classList.contains('open'))closeMobileMenu(true);
+});
+window.addEventListener('resize',()=>{
+ if(window.innerWidth>900&&mobileSidebar?.classList.contains('open'))closeMobileMenu();
+});
+$('#logout')?.addEventListener('click',async()=>{closeMobileMenu();await signOut();location.href='../index.html'});
+boot().catch(e=>show(e.message||'Erro ao carregar o painel.'));
