@@ -173,6 +173,6 @@ test('Original navigation remains available, and client contacts are not exposed
  app.navSections[2].listeners.click();
  assert.equal(app.get('club').classList.contains('active'),true);
  assert.equal(app.get('home').classList.contains('active'),false);
- assert.match(app.get('appointmentList').children[0].children[1].textContent,/conta de cliente verificada/);
+ assert.match(app.get('appointmentList').children[0].children[1].textContent,/Nenhum agendamento foi encontrado/);
  assert.equal(app.calls.some(x=>x[0]==='saas_barber_requests'),false);
 });
