@@ -1,0 +1,26 @@
+name: SaaS tenant FK index integrity
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_tenant_composite_fk_indexes_54.sql'
+      - 'tests/saas-composite-fk-indexes.test.mjs'
+      - '.github/workflows/saas-index-integrity.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_tenant_composite_fk_indexes_54.sql'
+      - 'tests/saas-composite-fk-indexes.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  index-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check tenant FK index coverage
+        run: node --test tests/saas-composite-fk-indexes.test.mjs
