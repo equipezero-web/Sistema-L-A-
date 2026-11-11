@@ -103,7 +103,9 @@ async function scenario({store=null,services=null,employees=[]}={}){
  };
  const catalog=services||[{id:'service-1',item_type:'service',name:'Corte',
   price:30,duration_minutes:45,image_url:null}];
+ let bookingCreated=false;
  const sb={
+  auth:{getUser:async()=>({data:{user:{id:'customer-test'}},error:null}),signOut:async()=>({error:null})},
   from(table){
    calls.push([table]);
    const chain={
@@ -119,7 +121,9 @@ async function scenario({store=null,services=null,employees=[]}={}){
     timezone:'America/Recife',employees
    },error:null};
    if(name==='saas_barber_available_slots')return {data:{slots:['10:00','10:30']},error:null};
-   if(name==='saas_barber_request_booking')return {data:{status:'pending',code:'LA-1234567890'},error:null};
+   if(name==='saas_barber_customer_profile')return {data:{name:'Pessoa Teste',phone:'81999999999',email:'cliente@teste.invalid',registered:true},error:null};
+   if(name==='saas_barber_customer_history')return {data:bookingCreated?[{service_name:'Corte',code:'LA-1234567890',starts_at:'2026-11-12T13:00:00Z',status:'pending',price:30}]:[],error:null};
+   if(name==='saas_barber_request_booking'){bookingCreated=true;return {data:{status:'pending',code:'LA-1234567890'},error:null};}
    throw Error('Unexpected RPC: '+name);
   }
  };
@@ -149,7 +153,7 @@ test('Service and slot controls are functional and keep booking pending, not con
  assert.ok(slot);
  slot.listeners.click();
  assert.equal(app.get('bookBtn').disabled,false);
- app.get('bookBtn').listeners.click();
+ await app.get('bookBtn').listeners.click();
  assert.equal(app.get('saasGuestDialog').open,true);
  app.get('saasGuestName').value='Pessoa Teste';
  app.get('saasGuestPhone').value='81999999999';
@@ -161,14 +165,14 @@ test('Service and slot controls are functional and keep booking pending, not con
  assert.equal(request[1].p_day,app.get('datePick').value);
  assert.equal(request[1].p_time,'10:00');
  assert.equal(request[1].p_employee_id,null);
- assert.match(app.get('appointmentList').children[0].children[0].textContent,/LA-1234567890/);
- assert.match(app.get('appointmentList').children[0].children[1].textContent,/aguardando confirmação/);
+ assert.match(app.get('appointmentList').children[0].children[1].textContent,/LA-1234567890/);
+ assert.match(app.get('appointmentList').children[0].children[1].textContent,/Em análise/);
 });
 test('Original navigation remains available, and client contacts are not exposed to public readers',async()=>{
  const app=await scenario();
  app.navSections[2].listeners.click();
  assert.equal(app.get('club').classList.contains('active'),true);
  assert.equal(app.get('home').classList.contains('active'),false);
- assert.match(app.get('appointmentList').children[0].children[1].textContent,/conta de cliente verificada/);
+ assert.match(app.get('appointmentList').children[0].children[1].textContent,/nenhum agendamento foi encontrado/i);
  assert.equal(app.calls.some(x=>x[0]==='saas_barber_requests'),false);
 });

@@ -240,14 +240,46 @@ html,body{background:var(--template-background)!important;color:var(--template-t
 <div class="card" id="publicBusinessHours" style="margin-top:18px"><h3>Funcionamento</h3><p class="muted">Consultando dias e horários da barbearia...</p></div>
 </section>
 <section class="section" id="plans"><h1 class="section-title">Planos</h1><p class="muted">Confira as opções cadastradas pela barbearia.</p><div class="plan-grid" id="planGrid"></div></section>
-<section class="section" id="profile"><h1 class="section-title">Perfil e atendimento</h1><div class="card"><h3>Seus dados</h3><p class="muted">Nesta versão, você pode solicitar horários sem criar uma conta. Nome e telefone são enviados somente à barbearia para análise da solicitação.</p><p class="muted">Histórico privado, alteração de senha e autenticação do cliente serão disponibilizados quando o módulo de contas de clientes estiver integrado com segurança.</p><button type="button" class="primary" data-go="home">Solicitar atendimento</button></div></section>
+<section class="section" id="profile">
+  <h1 class="section-title">Perfil e atendimento</h1>
+  <div class="card"><h3>Minha conta</h3><p class="muted" id="profileDescriptionText">Cadastre-se com e-mail confirmado para solicitar agendamentos e consultar seu histórico nesta barbearia.</p>
+  <div id="customerProfileInfo" class="muted" role="status"></div>
+  <div class="quick"><button id="customerLoginButton" type="button" class="primary">Entrar / Criar conta</button>
+    <button id="customerLogoutButton" type="button" class="ghost" hidden>Sair da conta</button>
+    <button id="customerCompleteButton" type="button" class="ghost" hidden>Completar cadastro</button>
+  </div></div>
+</section>
 </main></div>
+<dialog id="saasCustomerAuthDialog" class="saas-guest-dialog" aria-labelledby="customerAuthTitle">
+ <form id="saasCustomerAuthForm"><h2 id="customerAuthTitle">Entrar na Barbearia</h2>
+ <p id="customerAuthHint" class="saas-public-note">Faça login para solicitar e acompanhar seus agendamentos.</p>
+ <div class="field"><label for="customerAuthEmail">E-mail</label><input id="customerAuthEmail" type="email" autocomplete="email" required></div>
+ <div class="field"><label for="customerAuthPassword">Senha</label><input id="customerAuthPassword" type="password" autocomplete="current-password" minlength="8" required></div>
+ <div id="customerSignupFields" hidden>
+  <div class="field"><label for="customerSignupName">Nome</label><input id="customerSignupName" autocomplete="name" minlength="2" maxlength="80"></div>
+  <div class="field"><label for="customerSignupPhone">Telefone</label><input id="customerSignupPhone" type="tel" autocomplete="tel" inputmode="tel"></div>
+  <label class="checkbox-line"><input id="customerSignupConsent" type="checkbox"><span>Autorizo o cadastro do meu nome, e-mail e telefone para atendimento e agendamento nesta barbearia.</span></label>
+ </div>
+ <p id="customerAuthStatus" class="saas-inline-status" role="status" aria-live="polite"></p>
+ <div class="dialog-actions"><button id="customerAuthCancel" class="ghost" type="button">Cancelar</button><button id="customerAuthSubmit" class="primary" type="submit">Entrar</button></div>
+ <button id="customerAuthToggle" class="ghost" type="button" style="width:100%;margin-top:10px">Não possui conta? Cadastre-se</button>
+ </form>
+</dialog>
+<dialog id="saasCustomerCompleteDialog" class="saas-guest-dialog">
+<form id="saasCustomerCompleteForm"><h2>Complete seu cadastro</h2>
+<p class="saas-public-note">Seus dados serão vinculados somente a esta barbearia.</p>
+<div class="field"><label for="customerCompleteName">Nome</label><input id="customerCompleteName" minlength="2" maxlength="80" required></div>
+<div class="field"><label for="customerCompletePhone">Telefone</label><input id="customerCompletePhone" type="tel" inputmode="tel" required></div>
+<label class="checkbox-line"><input id="customerCompleteConsent" type="checkbox" required><span>Autorizo o uso destes dados para atendimento nesta empresa.</span></label>
+<p id="customerCompleteStatus" class="saas-inline-status" role="status" aria-live="polite"></p>
+<div class="dialog-actions"><button id="customerCompleteCancel" type="button" class="ghost">Cancelar</button><button id="customerCompleteSubmit" type="submit" class="primary">Concluir cadastro</button></div>
+</form></dialog>
 <dialog id="saasGuestDialog" class="saas-guest-dialog" aria-labelledby="guestTitle">
 <form id="saasGuestForm">
 <h2 id="guestTitle">Solicitar atendimento</h2>
-<p class="saas-public-note">O horário escolhido será encaminhado à barbearia e ficará pendente até confirmação pelo responsável.</p>
-<div class="field"><label for="saasGuestName">Nome completo</label><input id="saasGuestName" minlength="2" maxlength="80" autocomplete="name" required></div>
-<div class="field"><label for="saasGuestPhone">WhatsApp ou telefone</label><input id="saasGuestPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(81) 99999-9999" required></div>
+<p class="saas-public-note">O horário escolhido será encaminhado à barbearia. Sua conta deve estar cadastrada e seu e-mail confirmado. O pedido ficará pendente até aprovação.</p>
+<div class="field"><label for="saasGuestName">Nome completo</label><input id="saasGuestName" minlength="2" maxlength="80" autocomplete="name" readonly required></div>
+<div class="field"><label for="saasGuestPhone">WhatsApp ou telefone</label><input id="saasGuestPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(81) 99999-9999" readonly required></div>
 <label class="checkbox-line"><input id="saasGuestConsent" type="checkbox" required><span>Autorizo a barbearia a usar meu nome e telefone para responder a esta solicitação de horário.</span></label>
 <p id="saasGuestStatus" class="saas-inline-status" role="status" aria-live="polite"></p>
 <div class="dialog-actions"><button id="saasGuestCancel" type="button" class="ghost">Cancelar</button><button id="saasGuestSend" type="submit" class="primary">Enviar solicitação</button></div>
