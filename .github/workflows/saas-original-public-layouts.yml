@@ -1,0 +1,32 @@
+name: SaaS original public layouts
+on:
+  pull_request:
+    paths:
+      - 'store/barbearia.html'
+      - 'store/index.html'
+      - 'assets/js/barber-original-template.js'
+      - 'tests/saas-original-barber-template.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+      - '.github/workflows/saas-original-public-layouts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'store/barbearia.html'
+      - 'store/index.html'
+      - 'assets/js/barber-original-template.js'
+      - 'tests/saas-original-barber-template.test.mjs'
+      - 'tests/saas-public-store-loading.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-barber:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify original customer interface, routing and booking safety
+        run: node --test tests/saas-original-barber-template.test.mjs tests/saas-public-store-loading.test.mjs tests/saas-barber-booking.test.mjs tests/saas-business-templates.test.mjs
