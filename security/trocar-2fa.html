@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trocar autenticador | L&A Royal SaaS</title>
+<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<main class="auth-wrap">
+<a class="brand" href="../auth/login.html">L&A <span>ROYAL</span></a>
+<section class="card" style="margin-top:24px">
+<div class="eyebrow">Segurança da conta</div>
+<h1>Trocar autenticador 2FA</h1>
+<p style="color:#b9bec8;line-height:1.6">Proteja sua conta usando uma nova chave. O autenticador atual só será revogado <strong>depois</strong> que você confirmar o novo código.</p>
+<div id="status" class="status"></div>
+<div id="startBox" class="nav-actions hidden">
+<button id="start" class="btn primary" type="button">Gerar novo autenticador</button>
+</div>
+<div id="enrollBox" class="security-box hidden">
+<h3>Escaneie o novo QR Code</h3>
+<img id="qr" class="qr" alt="Novo QR Code 2FA">
+<p>Ou use esta nova chave:</p><code id="secret"></code>
+<div class="field" style="margin-top:16px">
+<label for="code">Código de seis dígitos do novo autenticador</label>
+<input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+</div>
+<br>
+<button id="confirm" class="btn primary" type="button">Confirmar novo fator e revogar antigo</button>
+</div>
+<div id="retryBox" class="security-box hidden">
+<p>O novo autenticador já está confirmado. A revogação do anterior ainda precisa ser concluída.</p>
+<button id="retry" class="btn primary" type="button">Concluir revogação do fator antigo</button>
+</div>
+<p style="color:#9da3af"><a href="../auth/login.html" style="color:#f1d477">Voltar ao login</a></p>
+</section>
+</main>
+<script type="module">
+import {getVerifiedUser,getAAL,listMfaFactors,enrollTotp,verifyTotpEnrollment,unenrollTotp,setMfaPreference} from '../assets/js/auth.js';
+const $=id=>document.getElementById(id);
+const status=$('status'),startBox=$('startBox'),enrollBox=$('enrollBox'),retryBox=$('retryBox');
+const start=$('start'),confirm=$('confirm'),retry=$('retry'),qr=$('qr'),secret=$('secret'),code=$('code');
+let oldFactorId=null,newFactorId=null,newVerified=false;
+const msg=(value,error=false)=>{status.textContent=value;status.className='status show '+(error?'error':'ok')};
+async function bootstrap(){
+  const user=await getVerifiedUser();
+  if(!user){location.replace('../auth/login.html');return}
+  const assurance=await getAAL();
+  if(assurance.currentLevel!=='aal2'){
+    msg('Confirme seu 2FA no login para poder substituir o autenticador.',true);
+    return;
+  }
+  const factors=await listMfaFactors();
+  const verified=(factors.totp||[]).filter(f=>f.status==='verified');
+  if(verified.length!==1){
+    msg(verified.length===0?'Não há autenticador confirmado. Configure primeiro o seu 2FA.':'Há mais de um autenticador confirmado. Procure o suporte para escolher qual deve ser revogado.',true);
+    return;
+  }
+  oldFactorId=verified[0].id;
+  startBox.classList.remove('hidden');
+  msg('Sessão confirmada. Você pode cadastrar um novo autenticador.');
+}
+async function finishRotation(){
+  if(!newVerified||!newFactorId||!oldFactorId)throw new Error('Confirme o novo autenticador antes de revogar o anterior.');
+  const factors=await listMfaFactors();
+  const newActive=(factors.totp||[]).some(f=>f.id===newFactorId&&f.status==='verified');
+  if(!newActive)throw new Error('O novo fator não foi confirmado pelo Supabase.');
+  await setMfaPreference('enabled');
+  const oldStillPresent=(factors.totp||[]).some(f=>f.id===oldFactorId);
+  if(oldStillPresent)await unenrollTotp(oldFactorId);
+  retryBox.classList.add('hidden');
+  enrollBox.classList.add('hidden');
+  secret.textContent='';
+  qr.src='';
+  code.value='';
+  msg('Novo autenticador confirmado e fator antigo revogado. Use apenas o novo autenticador nos próximos acessos.');
+}
+start.addEventListener('click',async()=>{
+  start.disabled=true;
+  try{
+    if(!oldFactorId)throw new Error('Confirme sua sessão antes de trocar o 2FA.');
+    const data=await enrollTotp('L&A Royal - Novo autenticador');
+    newFactorId=data.id;
+    qr.src=data.totp.qr_code;
+    secret.textContent=data.totp.secret;
+    startBox.classList.add('hidden');
+    enrollBox.classList.remove('hidden');
+    msg('Cadastre a nova chave. O fator antigo continua ativo até a confirmação.');
+  }catch(err){msg(err.message||'Não foi possível criar o novo fator.',true);start.disabled=false}
+});
+confirm.addEventListener('click',async()=>{
+  confirm.disabled=true;
+  try{
+    if(!newFactorId)throw new Error('Gere primeiro um novo autenticador.');
+    await verifyTotpEnrollment(newFactorId,code.value.trim());
+    const assurance=await getAAL();
+    if(assurance.currentLevel!=='aal2')throw new Error('Confirmação AAL2 não concluída.');
+    newVerified=true;
+    secret.textContent='';
+    qr.src='';
+    await finishRotation();
+  }catch(err){
+    if(newVerified){
+      enrollBox.classList.add('hidden');
+      retryBox.classList.remove('hidden');
+      msg('Novo fator confirmado, mas houve falha ao revogar o antigo. Não compartilhe nenhuma chave; tente concluir a revogação.',true);
+    }else{
+      msg(err.message||'Não foi possível verificar o novo código.',true);
+    }
+  }finally{confirm.disabled=false}
+});
+retry.addEventListener('click',async()=>{
+  retry.disabled=true;
+  try{await finishRotation()}
+  catch(err){msg(err.message||'Não foi possível concluir a revogação.',true)}
+  finally{retry.disabled=false}
+});
+void bootstrap().catch(err=>msg(err.message||'Não foi possível verificar o acesso.',true));
+</script>
+</body>
+</html>

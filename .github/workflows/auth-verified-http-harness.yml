@@ -4,6 +4,8 @@ on:
     paths:
       - 'assets/js/auth.js'
       - 'security/setup-2fa.html'
+      - 'security/trocar-2fa.html'
+      - 'tests/saas-totp-rotation.test.mjs'
       - 'supabase/sql/saas_mfa_preference_private_rpc_55.sql'
       - 'tests/saas-mfa-preference-recovery.test.mjs'
       - 'assets/js/app.js'
@@ -21,6 +23,8 @@ on:
     paths:
       - 'assets/js/auth.js'
       - 'security/setup-2fa.html'
+      - 'security/trocar-2fa.html'
+      - 'tests/saas-totp-rotation.test.mjs'
       - 'supabase/sql/saas_mfa_preference_private_rpc_55.sql'
       - 'tests/saas-mfa-preference-recovery.test.mjs'
       - 'assets/js/app.js'
@@ -45,6 +49,6 @@ jobs:
         with:
           node-version: '22'
       - name: Auth and module offline regression tests
-        run: node --test tests/saas-mfa-preference-recovery.test.mjs tests/saas-admin-privilege-rollback.test.mjs tests/super-admin-mfa-http.test.mjs tests/tenant-http-fixtures.test.mjs tests/auth-verified-user-http-harness.test.mjs tests/auth-role-session-guards.test.mjs tests/auth-dashboard-permissions.test.mjs tests/saas-privileged-rpc-wrappers.test.mjs
+        run: node --test tests/saas-totp-rotation.test.mjs tests/saas-mfa-preference-recovery.test.mjs tests/saas-admin-privilege-rollback.test.mjs tests/super-admin-mfa-http.test.mjs tests/tenant-http-fixtures.test.mjs tests/auth-verified-user-http-harness.test.mjs tests/auth-role-session-guards.test.mjs tests/auth-dashboard-permissions.test.mjs tests/saas-privileged-rpc-wrappers.test.mjs
       - name: Syntax check for opt-in HTTP harness
         run: node --check scripts/verify-tenant-http.mjs && node --check scripts/verify-super-admin-mfa-http.mjs
