@@ -7,6 +7,7 @@ const get=id=>document.getElementById(id);
 const slug=new URLSearchParams(location.search).get('slug');
 const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 let store=null,setup=null,services=[],currentService=null,employeeId=null,time='',reqSeq=0;
+let design={};
 
 const escapeText=value=>String(value??'');
 const moneyValue=value=>money.format(Number(value||0));
@@ -35,6 +36,78 @@ function plusDays(ymd,offset){
  const d=new Date(ymd+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);
  return d.toISOString().slice(0,10);
 }
+function safeAssetUrl(value){
+ try{const u=new URL(value,location.href);
+  if(u.protocol==='https:'&&u.hostname.endsWith('.supabase.co'))return u.href;
+ }catch{}
+ return '';
+}
+function textIn(selector,value){
+ if(value===undefined||value===null||value==='')return;
+ const node=document.querySelector(selector);
+ if(node)node.textContent=String(value);
+}
+function applyDesign(){
+ design=store.design_settings&&typeof store.design_settings==='object'?
+   store.design_settings:{};
+ const root=document.documentElement.style;
+ const numbers=[
+  ['fontSize','--designer-font',12,22],
+  ['sectionGap','--designer-gap',12,80],
+  ['cardRadius','--designer-radius',0,40],
+  ['contentWidth','--designer-width',780,1500]
+ ];
+ for(const [key,name,min,max] of numbers){
+  const value=Number(design[key]);
+  if(Number.isFinite(value)&&value>=min&&value<=max)
+   root.setProperty(name,value+'px');
+ }
+ for(const [key,name] of [
+  ['buttonColor','--designer-button'],['mutedColor','--designer-muted'],
+  ['navigationBackground','--designer-navigation'],['cardBackground','--designer-card']
+ ]){
+  const value=design[key];
+  if(typeof value==='string'&&/^#[a-f0-9]{6}$/i.test(value))
+   root.setProperty(name,value);
+ }
+ const background=safeAssetUrl(design.backgroundImageUrl);
+ if(background){
+  document.body.style.backgroundImage='linear-gradient(#0007,#0009),url("'+background+'")';
+  document.body.style.backgroundSize='cover';
+  document.body.style.backgroundAttachment='fixed';
+ }
+ const hero=safeAssetUrl(design.heroImageUrl);
+ if(hero)get('home').querySelector('.hero').style.backgroundImage=
+  'linear-gradient(90deg,#000b,#0006),url("'+hero+'")';
+ const heroTitle=design.heroTitle;
+ if(typeof heroTitle==='string'&&heroTitle.trim())
+  get('home').querySelector('.hero h1').textContent=heroTitle.slice(0,110);
+ textIn('#home .hero p',design.heroSubtitle);
+ textIn('#home .booking h2',design.bookingTitle);
+ textIn('#bookBtn',design.bookingButtonLabel);
+ textIn('#club .section-title',design.clubTitle);
+ textIn('#club > p.muted',design.clubDescription);
+ textIn('#plans .section-title',design.plansTitle);
+ textIn('#plans > p.muted',design.plansDescription);
+ textIn('#profile .section-title',design.profileTitle);
+ textIn('#profile .card p.muted',design.profileDescription);
+ textIn('#appointments .section-title',design.appointmentsTitle);
+ for(const [section,visible] of [
+  ['club',design.showClub!==false],['plans',design.showPlans!==false],
+  ['profile',design.showProfile!==false]
+ ]){
+  const sectionNode=get(section);
+  sectionNode.hidden=!visible;
+  const nav=document.querySelector('#app nav [data-sec="'+section+'"]');
+  if(nav)nav.hidden=!visible;
+ }
+ const footer=String(design.footerText||'').slice(0,140);
+ if(footer){
+  const p=document.createElement('p');p.className='muted';p.textContent=footer;
+  p.style.cssText='text-align:center;margin:35px 0 12px';
+  get('app').querySelector('.main').append(p);
+ }
+}
 function applyBrand(){
  document.title=store.name+' | Agendamentos';
  const primary=/^#[a-f0-9]{6}$/i.test(store.primary_color||'')?store.primary_color:'#D4AF37';
@@ -50,6 +123,8 @@ function applyBrand(){
  root.setProperty('--template-text',text);
  root.setProperty('--white',text);
  root.setProperty('--black',bg);
+ const allowedFonts=new Set(['Inter','Poppins','Montserrat','Playfair Display','Roboto','Lato']);
+ if(allowedFonts.has(store.font_style))document.body.style.fontFamily='"'+store.font_style+'",Arial,sans-serif';
  get('tenantHeroLabel').textContent=store.name.toLocaleUpperCase('pt-BR');
  get('tenantInitial').textContent=store.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
  get('topAvatar').textContent=get('tenantInitial').textContent;
@@ -186,15 +261,44 @@ function renderInfo(){
   note.textContent='Agendamento mediante disponibilidade e aprovação.';
   foot.append(h,p,note);
  }
- get('clientShopGallery').textContent='As fotos do ambiente serão exibidas quando a barbearia cadastrá-las.';
+ const gallery=get('clientShopGallery');gallery.replaceChildren();
+ const photos=Array.isArray(design.gallery)?design.gallery.slice(0,12):[];
+ for(const item of photos){
+  const url=safeAssetUrl(item?.url);
+  if(!url)continue;
+  const figure=document.createElement('figure');
+  const img=document.createElement('img');img.src=url;img.loading='lazy';img.alt=String(item?.caption||'Foto da barbearia').slice(0,100);
+  const caption=document.createElement('figcaption');
+  caption.textContent=String(item?.caption||'').slice(0,100);
+  figure.append(img,caption);gallery.append(figure);
+ }
+ if(!gallery.children.length)
+  gallery.textContent='As fotos do ambiente serão exibidas quando a barbearia cadastrá-las.';
 }
 function renderPlans(){
  const plans=get('planGrid');plans.replaceChildren();
- const card=document.createElement('div');card.className='card';
- const h=document.createElement('h3');h.textContent='Planos da barbearia';
- const p=document.createElement('p');p.className='muted';
- p.textContent='Não há planos de assinatura publicados nesta empresa no momento. Consulte a barbearia sobre planos e benefícios.';
- card.append(h,p);plans.append(card);
+ const items=Array.isArray(design.plans)?design.plans.slice(0,8):[];
+ if(!items.length){
+  const card=document.createElement('div');card.className='card';
+  const h=document.createElement('h3');h.textContent='Planos da barbearia';
+  const p=document.createElement('p');p.className='muted';
+  p.textContent='Nenhum plano anunciado por esta barbearia no momento.';
+  card.append(h,p);plans.append(card);
+  return;
+ }
+ for(const plan of items){
+  const card=document.createElement('div');card.className='card';
+  const h=document.createElement('h3');h.textContent=String(plan.name||'Plano').slice(0,65);
+  const price=document.createElement('strong');price.textContent=moneyValue(plan.price);
+  const desc=document.createElement('p');desc.textContent=String(plan.description||'').slice(0,230);
+  const features=document.createElement('ul');
+  for(const feature of Array.isArray(plan.features)?plan.features.slice(0,8):[]){
+   const li=document.createElement('li');li.textContent=String(feature).slice(0,100);features.append(li);
+  }
+  const note=document.createElement('small');note.className='muted';
+  note.textContent='Consulte a barbearia sobre contratação. Não há cobrança automática neste site.';
+  card.append(h,price,desc,features,note);plans.append(card);
+ }
 }
 function renderHistory(code){
  const area=get('appointmentList');area.replaceChildren();
@@ -213,12 +317,12 @@ async function init(){
  if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
   throw new Error('Link da barbearia inválido.');
  const shop=await supabase.from('saas_public_stores')
-  .select('tenant_id,name,slug,template_code,business_type,logo_url,primary_color,secondary_color,background_color,text_color')
+  .select('tenant_id,name,slug,template_code,business_type,logo_url,primary_color,secondary_color,background_color,text_color,font_style,design_settings')
   .eq('slug',slug).maybeSingle();
  if(shop.error)throw shop.error;
  if(!shop.data||shop.data.template_code!=='barbershop')
   throw new Error('Esta barbearia não está publicada ou não foi encontrada.');
- store=shop.data;applyBrand();
+ store=shop.data;applyBrand();applyDesign();
  const [a,b]=await Promise.all([
   supabase.rpc('saas_barber_public_setup',{p_slug:slug}),
   supabase.from('saas_public_catalog_items')
