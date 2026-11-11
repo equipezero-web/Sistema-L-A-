@@ -215,10 +215,106 @@ html,body{background:var(--template-background)!important;color:var(--template-t
 .saas-guest-dialog .dialog-actions button{flex:1;min-height:42px}
 .barber-public #plans .card,.barber-public #appointments .card{max-width:780px}
 @media(max-width:560px){.saas-guest-dialog{padding:18px}.barber-public .service-list{grid-template-columns:1fr}}
+
+/* MOBILE SYSTEM v68: adapt tenant-selected typography/spacing without ever
+   replacing the tenant's colors or branding. */
+:root{--barber-safe-bottom:env(safe-area-inset-bottom,0px)}
+html{min-width:0;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0;max-width:100%;overflow-x:clip}
+#app,#app *{box-sizing:border-box}
+#app .main,#app .section,#app .card,#app .booking,#app .hero,
+#app .cards,#app .plan-grid,#app .service-list,#app .slots{min-width:0}
+#app .main{width:calc(100% - 260px);max-width:min(100% - 260px,var(--designer-width))!important}
+#app .card,#app .hero,#app .booking{max-width:100%}
+#app .gallery{grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr))}
+#app img{max-width:100%;height:auto}
+#app .choice,#app .slot{min-height:44px;max-width:100%;overflow-wrap:anywhere}
+#app .service-list button{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+#app .summary{max-width:100%;z-index:12}
+#app .nav button{min-height:44px}
+#app .topbar>*{min-width:0}
+#app .topbar{gap:12px}
+#app .topbar .avatar{flex:none}
+#app .section h1,#app .section h2,#app .section h3{overflow-wrap:anywhere}
+#app .card p,#app .card small,#app .muted{overflow-wrap:anywhere}
+#app .plan-grid .card{max-width:100%}
+#app [hidden],dialog:not([open]){display:none!important}
+#mobileBackToStore{display:none;text-decoration:none;color:var(--template-primary);font-weight:700;
+ border:1px solid var(--template-primary);border-radius:11px;min-height:44px;
+ padding:10px;align-items:center;justify-content:center;flex-shrink:0}
+.saas-guest-dialog{max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px - var(--barber-safe-bottom));
+ overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.saas-guest-dialog input{font-size:16px;min-width:0;max-width:100%}
+.saas-guest-dialog .dialog-actions button{min-height:44px}
+.saas-guest-dialog .field{min-width:0}
+#app button:focus-visible,#app a:focus-visible,.saas-guest-dialog :focus-visible{outline:2px solid var(--template-primary);outline-offset:3px}
+@media(max-width:900px){
+ #app .main{width:calc(100% - 76px);max-width:calc(100% - 76px)!important;margin-left:76px;
+  padding:clamp(14px,3vw,24px)!important}
+ #app .hero{padding:clamp(17px,4vw,26px)}
+ #app .cards,#app .plan-grid{grid-template-columns:minmax(0,1fr)}
+ #app .service-list{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))}
+ #app .sidebar{overscroll-behavior:contain}
+}
+@media(max-width:620px){
+ #app .sidebar{position:fixed;inset:auto 0 0 0;width:100%;height:auto;min-height:74px;
+  padding:5px max(4px,env(safe-area-inset-right)) calc(5px + var(--barber-safe-bottom))
+  max(4px,env(safe-area-inset-left));border:0;border-top:1px solid color-mix(in srgb,var(--template-primary) 32%,transparent);
+  z-index:75;display:block;box-shadow:0 -10px 40px #0009;backdrop-filter:blur(14px)}
+ #app .sidebar .side-brand,#app .sidebar .logout{display:none!important}
+ #app .sidebar .nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ #app .sidebar .nav button{min-width:0;width:100%;height:60px;min-height:60px;padding:5px 1px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0;
+  font-size:clamp(18px,5vw,22px);border-radius:12px;line-height:1}
+ #app .sidebar .nav span{display:block;font-size:clamp(9px,2.3vw,11px);font-weight:650;
+  text-align:center;line-height:1.15;overflow-wrap:anywhere;max-width:100%;padding:2px 1px}
+ #app .main{width:100%;max-width:100%!important;margin-left:0;
+  padding:clamp(12px,4vw,20px) clamp(10px,3.5vw,18px) calc(112px + var(--barber-safe-bottom))!important}
+ #app .topbar{flex-wrap:wrap;gap:9px;align-items:center}
+ #app .topbar>div:first-child{flex:1 1 140px}
+ #app .topbar .avatar{width:38px;height:38px;font-size:.85rem}
+ #mobileBackToStore{display:inline-flex;font-size:.76rem}
+ #app .hero{padding:clamp(16px,5vw,26px);border-radius:16px!important}
+ #app .hero h1{font-size:clamp(1.6rem,8vw,2.5rem);line-height:1.08}
+ #app .hero .quick{display:flex;flex-wrap:wrap;gap:8px}
+ #app .hero .quick button{flex:1 1 160px;min-width:0;min-height:44px}
+ #app .card,#app .booking{padding:clamp(12px,4vw,20px)}
+ #app .step{margin-bottom:16px}
+ #app .service-list,#app .cards,#app .plan-grid{grid-template-columns:minmax(0,1fr)}
+ #app .choice{width:100%;min-width:0}
+ #app .slots{grid-template-columns:repeat(auto-fit,minmax(min(75px,100%),1fr));gap:7px}
+ #app .slot{padding:10px 5px;min-height:44px}
+ #app .gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #app .summary{bottom:calc(80px + var(--barber-safe-bottom));padding:12px;
+  flex-direction:column;align-items:stretch;gap:8px}
+ #app .summary .primary{min-height:46px;width:100%}
+ .saas-guest-dialog{width:min(460px,calc(100vw - 16px));padding:clamp(15px,4vw,22px)}
+ .saas-guest-dialog .dialog-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .saas-guest-dialog .dialog-actions button{min-width:0}
+}
+@media(max-width:350px){
+ #app .topbar .muted{font-size:.75rem}
+ #app .topbar{align-items:flex-start}
+ #app .topbar .avatar{display:none}
+ #app .hero .quick button{flex:1 1 100%}
+ #app .gallery{grid-template-columns:minmax(0,1fr)}
+ #app .sidebar .nav button{height:64px;min-height:64px;font-size:18px}
+ #app .sidebar .nav span{font-size:9px}
+ #app .main{padding-inline:10px!important;padding-bottom:calc(116px + var(--barber-safe-bottom))!important}
+ .saas-guest-dialog .dialog-actions{grid-template-columns:1fr}
+}
+@media(max-height:520px) and (orientation:landscape){
+ #app .summary{position:relative;bottom:auto}
+ .saas-guest-dialog{max-height:calc(100dvh - 10px);padding:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .section,#app .hero,#app button{animation:none!important;transition:none!important}
+}
+
 </style>
 </head>
-<body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home">⌂ <span>Início</span></button><button data-sec="appointments">◷ <span>Agendamentos</span></button><button data-sec="club">◇ <span>Barbearia</span></button><button data-sec="plans">▣ <span>Planos</span></button><button data-sec="profile">○ <span>Perfil</span></button></nav><a class="ghost logout" id="backToStore" href="./">Voltar à loja</a></aside>
-<main class="main"><header class="topbar"><div><b id="hello">Olá</b><div class="muted">Seu próximo atendimento começa aqui.</div></div><div class="avatar" id="topAvatar">AP</div></header>
+<body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home" aria-label="Início" title="Início">⌂ <span>Início</span></button><button data-sec="appointments" aria-label="Agendamentos" title="Agendamentos">◷ <span>Agendamentos</span></button><button data-sec="club" aria-label="Barbearia" title="Barbearia">◇ <span>Barbearia</span></button><button data-sec="plans" aria-label="Planos" title="Planos">▣ <span>Planos</span></button><button data-sec="profile" aria-label="Perfil" title="Perfil">○ <span>Perfil</span></button></nav><a class="ghost logout" id="backToStore" href="./">Voltar à loja</a></aside>
+<main class="main"><header class="topbar"><div><b id="hello">Olá</b><div class="muted">Seu próximo atendimento começa aqui.</div></div><a id="mobileBackToStore" href="./" aria-label="Abrir catálogo da barbearia">Catálogo</a><div class="avatar" id="topAvatar">AP</div></header>
 <section class="section active" id="home">
 <div class="hero"><span class="pill" id="tenantHeroLabel">BARBEARIA</span><h1>Seu estilo.<br/><span class="gold-text">Nossa assinatura.</span></h1>
 <p class="muted">Atendimento personalizado em um único espaço. Selecione o serviço, a data e um horário disponível.</p>
