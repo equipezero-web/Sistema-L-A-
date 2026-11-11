@@ -8,6 +8,8 @@ on:
       - 'scripts/verify-tenant-http.mjs'
       - 'tests/auth-verified-user-http-harness.test.mjs'
       - 'tests/tenant-http-fixtures.test.mjs'
+      - 'tests/saas-admin-privilege-rollback.test.mjs'
+      - 'supabase/tests/saas_admin_privileges_rollback.sql'
       - 'tests/super-admin-mfa-http.test.mjs'
       - 'scripts/verify-super-admin-mfa-http.mjs'
       - '.github/workflows/auth-verified-http-harness.yml'
@@ -20,6 +22,8 @@ on:
       - 'scripts/verify-tenant-http.mjs'
       - 'tests/auth-verified-user-http-harness.test.mjs'
       - 'tests/tenant-http-fixtures.test.mjs'
+      - 'tests/saas-admin-privilege-rollback.test.mjs'
+      - 'supabase/tests/saas_admin_privileges_rollback.sql'
       - 'tests/super-admin-mfa-http.test.mjs'
       - 'scripts/verify-super-admin-mfa-http.mjs'
   workflow_dispatch:
@@ -35,6 +39,6 @@ jobs:
         with:
           node-version: '22'
       - name: Auth and module offline regression tests
-        run: node --test tests/super-admin-mfa-http.test.mjs tests/tenant-http-fixtures.test.mjs tests/auth-verified-user-http-harness.test.mjs tests/auth-role-session-guards.test.mjs tests/auth-dashboard-permissions.test.mjs tests/saas-privileged-rpc-wrappers.test.mjs
+        run: node --test tests/saas-admin-privilege-rollback.test.mjs tests/super-admin-mfa-http.test.mjs tests/tenant-http-fixtures.test.mjs tests/auth-verified-user-http-harness.test.mjs tests/auth-role-session-guards.test.mjs tests/auth-dashboard-permissions.test.mjs tests/saas-privileged-rpc-wrappers.test.mjs
       - name: Syntax check for opt-in HTTP harness
         run: node --check scripts/verify-tenant-http.mjs && node --check scripts/verify-super-admin-mfa-http.mjs
