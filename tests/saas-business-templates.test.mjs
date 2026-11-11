@@ -52,6 +52,6 @@ test('Frontend code parses as JavaScript without importing source project creden
  const o=onboard.match(/<script type="module">([\s\S]+?)<\/script>/)?.[1];
  assert.ok(s&&o);
  assert.doesNotThrow(()=>new vm.Script(s.replace(/^import\s*\{[^}]*\}\s*from\s*'[^']+';/,'')));
- assert.doesNotThrow(()=>new vm.Script(o.replace(/^import\s*\{[^}]*\}\s*from\s*'[^']+';/,'')));
+ assert.doesNotThrow(()=>new vm.Script(o.replace(/^import\s*\{[^}]*\}\s*from\s*'[^']+';\s*/gm,'')));
  assert.doesNotMatch(sql+store+onboard+settings,/service_role_key|MP_ACCESS_TOKEN|SUPABASE_SERVICE_ROLE_KEY/i);
 });
