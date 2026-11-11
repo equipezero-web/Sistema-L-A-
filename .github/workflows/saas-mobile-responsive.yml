@@ -1,0 +1,58 @@
+name: SaaS Mobile Responsive All Viewports
+on:
+  pull_request:
+    paths:
+      - 'assets/css/main.css'
+      - 'assets/js/app.js'
+      - 'assets/js/barber-original-template.js'
+      - 'app/index.html'
+      - 'store/barbearia.html'
+      - 'store/recepcao.html'
+      - 'store/reservar.html'
+      - 'store/index.html'
+      - 'super-admin/index.html'
+      - 'tests/saas-mobile-responsive.test.mjs'
+      - 'tests/saas-mobile-browser.test.mjs'
+      - '.github/workflows/saas-mobile-responsive.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/css/main.css'
+      - 'assets/js/app.js'
+      - 'assets/js/barber-original-template.js'
+      - 'app/index.html'
+      - 'store/barbearia.html'
+      - 'store/recepcao.html'
+      - 'store/reservar.html'
+      - 'store/index.html'
+      - 'super-admin/index.html'
+      - 'tests/saas-mobile-responsive.test.mjs'
+      - 'tests/saas-mobile-browser.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Responsive CSS, navigation and existing SaaS regression tests
+        run: node --test tests/saas-mobile-responsive.test.mjs tests/saas-barber-designer.test.mjs tests/saas-original-barber-template.test.mjs tests/saas-barber-customer-auth.test.mjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test dependency
+        run: npm install --no-save --ignore-scripts playwright@1.55.0
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Mobile viewport, table scrolling and touch smoke tests
+        run: node tests/saas-mobile-browser.test.mjs

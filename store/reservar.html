@@ -39,6 +39,37 @@ body{background:radial-gradient(circle at 75% 0,rgba(210,167,71,.13),transparent
 .booking-success strong{color:#9be6b7;font-size:1.12rem}
 @media(max-width:820px){.booking-grid{grid-template-columns:1fr}.booking-header{align-items:start}.slot-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:460px){.booking-shell{width:94%}.booking-card{padding:18px}.booking-brand img{width:50px;height:50px}.booking-back{font-size:.78rem}.slot-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* MOBILE SYSTEM v68 — direct appointment link remains usable on very small phones */
+.booking-shell,.booking-grid,.booking-card,.booking-header,.booking-brand,.booking-brand>div{min-width:0}
+.booking-card,.booking-status,.booking-brand h1,.booking-intro{overflow-wrap:anywhere}
+.booking-card input,.booking-card select{max-width:100%;min-width:0;font-size:16px}
+.booking-card .slot{min-height:44px;touch-action:manipulation}
+@media(max-width:620px){
+ .booking-shell{width:calc(100% - 24px);padding:18px 0 calc(40px + env(safe-area-inset-bottom,0px))}
+ .booking-header{flex-wrap:wrap;align-items:flex-start;gap:10px;margin-bottom:16px}
+ .booking-brand{gap:10px;min-width:0}
+ .booking-brand h1{font-size:clamp(1.3rem,6vw,1.8rem)}
+ .booking-brand img{width:46px;height:46px}
+ .booking-back{min-height:44px;display:inline-flex;align-items:center}
+ .booking-intro{margin:12px 0 20px}
+ .booking-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .booking-card{padding:clamp(12px,4vw,18px);border-radius:16px}
+ .slot-grid{grid-template-columns:repeat(auto-fit,minmax(min(76px,100%),1fr));gap:7px}
+ .booking-card .btn{min-height:46px;width:100%;white-space:normal}
+ .summary-item{gap:10px}
+ .summary-item span,.summary-item strong{min-width:0;overflow-wrap:anywhere}
+}
+@media(max-width:350px){
+ .booking-shell{width:calc(100% - 18px)}
+ .booking-card{padding:12px}
+ .booking-brand h1{font-size:1.3rem}
+ .slot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .booking-shell{padding-top:12px}
+}
+
 </style>
 </head><body>
 <main class="booking-shell">
