@@ -8,6 +8,7 @@ const slug=new URLSearchParams(location.search).get('slug');
 const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 let store=null,setup=null,services=[],currentService=null,employeeId=null,time='',reqSeq=0;
 let design={};
+let customerProfile=null,customerAuthMode='login';
 
 const escapeText=value=>String(value??'');
 const moneyValue=value=>money.format(Number(value||0));
@@ -300,6 +301,80 @@ function renderPlans(){
   card.append(h,price,desc,features,note);plans.append(card);
  }
 }
+function customerMessage(text,error=false){
+ const node=get('customerAuthStatus');
+ node.textContent=text;
+ node.style.color=error?'#ffa4a4':'#e1cb8b';
+}
+function authMode(mode='login'){
+ customerAuthMode=mode;
+ const signup=mode==='signup';
+ get('customerAuthTitle').textContent=signup?'Criar conta de cliente':'Entrar na Barbearia';
+ get('customerAuthHint').textContent=signup?
+  'Cadastre-se com e-mail válido. Você deverá confirmar seu e-mail antes de agendar.':
+  'Entre usando o e-mail e a senha da sua conta de cliente.';
+ get('customerSignupFields').hidden=!signup;
+ for(const id of ['customerSignupName','customerSignupPhone','customerSignupConsent'])
+  get(id).required=signup;
+ get('customerAuthSubmit').textContent=signup?'Criar conta':'Entrar';
+ get('customerAuthToggle').textContent=signup?'Já tenho conta — Entrar':'Não possui conta? Cadastre-se';
+ get('customerAuthStatus').textContent='';
+}
+function openCustomerAuth(){
+ authMode('login');get('saasCustomerAuthDialog').showModal();
+}
+function updateProfile(){
+ const info=get('customerProfileInfo');
+ if(customerProfile){
+  info.textContent=customerProfile.name+' · '+customerProfile.email+' · '+customerProfile.phone;
+  get('customerLoginButton').hidden=true;
+  get('customerLogoutButton').hidden=false;
+  get('customerCompleteButton').hidden=true;
+ }else{
+  info.textContent='Entre ou cadastre-se para solicitar horários. Seus agendamentos ficam vinculados à sua conta.';
+  get('customerLoginButton').hidden=false;
+  get('customerLogoutButton').hidden=true;
+  get('customerCompleteButton').hidden=true;
+ }
+}
+async function refreshCustomer(){
+ const {data:{user},error}=await supabase.auth.getUser();
+ if(error||!user){customerProfile=null;updateProfile();return null}
+ const {data,error:profileError}=await supabase.rpc('saas_barber_customer_profile',{p_slug:slug});
+ if(profileError)throw profileError;
+ customerProfile=data||null;
+ updateProfile();
+ if(!customerProfile){
+  get('customerCompleteButton').hidden=false;
+  get('customerProfileInfo').textContent='Conta autenticada. Complete seu cadastro nesta barbearia para reservar.';
+ }
+ await refreshCustomerHistory();
+ return customerProfile;
+}
+async function refreshCustomerHistory(){
+ const area=get('appointmentList');
+ if(!customerProfile)return;
+ const {data,error}=await supabase.rpc('saas_barber_customer_history',{p_slug:slug});
+ if(error)throw error;
+ const entries=Array.isArray(data)?data:[];
+ area.replaceChildren();
+ if(!entries.length){renderHistory(null);return}
+ for(const item of entries){
+  const card=document.createElement('article');card.className='card';
+  const title=document.createElement('h3');
+  title.textContent=String(item.service_name||'Serviço')+' · '+new Date(item.starts_at).toLocaleString('pt-BR');
+  const summary=document.createElement('p');
+  summary.className='muted';
+  summary.textContent='Código: '+String(item.code)+' · '+
+    ({pending:'Em análise',accepted:'Confirmado',rejected:'Recusado'}[item.status]||item.status);
+  const price=document.createElement('strong');price.textContent=moneyValue(item.price);
+  card.append(title,summary,price);area.append(card);
+ }
+}
+function openCompleteCustomer(){
+ get('customerCompleteStatus').textContent='';
+ get('saasCustomerCompleteDialog').showModal();
+}
 function renderHistory(code){
  const area=get('appointmentList');area.replaceChildren();
  const card=document.createElement('article');card.className='card';
@@ -338,6 +413,7 @@ async function init(){
  get('datePick').value=today;
  renderServices();renderEmployees();renderInfo();renderPlans();renderHistory(null);
  refreshSummary();await renderSlots();
+ await refreshCustomer().catch(error=>toast(error.message||'Faça login para agendar.',true));
  toast('Seja bem-vindo à '+store.name);
 }
 
@@ -348,9 +424,21 @@ document.querySelectorAll('#app [data-go]').forEach(button=>{
  button.addEventListener('click',()=>go(button.dataset.go));
 });
 get('datePick').addEventListener('change',()=>{void renderSlots()});
-get('bookBtn').addEventListener('click',()=>{
+get('bookBtn').addEventListener('click',async()=>{
  if(!currentService||!time||!get('datePick').value)return;
- get('saasGuestDialog').showModal();
+ try{
+  const profile=await refreshCustomer();
+  if(!profile){
+   const {data:{user}}=await supabase.auth.getUser();
+   if(user)openCompleteCustomer();
+   else openCustomerAuth();
+   toast('Cadastre-se ou entre na sua conta para reservar.');
+   return;
+  }
+  get('saasGuestName').value=profile.name;
+  get('saasGuestPhone').value=profile.phone;
+  get('saasGuestDialog').showModal();
+ }catch(error){toast(error.message||'Não foi possível verificar sua conta.',true)}
 });
 get('saasGuestCancel').addEventListener('click',()=>get('saasGuestDialog').close());
 get('saasGuestForm').addEventListener('submit',async event=>{
@@ -374,9 +462,80 @@ get('saasGuestForm').addEventListener('submit',async event=>{
   if(data?.status!=='pending'||!data?.code)throw new Error('O servidor não confirmou a solicitação.');
   get('saasGuestDialog').close();get('saasGuestForm').reset();err.textContent='';
   renderHistory(data.code);go('appointments');
+  await refreshCustomerHistory().catch(()=>{});
   toast('Pedido '+data.code+' enviado. Aguarde a confirmação da barbearia.');
   time='';refreshSummary();void renderSlots();
  }catch(e){err.textContent=e.message||'Não foi possível solicitar o horário.'}
+ finally{b.disabled=false}
+});
+get('customerLoginButton').addEventListener('click',openCustomerAuth);
+get('customerCompleteButton').addEventListener('click',openCompleteCustomer);
+get('customerAuthToggle').addEventListener('click',()=>{
+ authMode(customerAuthMode==='login'?'signup':'login');
+});
+get('customerAuthCancel').addEventListener('click',()=>get('saasCustomerAuthDialog').close());
+get('customerCompleteCancel').addEventListener('click',()=>get('saasCustomerCompleteDialog').close());
+get('customerLogoutButton').addEventListener('click',async()=>{
+ await supabase.auth.signOut();customerProfile=null;updateProfile();renderHistory(null);
+ toast('Sessão encerrada.');
+});
+get('saasCustomerAuthForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const email=get('customerAuthEmail').value.trim().toLowerCase();
+ const password=get('customerAuthPassword').value;
+ const button=get('customerAuthSubmit');button.disabled=true;
+ try{
+  if(customerAuthMode==='signup'){
+   if(!get('customerSignupConsent').checked)throw new Error('Autorize o cadastro de cliente.');
+   if(password.length<8)throw new Error('A senha deve ter no mínimo oito caracteres.');
+   const name=get('customerSignupName').value.trim();
+   const phone=get('customerSignupPhone').value.replace(/\D/g,'');
+   if(name.length<2||phone.length<10||phone.length>13)throw new Error('Informe nome e telefone válidos.');
+   const redirect=new URL('./barbearia.html?slug='+encodeURIComponent(slug),location.href).href;
+   const {data,error}=await supabase.auth.signUp({
+    email,password,options:{emailRedirectTo:redirect,data:{full_name:name}}
+   });
+   if(error)throw error;
+   if(data?.session){
+    const register=await supabase.rpc('saas_barber_customer_register',{
+     p_slug:slug,p_name:name,p_phone:phone
+    });
+    if(register.error)throw register.error;
+    get('saasCustomerAuthDialog').close();
+    await refreshCustomer();
+    toast('Conta cadastrada com sucesso.');
+   }else{
+    customerMessage('Verifique o e-mail de confirmação. Depois volte à barbearia e entre na sua conta.');
+   }
+  }else{
+   const {error}=await supabase.auth.signInWithPassword({email,password});
+   if(error)throw error;
+   get('saasCustomerAuthDialog').close();
+   const profile=await refreshCustomer();
+   if(!profile)openCompleteCustomer();
+   else toast('Bem-vindo de volta, '+profile.name+'!');
+  }
+ }catch(error){customerMessage(error.message||'Não foi possível autenticar.',true)}
+ finally{button.disabled=false}
+});
+get('saasCustomerCompleteForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const name=get('customerCompleteName').value.trim();
+ const phone=get('customerCompletePhone').value.replace(/\D/g,'');
+ if(!get('customerCompleteConsent').checked||name.length<2||phone.length<10||phone.length>13){
+  get('customerCompleteStatus').textContent='Informe nome, telefone e autorização de contato.';
+  return;
+ }
+ const b=get('customerCompleteSubmit');b.disabled=true;
+ try{
+  const {error}=await supabase.rpc('saas_barber_customer_register',{
+   p_slug:slug,p_name:name,p_phone:phone
+  });
+  if(error)throw error;
+  get('saasCustomerCompleteDialog').close();
+  await refreshCustomer();
+  toast('Cadastro de cliente concluído.');
+ }catch(error){get('customerCompleteStatus').textContent=error.message}
  finally{b.disabled=false}
 });
 void init().catch(error=>{
