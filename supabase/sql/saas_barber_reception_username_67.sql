@@ -1,5 +1,6 @@
 -- Etapa #67 — recepção: login por usuário, criado exclusivamente no ADM.
 -- Não concede saas_members e NÃO dá acesso às tabelas financeiras do painel.
+grant usage on schema booking_private to service_role;
 create table if not exists private.saas_reception_accounts (
   tenant_id uuid not null references public.saas_tenants(id) on delete cascade,
   user_id uuid not null unique references auth.users(id) on delete cascade,
