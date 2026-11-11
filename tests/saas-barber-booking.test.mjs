@@ -14,7 +14,7 @@ const compiled=strip(js);
 
 test('Public barbershop and staff modules parse without browser runtime',()=>{
  assert.doesNotThrow(()=>new vm.Script(compiled));
- assert.doesNotThrow(()=>new vm.Script(strip(agendaJs)));
+ assert.doesNotThrow(()=>new vm.Script(strip(agendaJs).replace(/import\.meta\.url/g,"'https://equipezero-web.github.io/Sistema-L-A-/assets/js/agenda.js'")));
 });
 test('Public storefront shows booking CTA only for barbershop template',()=>{
  assert.match(store,/model==='barbershop'/);
@@ -25,7 +25,7 @@ test('Public storefront shows booking CTA only for barbershop template',()=>{
 });
 test('Request creation is restricted to verified published store with server-side slot and rate limits',()=>{
  assert.match(migration,/private\.saas_public_store_visible\(s\.tenant_id\)/);
- assert.match(migration,/p_slug=p_slug and s\.template_code='barbershop'/);
+ assert.match(migration,/s\.slug=p_slug and s\.template_code='barbershop'/);
  assert.match(migration,/public\.saas_barber_available_slots\(p_slug,p_service_id,p_day,p_employee_id\)/);
  assert.match(migration,/pg_advisory_xact_lock/);
  assert.match(migration,/2 minutes/);
