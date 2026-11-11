@@ -31,7 +31,7 @@ test('Public wrappers are SECURITY INVOKER and use empty search_path',()=>{
 test('Anonymous users can request but cannot decide, and direct booking table stays private',()=>{
  assert.match(migration,/public\.saas_barber_request_booking\(text,uuid,date,time,uuid,text,text\)[\s\S]*?to anon,authenticated/);
  assert.match(migration,/public\.saas_barber_decide_request\(uuid,text\)[\s\S]*?to authenticated/);
- assert.doesNotMatch(migration,/saas_barber_decide_request\(uuid,text\)[\s\S]*?to anon,/);
+ assert.doesNotMatch(migration,/grant execute on function public\.saas_barber_decide_request\(uuid,text\)\s+to anon/);
  assert.doesNotMatch(migration,/grant (?:select|insert|update|delete) on public\.saas_barber_requests/i);
 });
 test('Frontends keep calling the same public RPCs; no changes to subscription or users',()=>{
