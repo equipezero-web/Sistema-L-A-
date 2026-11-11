@@ -110,6 +110,10 @@ create or replace function private.saas_barber_appointment_conflict_guard()
 returns trigger language plpgsql security definer set search_path=''
 as $fn$
 begin
+ if not exists (
+   select 1 from public.saas_tenants t
+   where t.id=new.tenant_id and t.template_code='barbershop'
+ ) then return new; end if;
  if new.ends_at<=new.starts_at then raise exception 'O fim deve ser posterior ao início.'; end if;
  if new.status in ('cancelled','no_show') then return new; end if;
  perform pg_advisory_xact_lock(hashtextextended('saas_barber:'||new.tenant_id::text,0));
