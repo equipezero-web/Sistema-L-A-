@@ -26,10 +26,10 @@ test('Catalog and inventory inline modules parse after removing import syntax',(
 test('Employee catalog is read-only even if a hidden edit or save event fires',()=>{
  for(const key of ['products','services']){
   const src=source(files[key]);
-  assert.match(src,/if\(!ctx\.canManage\)newBtn\.classList\.add\('hidden'\)/);
+  assert.match(src,/if\(!ctx\.canManage\)ui\.newBtn\.classList\.add\('hidden'\)/);
   assert.match(src,/function open\([px]=\{\}\)\{if\(!ctx\?\.canManage\)return;/);
-  assert.match(src,/rows\.onclick=async e=>\{if\(!ctx\?\.canManage\)return;/);
-  assert.match(src,/form\.onsubmit=async e=>\{e\.preventDefault\(\);const b=e\.submitter;try\{if\(!ctx\?\.canManage\)throw new Error/);
+  assert.match(src,/ui\.rows\.onclick=async e=>\{if\(!ctx\?\.canManage\)return;/);
+  assert.match(src,/ui\.form\.onsubmit=async e=>\{e\.preventDefault\(\);const b=e\.submitter\|\|ui\.form\.querySelector\('button\[type="submit"\]'\);try\{if\(!ctx\?\.canManage\)throw new Error/);
  }
 });
 
