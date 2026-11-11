@@ -172,10 +172,8 @@ function renderInfo(){
  card('Funcionamento',openDays+' · '+hours+' · '+setup.timezone);
  const label=get('bookingHoursLabel');
  label.textContent=openDays+' · '+hours+'. Escolha uma data nos próximos 30 dias.';
- const club=get('club');
- const foot=club?.querySelector('.card:last-child');
- if(foot)foot.replaceChildren();
- if(foot){
+ const foot=get('publicBusinessHours');
+ if(foot){foot.replaceChildren();
   const h=document.createElement('h3');h.textContent='Horários de funcionamento';
   const p=document.createElement('p');p.textContent=openDays+' · '+hours;
   const note=document.createElement('p');note.className='muted';
