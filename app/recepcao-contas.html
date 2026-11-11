@@ -1,0 +1,35 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acessos da Recepção | L&A Royal SaaS</title>
+<link rel="stylesheet" href="../assets/css/main.css"></head>
+<body class="dashboard"><main class="dash-main" style="max-width:1050px;margin:0 auto">
+<header class="dash-top"><div><div class="eyebrow">Equipe / Barbearia</div><h1>Contas da Recepção</h1>
+<p class="muted" id="company">Carregando empresa...</p></div><a class="btn" href="./aparencia.html">← Minha Loja</a></header>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="dash-grid">
+<section class="dash-card">
+<h2>Criar acesso</h2>
+<p class="muted">Somente o administrador cria o usuário da recepção. O recepcionista entra com <strong>usuário e senha</strong>, sem precisar de e-mail.</p>
+<form id="createForm" class="form-grid" autocomplete="off">
+<label class="field full">Nome de usuário<input id="username" minlength="3" maxlength="20" pattern="[a-zA-Z][a-zA-Z0-9._-]{2,19}" placeholder="recepcao1" required autocomplete="off"><small>3 a 20 caracteres. Letras, números, ponto, hífen ou _.</small></label>
+<label class="field full">Senha inicial<input id="password" type="password" minlength="12" maxlength="72" required autocomplete="new-password"><small>Mínimo de 12 caracteres, incluindo maiúscula, minúscula e número.</small></label>
+<div class="field full"><button id="createButton" type="submit" class="btn primary">Criar usuário da recepção</button></div></form>
+<p class="muted">Compartilhe a senha pessoalmente. Ela não será exibida novamente nem ficará salva no navegador.</p>
+</section>
+<section class="dash-card"><h2>Acesso da recepção</h2>
+<p>O link pertence à sua empresa. O profissional fará login apenas com o usuário criado pelo ADM.</p>
+<a id="receptionLink" class="btn primary" target="_blank" rel="noopener">Abrir recepção</a>
+<p class="muted">A recepção terá uma agenda própria. Ela não terá acesso aos relatórios, pagamentos, configurações ou clientes de outras empresas.</p>
+</section></div>
+<section class="dash-card" style="margin-top:20px">
+<h2>Usuários cadastrados</h2>
+<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Status</th><th>Criado em</th><th>Ações</th></tr></thead><tbody id="rows">
+<tr><td colspan="4">Carregando contas...</td></tr></tbody></table></div>
+</section>
+<dialog id="resetDialog" class="royal-modal"><form id="resetForm" class="modal-card">
+<div class="modal-title"><h2>Redefinir senha da recepção</h2><button type="button" id="resetClose" class="icon-btn">×</button></div>
+<p id="resetAccount"></p>
+<div class="field"><label for="resetPassword">Nova senha</label><input id="resetPassword" type="password" required minlength="12" maxlength="72" autocomplete="new-password"></div>
+<div class="modal-actions"><button type="button" class="btn" id="resetCancel">Cancelar</button><button type="submit" class="btn primary">Salvar nova senha</button></div>
+</form></dialog></main>
+<script type="module" src="../assets/js/reception-admin.js"></script></body></html>

@@ -1,0 +1,42 @@
+name: SaaS Barber Reception Access
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_barber_reception_username_67.sql'
+      - 'supabase/functions/saas-reception-admin/index.ts'
+      - 'app/recepcao-contas.html'
+      - 'store/recepcao.html'
+      - 'assets/js/reception-admin.js'
+      - 'assets/js/reception-portal.js'
+      - 'app/aparencia.html'
+      - 'tests/saas-barber-reception-username.test.mjs'
+      - '.github/workflows/saas-barber-reception.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_barber_reception_username_67.sql'
+      - 'supabase/functions/saas-reception-admin/index.ts'
+      - 'app/recepcao-contas.html'
+      - 'store/recepcao.html'
+      - 'assets/js/reception-admin.js'
+      - 'assets/js/reception-portal.js'
+      - 'tests/saas-barber-reception-username.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reception:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate SQL privilege boundaries, JS and admin actions
+        run: node --test tests/saas-barber-reception-username.test.mjs tests/saas-barber-customer-auth.test.mjs
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.4.5
+      - name: Typecheck reception provisioning Edge Function
+        run: deno check --no-config supabase/functions/saas-reception-admin/index.ts
