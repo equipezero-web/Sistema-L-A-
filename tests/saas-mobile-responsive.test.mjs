@@ -59,8 +59,8 @@ test('Barber public client has five accessible, safe-area bottom tabs and tenant
  assert.match(barber,/padding:[^}]*calc\(112px \+ var\(--barber-safe-bottom\)\)/);
  assert.match(barber,/saas-guest-dialog\{max-width:[^}]*max-height/);
  assert.match(barber,/min-height:44px/);
- assert.match(barber,/id="mobileBackToStore"/);
- assert.match(barberJs,/mobileBackToStore/);
+ assert.doesNotMatch(barber,/id="mobileBackToStore"|id="backToStore"/);
+ assert.doesNotMatch(barberJs,/mobileBackToStore|view=catalogo/);
  assert.match(barberJs,/target\.hidden/);
  assert.match(barberJs,/b\.hidden=!visible/);
 });
