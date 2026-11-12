@@ -81,8 +81,18 @@ function applyDesign(){
  if(hero)get('home').querySelector('.hero').style.backgroundImage=
   'linear-gradient(90deg,#000b,#0006),url("'+hero+'")';
  const heroTitle=design.heroTitle;
- if(typeof heroTitle==='string'&&heroTitle.trim())
-  get('home').querySelector('.hero h1').textContent=heroTitle.slice(0,110);
+ if(typeof heroTitle==='string'&&heroTitle.trim()){
+  const headline=get('home').querySelector('.hero h1');
+  const rawTitle=heroTitle.slice(0,110);
+  const signature='Nossa assinatura.';
+  const index=rawTitle.toLocaleLowerCase('pt-BR').indexOf(signature.toLocaleLowerCase('pt-BR'));
+  headline.replaceChildren();
+  if(index>=0){
+   headline.append(document.createTextNode(rawTitle.slice(0,index)));
+   const gold=document.createElement('span');gold.className='gold-text';gold.textContent=rawTitle.slice(index,index+signature.length);
+   headline.append(gold,document.createTextNode(rawTitle.slice(index+signature.length)));
+  }else headline.textContent=rawTitle;
+ }
  textIn('#home .hero p',design.heroSubtitle);
  textIn('#home .booking h2',design.bookingTitle);
  textIn('#bookBtn',design.bookingButtonLabel);
@@ -133,10 +143,6 @@ function applyBrand(){
  get('tenantInitial').textContent=store.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
  get('topAvatar').textContent=get('tenantInitial').textContent;
  get('hello').textContent='Olá! Bem-vindo à '+store.name;
- const link=get('backToStore');
- link.href='./?slug='+encodeURIComponent(slug)+'&view=catalogo';
- const mobileLink=get('mobileBackToStore');
- if(mobileLink)mobileLink.href=link.href;
  if(store.logo_url){
   try{
    const image=new URL(store.logo_url,location.href);
