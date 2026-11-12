@@ -48,6 +48,17 @@ function textIn(selector,value){
  const node=document.querySelector(selector);
  if(node)node.textContent=String(value);
 }
+
+function sanitizeSignature(d){
+ const color=x=>typeof x==='string'&&/^#[0-9a-f]{6}$/i.test(x);
+ return {mode:d.signatureMode==='gradient'?'gradient':'solid',start:color(d.signatureStart)?d.signatureStart:'#D4AF37',end:color(d.signatureEnd)?d.signatureEnd:'#F4DC8A',angle:Number.isFinite(+d.signatureAngle)?Math.max(0,Math.min(360,+d.signatureAngle)):135};
+}
+function applySignatureStyle(node,g){
+ node.classList.add('tenant-signature');
+ node.style.setProperty('--signature-color',g.start);
+ node.style.setProperty('--signature-gradient','linear-gradient('+g.angle+'deg,'+g.start+','+g.end+')');
+ node.classList.toggle('gradient-signature',g.mode==='gradient');
+}
 function applyDesign(){
  design=store.design_settings&&typeof store.design_settings==='object'?
    store.design_settings:{};
@@ -80,6 +91,9 @@ function applyDesign(){
  const hero=safeAssetUrl(design.heroImageUrl);
  if(hero)get('home').querySelector('.hero').style.backgroundImage=
   'linear-gradient(90deg,#000b,#0006),url("'+hero+'")';
+ const signature=sanitizeSignature(design);
+ const signatureNode=get('home').querySelector('.hero .gold-text');
+ if(signatureNode)applySignatureStyle(signatureNode,signature);
  const heroTitle=design.heroTitle;
  if(typeof heroTitle==='string'&&heroTitle.trim()){
   const headline=get('home').querySelector('.hero h1');
@@ -90,7 +104,7 @@ function applyDesign(){
   if(index>=0){
    headline.append(document.createTextNode(rawTitle.slice(0,index)));
    const gold=document.createElement('span');gold.className='gold-text';gold.textContent=rawTitle.slice(index,index+signature.length);
-   headline.append(gold,document.createTextNode(rawTitle.slice(index+signature.length)));
+   applySignatureStyle(gold,signature);headline.append(gold,document.createTextNode(rawTitle.slice(index+signature.length)));
   }else headline.textContent=rawTitle;
  }
  textIn('#home .hero p',design.heroSubtitle);
@@ -137,6 +151,15 @@ function applyBrand(){
  root.setProperty('--template-text',text);
  root.setProperty('--white',text);
  root.setProperty('--black',bg);
+ const gradients=store.design_settings?.themeGradients||{};
+ for(const key of ['primary','secondary','background','text']){
+  const x=gradients[key];if(!x||x.mode!=='gradient')continue;
+  const valid=c=>typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c);
+  if(!valid(x.start)||!valid(x.end))continue;
+  const angle=Number.isFinite(+x.angle)?Math.max(0,Math.min(360,+x.angle)):135;
+  document.body.classList.add('gradient-'+key);
+  root.setProperty('--gradient-'+key,'linear-gradient('+angle+'deg,'+x.start+','+x.end+')');
+ }
  const allowedFonts=new Set(['Inter','Poppins','Montserrat','Playfair Display','Roboto','Lato']);
  if(allowedFonts.has(store.font_style))document.body.style.fontFamily='"'+store.font_style+'",Arial,sans-serif';
  get('tenantHeroLabel').textContent=store.name.toLocaleUpperCase('pt-BR');
