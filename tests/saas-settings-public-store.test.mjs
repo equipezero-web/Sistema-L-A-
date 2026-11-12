@@ -55,7 +55,7 @@ async function run({role='owner',mode='products',active=false,published=false,er
  return {
   element,calls,updates,nav,
   async save(){const fn=element('settingsForm').listeners.submit;assert.equal(typeof fn,'function');await fn({preventDefault(){}})},
-  async saveTemplate(){const fn=element('templateForm').listeners.submit;assert.equal(typeof fn,'function');await fn({preventDefault(){}})}
+
  };
 }
 test('Navigation points to actual Settings page, not an empty hash',()=>{
@@ -105,18 +105,10 @@ test('Customer-facing page is a public catalog, not a consumer checkout or admin
  assert.match(appearance,/\.\.\/store\/\?slug=/);
 });
 
-test('Owner changes the company model without touching payment, subscriptions or catalog',async()=>{
- const app=await run({role:'owner'});
- assert.equal(app.element('templateForm').hidden,false);
- app.element('templateCode').value='barbershop';
- await app.saveTemplate();
- assert.equal(app.updates.length,1);
- assert.equal(app.updates[0].table,'saas_tenants');
- assert.equal(app.updates[0].payload.template_code,'barbershop');
- assert.equal(app.element('templateForm').hidden,false);
-});
-test('A non-owner cannot save a template even if the form event is forced',async()=>{
- const app=await run({role:'employee'});
- await app.saveTemplate();
+test('Company template is immutable from settings; public link uses canonical resolver',async()=>{
+ const app=await run({role:'owner',active:true,published:true});
+ assert.doesNotMatch(settings,/id="templateCode"|id="templateForm"|saveTemplate|\.update\(\{template_code:/);
+ assert.doesNotMatch(settings,/Modelo da empresa/);
+ assert.equal(app.element('storeLink').href,'https://equipezero-web.github.io/Sistema-L-A-/store/?slug=minha-loja-teste');
  assert.equal(app.updates.length,0);
 });

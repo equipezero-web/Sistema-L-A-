@@ -141,7 +141,7 @@ function fill(d){
  preview();
 }
 function collect(){
- const d={...design,backgroundImageUrl:design.backgroundImageUrl||'',heroImageUrl:design.heroImageUrl||''};
+ const d={backgroundImageUrl:design.backgroundImageUrl||'',heroImageUrl:design.heroImageUrl||''};
  for(const name of fields)d[name]=fieldValue(name);
  d.heroTitle=String(d.heroTitle).slice(0,110);
  d.heroSubtitle=String(d.heroSubtitle).slice(0,350);
@@ -203,7 +203,13 @@ get('designerForm').addEventListener('submit',async event=>{
  const button=get('designerForm').querySelector('button[type="submit"]');
  button.disabled=true;
  try{
-  const next=collect();
+  const {data:latest,error:readError}=await supabase.from('saas_store_themes')
+   .select('design_settings').eq('tenant_id',ctx.tenant.id).single();
+  if(readError)throw readError;
+  // Preserve global palettes/gradients and future editor fields saved elsewhere.
+  const current=latest?.design_settings&&typeof latest.design_settings==='object'
+   && !Array.isArray(latest.design_settings)?latest.design_settings:{};
+  const next={...current,...collect()};
   const {error}=await supabase.from('saas_store_themes')
    .update({design_settings:next}).eq('tenant_id',ctx.tenant.id);
   if(error)throw error;
