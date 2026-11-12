@@ -349,6 +349,16 @@ html,body {max-width:100%;overflow-x:clip;}
  #app .service-list {grid-template-columns:minmax(0,1fr);}
 }
 
+
+/* Paletas da empresa e destaque independente da assinatura. */
+#app .hero h1 .tenant-signature {color:var(--signature-color,#D4AF37)!important}
+#app .hero h1 .tenant-signature.gradient-signature {background:var(--signature-gradient)!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}
+body.gradient-background {background:var(--gradient-background)!important}
+body.gradient-secondary #app .sidebar,body.gradient-secondary #app .topbar {background:var(--gradient-secondary)!important}
+body.gradient-primary #app .primary,body.gradient-primary #app .nav button.active {background:var(--gradient-primary)!important}
+body.gradient-text #app :is(h1,h2,h3,p,small,label,.brand,.muted,.nav button,.pill,.section-title,.price) {background-image:var(--gradient-text);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+body.gradient-text #app .tenant-signature {-webkit-text-fill-color:initial}
+body.gradient-text #app .tenant-signature.gradient-signature {-webkit-text-fill-color:transparent}
 </style>
 </head>
 <body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home" aria-label="Início" title="Início">⌂ <span>Início</span></button><button data-sec="appointments" aria-label="Agendamentos" title="Agendamentos">◷ <span>Agendamentos</span></button><button data-sec="club" aria-label="Barbearia" title="Barbearia">◇ <span>Barbearia</span></button><button data-sec="plans" aria-label="Planos" title="Planos">▣ <span>Planos</span></button><button data-sec="profile" aria-label="Perfil" title="Perfil">○ <span>Perfil</span></button></nav></aside>
