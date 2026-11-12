@@ -125,8 +125,8 @@ async function loadStore() {
       return;
     }
 
-    // Select the company's original full client experience, not the generic catalog.
-    // Other templates remain on the existing safe catalog until their backend adapters are ready.
+    // Canonical public entry point; a tenant's template is chosen at creation and
+    // cannot be changed from the settings panel. Preserve existing tenant data.
     if (store.template_code === 'barbershop') {
       location.replace(new URL('./barbearia.html?slug=' + encodeURIComponent(slug), location.href).href);
       return;

@@ -27,30 +27,14 @@
 </form>
 </section>
 <section class="card" style="margin-top:18px">
-<h2>Modelo da empresa</h2>
-<p class="muted">Selecione a experiência usada pela sua empresa. O modelo altera a apresentação pública; seus clientes, produtos, funcionários e históricos continuam separados e não são excluídos.</p>
-<form id="templateForm" class="form-grid" hidden>
-<label class="field full">Sistema selecionado
-<select id="templateCode" required>
-<option value="barbershop">Barbearia — atendimento e serviços</option>
-<option value="virtual_store">Loja Virtual — produtos e catálogo</option>
-<option value="instagram_orders">Pedidos Instagram — pacotes</option>
-<option value="business_communication">Comunicação Empresarial — CRM e equipe privada</option>
-<option value="generic">Catálogo geral — produtos e serviços</option>
-</select></label>
-<div class="field full"><button type="submit" id="saveTemplate" class="btn primary">Salvar modelo</button></div>
-</form>
-<p class="muted">O modelo de Comunicação Empresarial não expõe mensagens internas. Agendamentos e checkout somente serão habilitados após a integração dos respectivos módulos.</p>
-</section>
-<section class="card" style="margin-top:18px">
 <h2>Loja para os clientes</h2>
 <p id="storeState" class="muted">Verificando publicação...</p>
-<p id="storeLinkBox" hidden><a id="storeLink" class="btn primary" target="_blank" rel="noopener noreferrer">Abrir loja pública</a></p>
+<p id="storeLinkBox" hidden><a id="storeLink" class="btn primary" target="_blank" rel="noopener noreferrer">Abrir site da empresa</a></p>
 <div class="nav-actions">
 <a class="btn" href="./aparencia.html">Personalizar minha loja</a>
 <a class="btn" href="./plano.html">Plano e assinatura</a>
 </div>
-<p class="muted">Os clientes acessam a vitrine pública pelo link da sua loja; não entram neste painel administrativo. A vitrine atual exibe itens e preços, mas ainda não oferece checkout de compras pelo cliente.</p>
+<p class="muted">Os clientes acessam apenas a experiência pública correspondente ao tipo de empresa cadastrado. As funcionalidades disponíveis dependem da integração do modelo e de sua publicação.</p>
 </section>
 </main>
 <script type="module">
@@ -59,7 +43,6 @@ import {getBusinessContext} from '../assets/js/business.js';
 const fields=['products_enabled','services_enabled','inventory_enabled','appointments_enabled','finance_enabled','ai_enabled'];
 const get=id=>document.getElementById(id);
 const status=get('status'),form=get('settingsForm'),save=get('saveSettings');
-const templateForm=get('templateForm'),templateCode=get('templateCode'),saveTemplate=get('saveTemplate');
 
 let context=null,businessMode=null;
 function message(text,error=false){status.textContent=text;status.className='status show '+(error?'error':'ok')}
@@ -89,8 +72,6 @@ async function boot(){
   for(const id of fields)get(id).checked=settings[id]===true;
   enforceMode();
   form.hidden=false;
-  templateCode.value=tenant?.template_code||'generic';
-  templateForm.hidden=false;
 
   if(subError||themeError||slugError){
     get('storeState').textContent='Não foi possível confirmar a publicação da loja. Consulte Minha Loja ou Plano e assinatura.';
@@ -98,7 +79,7 @@ async function boot(){
     const url=new URL('../store/?slug='+encodeURIComponent(tenant.slug),import.meta.url);
     get('storeLink').href=url.href;
     get('storeLinkBox').hidden=false;
-    get('storeState').textContent='Loja publicada. Compartilhe o link da vitrine com seus clientes.';
+    get('storeState').textContent='Site da empresa publicado. Compartilhe este link com seus clientes.';
   }else if(subscription?.active===true){
     get('storeState').textContent=subscription?.access_type==='trial'
       ?'Acesso de homologação temporário ativo. Vá em Minha Loja para publicar sua vitrine de teste.'
@@ -124,22 +105,6 @@ form.addEventListener('submit',async event=>{
   message('Configurações salvas. Volte ao painel para visualizar os módulos atualizados.');
  }catch(e){message(e.message||'Não foi possível salvar as configurações.',true)}
  finally{save.disabled=false}
-});
-templateForm.addEventListener('submit',async event=>{
- event.preventDefault();
- if(!context||context.membership.role!=='owner'){
-   message('Somente o proprietário pode selecionar o modelo.',true);return;
- }
- saveTemplate.disabled=true;
- try{
-   const {data,error}=await supabase.from('saas_tenants')
-     .update({template_code:templateCode.value})
-     .eq('id',context.tenant.id).select('id,template_code').single();
-   if(error)throw error;
-   if(!data)throw new Error('Não foi possível confirmar a alteração.');
-   message('Modelo atualizado. A vitrine pública utiliza o novo formato sem excluir seus cadastros.');
- }catch(error){message(error.message||'Não foi possível salvar o modelo.',true)}
- finally{saveTemplate.disabled=false}
 });
 void boot();
 </script>
