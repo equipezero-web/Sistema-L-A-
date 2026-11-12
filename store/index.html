@@ -21,6 +21,11 @@
  .template-pill{max-width:100%;white-space:normal}
 }
 
+
+body.gradient-background{background:var(--gradient-background)!important}
+body.gradient-primary .btn.primary{background:var(--gradient-primary)!important}
+body.gradient-secondary .store-card{background:var(--gradient-secondary)!important}
+body.gradient-text :is(h1,h2,h3,p,small,.eyebrow,.pill,strong,.store-intro,.store-detail){background-image:var(--gradient-text);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 </style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><p id="storeStatus"></p><p><a id="bookingLink" class="btn primary" hidden>Solicitar horário online</a></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
 window.__laPublicStoreSettled = false;
 window.setTimeout(function () {
@@ -109,7 +114,7 @@ async function loadStore() {
 
     const { data: store, error: storeError } = await supabase
       .from('saas_public_stores')
-      .select('tenant_id,name,business_type,template_code,logo_url,primary_color,background_color,text_color,font_style')
+      .select('tenant_id,name,business_type,template_code,logo_url,primary_color,background_color,text_color,font_style,design_settings')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -129,6 +134,14 @@ async function loadStore() {
 
     document.title = store.name + ' | L&A Royal Store';
     document.body.style.background = store.background_color || '#FFFFFF';
+    const gradients=store.design_settings?.themeGradients||{};
+    for(const key of ['primary','secondary','background','text']){
+     const x=gradients[key];if(x?.mode!=='gradient')continue;
+     if(!/^#[a-f0-9]{6}$/i.test(x.start||'')||!/^#[a-f0-9]{6}$/i.test(x.end||''))continue;
+     const angle=Number.isFinite(+x.angle)?Math.max(0,Math.min(360,+x.angle)):135;
+     document.body.classList.add('gradient-'+key);
+     document.documentElement.style.setProperty('--gradient-'+key,'linear-gradient('+angle+'deg,'+x.start+','+x.end+')');
+    }
     document.body.style.color = store.text_color || '#111111';
     document.body.style.fontFamily = (store.font_style || 'Inter') + ',Arial,sans-serif';
     document.documentElement.style.setProperty('--gold', store.primary_color || '#C9A227');

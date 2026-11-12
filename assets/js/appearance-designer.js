@@ -2,11 +2,11 @@ import {supabase} from './supabase.js';
 import {getBusinessContext,uploadTenantAsset} from './business.js';
 
 const get=id=>document.getElementById(id);
-const fields=['fontSize','sectionGap','cardRadius','contentWidth','buttonColor','mutedColor',
+const fields=['signatureMode','signatureStart','signatureEnd','signatureAngle','fontSize','sectionGap','cardRadius','contentWidth','buttonColor','mutedColor',
  'navigationBackground','cardBackground','heroTitle','heroSubtitle','bookingTitle',
  'bookingButtonLabel','clubTitle','clubDescription','plansTitle','plansDescription',
  'profileTitle','profileDescription','appointmentsTitle','footerText','showClub','showPlans','showProfile'];
-const defaults={
+const defaults={signatureMode:'solid',signatureStart:'#D4AF37',signatureEnd:'#F4DC8A',signatureAngle:135,
  fontSize:15,sectionGap:28,cardRadius:18,contentWidth:1280,
  buttonColor:'#D4AF37',mutedColor:'#AAA99F',navigationBackground:'#07182A',cardBackground:'#0A1018',
  heroTitle:'Seu estilo. Nossa assinatura.',
@@ -85,7 +85,28 @@ function readGallery(){
   caption:box.querySelector('[data-gallery-caption]').value.trim().slice(0,100)
  })).filter(x=>isUrl(x.url)).slice(0,12);
 }
-function preview(){
+const THEME_PALETTES={"gold":["#D4AF37","#F4DC8A"],"navy":["#061441","#143B8A"],"sea":["#087E9A","#54D5C5"],"ocean":["#003C6C","#049DCD"],"silver":["#8A96A6","#F0F3F7"],"sky":["#327EE8","#A7E6FF"]};
+const GRADIENT_KEYS=['primary','secondary','background','text'];
+const validColor=x=>typeof x==='string'&&/^#[0-9a-f]{6}$/i.test(x);
+function sanitizeGradient(x,base='#D4AF37'){const a=x&&typeof x==='object'?x:{};return {mode:a.mode==='gradient'?'gradient':'solid',start:validColor(a.start)?a.start:base,end:validColor(a.end)?a.end:base,angle:Number.isFinite(+a.angle)?Math.max(0,Math.min(360,+a.angle)):135};}
+function gradientCss(g){return g.mode==='gradient'?'linear-gradient('+g.angle+'deg,'+g.start+','+g.end+')':g.start;}
+
+function signaturePreview(){
+ const mode=get('signatureMode').value;
+ const g=sanitizeGradient({mode,start:get('signatureStart').value,end:get('signatureEnd').value,angle:+get('signatureAngle').value});
+ get('signatureSample').style.background=gradientCss(g);
+ get('signatureAngleOut').textContent=g.angle+'°';
+ const title=get('designerPreviewTitle');title.replaceChildren();
+ const text=get('heroTitle').value||'Sua barbearia';const sig='Nossa assinatura.';const i=text.toLocaleLowerCase('pt-BR').indexOf(sig.toLocaleLowerCase('pt-BR'));
+ if(i<0){title.textContent=text;return}
+ title.append(document.createTextNode(text.slice(0,i)));
+ const span=document.createElement('span');span.textContent=text.slice(i,i+sig.length);
+ if(g.mode==='gradient'){span.style.background=gradientCss(g);span.style.backgroundClip='text';span.style.webkitBackgroundClip='text';span.style.webkitTextFillColor='transparent'}
+ else span.style.color=g.start;
+ title.append(span,document.createTextNode(text.slice(i+sig.length)));
+}
+get('signaturePreset').addEventListener('change',()=>{const pair=THEME_PALETTES[get('signaturePreset').value];if(!pair)return;get('signatureStart').value=pair[0];get('signatureEnd').value=pair[1];preview()});
+function preview(){signaturePreview();
  for(const name of fields.filter(x=>x.endsWith('Size')||['sectionGap','cardRadius','contentWidth'].includes(x))){
   const output=get(name+'Out');if(output)output.textContent=get(name).value+'px';
  }
@@ -96,8 +117,8 @@ function preview(){
  designEl.style.borderRadius=get('cardRadius').value+'px';
  designEl.style.padding=Math.max(12,Number(get('sectionGap').value))+'px';
  designEl.style.fontSize=get('fontSize').value+'px';
- get('designerPreviewTitle').textContent=get('heroTitle').value||'Sua barbearia';
- get('designerPreviewTitle').style.color=get('buttonColor').value;
+ 
+ get('designerPreviewTitle').style.color=get('mutedColor').value;
  get('designerPreviewSubtitle').textContent=get('heroSubtitle').value||'';
  get('designerPreviewBadge').textContent=['Serviços',get('showClub').checked?'Barbearia':'',
    get('showPlans').checked?'Planos':'',get('showProfile').checked?'Perfil':''].filter(Boolean).join(' · ');
@@ -113,14 +134,14 @@ function fill(d){
   if(el.type==='checkbox')el.checked=design[name]!==false;
   else el.value=String(design[name]??defaults[name]);
  }
- get('galleryEditor').replaceChildren();
+ get('signaturePreset').value='custom';get('galleryEditor').replaceChildren();
  (Array.isArray(design.gallery)?design.gallery:[]).slice(0,12).forEach(galleryEditor);
  get('plansEditor').replaceChildren();
  (Array.isArray(design.plans)?design.plans:[]).slice(0,8).forEach(planEditor);
  preview();
 }
 function collect(){
- const d={backgroundImageUrl:design.backgroundImageUrl||'',heroImageUrl:design.heroImageUrl||''};
+ const d={...design,backgroundImageUrl:design.backgroundImageUrl||'',heroImageUrl:design.heroImageUrl||''};
  for(const name of fields)d[name]=fieldValue(name);
  d.heroTitle=String(d.heroTitle).slice(0,110);
  d.heroSubtitle=String(d.heroSubtitle).slice(0,350);
