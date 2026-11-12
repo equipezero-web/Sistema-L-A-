@@ -29,7 +29,8 @@ test('Original barber customer sections and markup are preserved in dedicated te
 test('Published barbershop switches to the original complete experience while other models are preserved',()=>{
  assert.match(store,/store\.template_code === 'barbershop'/);
  assert.match(store,/\.\/barbearia\.html\?slug=/);
- assert.match(store,/get\('view'\) !== 'catalogo'/);
+ assert.doesNotMatch(store,/get\('view'\) !== 'catalogo'/);
+ assert.doesNotMatch(html,/id="backToStore"|id="mobileBackToStore"/);
  assert.match(store,/saas_public_stores/);
  assert.match(store,/saas_public_catalog_items/);
 });
