@@ -1,0 +1,38 @@
+name: SaaS UI and Tenant Storefront Consistency
+on:
+  pull_request:
+    paths:
+      - 'app/aparencia.html'
+      - 'app/configuracoes.html'
+      - 'assets/js/appearance.js'
+      - 'assets/js/appearance-designer.js'
+      - 'assets/js/barber-original-template.js'
+      - 'store/index.html'
+      - 'store/barbearia.html'
+      - 'tests/saas-ui-consistency.test.mjs'
+      - '.github/workflows/saas-ui-consistency.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/aparencia.html'
+      - 'app/configuracoes.html'
+      - 'assets/js/appearance.js'
+      - 'assets/js/appearance-designer.js'
+      - 'assets/js/barber-original-template.js'
+      - 'store/index.html'
+      - 'store/barbearia.html'
+      - 'tests/saas-ui-consistency.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ui-consistency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate tenant storefront routing, editor persistence and model selection
+        run: node --test tests/saas-ui-consistency.test.mjs tests/saas-settings-public-store.test.mjs tests/saas-business-templates.test.mjs tests/saas-original-barber-template.test.mjs tests/saas-barber-designer.test.mjs tests/saas-public-store-loading.test.mjs
