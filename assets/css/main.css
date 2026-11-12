@@ -110,3 +110,41 @@ input[type="file"]{max-width:100%;font-size:.85rem}
 @media (prefers-reduced-motion:reduce){
  .dashboard .sidebar,.btn,.mini{transition:none!important}
 }
+
+
+/* Painel empresarial: rolagem funcional sem trilhos visíveis.
+   Mantém wheel, touchpad, toque, teclado e áreas independentes de rolagem. */
+body.dashboard,
+body.dashboard .sidebar,
+body.dashboard .dash-main,
+body.dashboard .table-wrap,
+body.dashboard .royal-modal,
+body.dashboard .modal-card,
+body.dashboard .dash-card,
+body.dashboard .side-nav,
+body.dashboard .sidebar nav,
+body.dashboard [class*="scroll"],
+body.dashboard [class*="overflow"] {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Edge legado */
+}
+body.dashboard::-webkit-scrollbar,
+body.dashboard .sidebar::-webkit-scrollbar,
+body.dashboard .dash-main::-webkit-scrollbar,
+body.dashboard .table-wrap::-webkit-scrollbar,
+body.dashboard .royal-modal::-webkit-scrollbar,
+body.dashboard .modal-card::-webkit-scrollbar,
+body.dashboard .dash-card::-webkit-scrollbar,
+body.dashboard .side-nav::-webkit-scrollbar,
+body.dashboard .sidebar nav::-webkit-scrollbar,
+body.dashboard [class*="scroll"]::-webkit-scrollbar,
+body.dashboard [class*="overflow"]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+html:has(body.dashboard) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html:has(body.dashboard)::-webkit-scrollbar { display:none;width:0;height:0; }
