@@ -122,8 +122,7 @@ async function loadStore() {
 
     // Select the company's original full client experience, not the generic catalog.
     // Other templates remain on the existing safe catalog until their backend adapters are ready.
-    if (store.template_code === 'barbershop'
-       && new URLSearchParams(location.search).get('view') !== 'catalogo') {
+    if (store.template_code === 'barbershop') {
       location.replace(new URL('./barbearia.html?slug=' + encodeURIComponent(slug), location.href).href);
       return;
     }
