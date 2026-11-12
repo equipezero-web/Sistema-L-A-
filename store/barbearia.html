@@ -311,10 +311,48 @@ body{min-width:0;max-width:100%;overflow-x:clip}
  #app .section,#app .hero,#app button{animation:none!important;transition:none!important}
 }
 
+
+/* Identidade de cada empresa: a cor de texto configurada vale em toda a experiência. */
+#app, #app .brand, #app .pill, #app .nav button, #app .nav button.active,
+#app .muted, #app .choice, #app .choice.selected, #app .slot,
+#app .step, #app .field label, #app .field input, #app .field select,
+#app .plan-grid, #app .benefits, #app .gallery figcaption,
+#app .topbar, #app button, #app .card, #app .hero {
+  color:var(--template-text)!important;
+}
+#app .hero h1 .gold-text {color:#D4AF37!important;}
+#app .main {width:calc(100% - 260px);max-width:none!important;min-width:0;margin-left:260px;}
+#app .sidebar {width:260px;}
+#app .hero, #app .booking {max-width:100%;}
+#app .service-list {grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));}
+#app .side-brand {min-width:0;}
+#app .side-brand .brand {overflow-wrap:anywhere;letter-spacing:.06em;}
+#app .topbar {gap:12px;min-width:0;}
+#app .topbar>div:first-child {min-width:0;overflow-wrap:anywhere;}
+html,body {max-width:100%;overflow-x:clip;}
+@media (min-width:561px) and (max-width:1100px) {
+ #app .sidebar {width:210px;padding:16px 12px;}
+ #app .main {margin-left:210px;width:calc(100% - 210px);padding:clamp(14px,2vw,24px)!important;}
+ #app .hero {padding:clamp(18px,3vw,30px);}
+ #app .hero h1 {font-size:clamp(29px,4vw,46px);}
+}
+@media (max-width:700px) and (min-width:561px) {
+ #app .sidebar {width:76px;}
+ #app .main {margin-left:76px;width:calc(100% - 76px);}
+ #app .nav span,#app .side-brand .brand,#app .side-brand small {display:none;}
+ #app .nav button {justify-content:center;}
+}
+@media (max-width:560px) {
+ #app .sidebar {width:100%;height:auto;min-height:70px;}
+ #app .main {margin-left:0;width:100%;max-width:100%;padding:16px 14px calc(100px + env(safe-area-inset-bottom,0px))!important;}
+ #app .hero h1 {font-size:clamp(27px,7vw,40px);}
+ #app .service-list {grid-template-columns:minmax(0,1fr);}
+}
+
 </style>
 </head>
-<body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home" aria-label="Início" title="Início">⌂ <span>Início</span></button><button data-sec="appointments" aria-label="Agendamentos" title="Agendamentos">◷ <span>Agendamentos</span></button><button data-sec="club" aria-label="Barbearia" title="Barbearia">◇ <span>Barbearia</span></button><button data-sec="plans" aria-label="Planos" title="Planos">▣ <span>Planos</span></button><button data-sec="profile" aria-label="Perfil" title="Perfil">○ <span>Perfil</span></button></nav><a class="ghost logout" id="backToStore" href="./">Voltar à loja</a></aside>
-<main class="main"><header class="topbar"><div><b id="hello">Olá</b><div class="muted">Seu próximo atendimento começa aqui.</div></div><a id="mobileBackToStore" href="./" aria-label="Abrir catálogo da barbearia">Catálogo</a><div class="avatar" id="topAvatar">AP</div></header>
+<body><div id="app" class="barber-public"><aside class="sidebar"><div class="side-brand"><img src="" data-tenant-logo hidden/><div><div class="brand" id="tenantInitial">LA</div><small class="muted">BARBEARIA</small></div></div><nav class="nav"><button class="active" data-sec="home" aria-label="Início" title="Início">⌂ <span>Início</span></button><button data-sec="appointments" aria-label="Agendamentos" title="Agendamentos">◷ <span>Agendamentos</span></button><button data-sec="club" aria-label="Barbearia" title="Barbearia">◇ <span>Barbearia</span></button><button data-sec="plans" aria-label="Planos" title="Planos">▣ <span>Planos</span></button><button data-sec="profile" aria-label="Perfil" title="Perfil">○ <span>Perfil</span></button></nav></aside>
+<main class="main"><header class="topbar"><div><b id="hello">Olá</b><div class="muted">Seu próximo atendimento começa aqui.</div></div><div class="avatar" id="topAvatar">AP</div></header>
 <section class="section active" id="home">
 <div class="hero"><span class="pill" id="tenantHeroLabel">BARBEARIA</span><h1>Seu estilo.<br/><span class="gold-text">Nossa assinatura.</span></h1>
 <p class="muted">Atendimento personalizado em um único espaço. Selecione o serviço, a data e um horário disponível.</p>
