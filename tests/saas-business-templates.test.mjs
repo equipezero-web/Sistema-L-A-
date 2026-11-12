@@ -9,11 +9,11 @@ const settings=readFileSync('app/configuracoes.html','utf8');
 const store=readFileSync('store/index.html','utf8');
 const supported=['generic','barbershop','virtual_store','instagram_orders','business_communication'];
 
-test('All five models have matching database checks and actual onboarding choices',()=>{
+test('All five models are selected during onboarding, never switched from tenant settings',()=>{
  for(const key of supported){
    assert.match(sql,new RegExp("'"+key+"'"),"missing DB model "+key);
    assert.match(onboard,new RegExp('value="'+key+'"'),"missing onboarding choice "+key);
-   assert.match(settings,new RegExp('value="'+key+'"'),"missing settings choice "+key);
+   assert.doesNotMatch(settings,new RegExp('value="'+key+'"'),"model must not be switchable in settings: "+key);
  }
  assert.match(sql,/alter table public\.saas_tenants/);
  assert.match(sql,/alter table public\.saas_public_stores/);
