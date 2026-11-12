@@ -12,6 +12,9 @@ const solidField={primary:'primary',secondary:'secondary',background:'background
 let gradientState={};
 function readGrad(){const k=$('#gradientTarget').value,g=gradientState[k];g.mode=$('#gradientMode').value;g.start=$('#gradientStart').value;g.end=$('#gradientEnd').value;g.angle=+$('#gradientAngle').value;if(g.mode==='solid')$('#'+solidField[k]).value=g.start;}
 function gradientControls(){const g=gradientState[$('#gradientTarget').value];if(!g)return;for(const x of ['Mode','Start','End','Angle'])$('#gradient'+x).value=g[x.toLowerCase()];$('#gradientAngleOut').textContent=g.angle+'°';$('#gradientPreset').value='custom';$('#gradientSample').style.background=gradientCss(g);}
+for(const [key,id] of Object.entries(solidField)){
+ $('#'+id).addEventListener('input',()=>{const g=gradientState[key];if(g&&g.mode==='solid'){g.start=$('#'+id).value;g.end=g.start;if($('#gradientTarget').value===key)gradientControls();}preview();});
+}
 $('#gradientTarget').addEventListener('change',()=>{gradientControls();preview()});
 for(const id of ['Mode','Start','End','Angle'])$('#gradient'+id).addEventListener('input',()=>{readGrad();gradientControlsSample();preview()});
 function gradientControlsSample(){const g=gradientState[$('#gradientTarget').value];$('#gradientAngleOut').textContent=g.angle+'°';$('#gradientSample').style.background=gradientCss(g);}
