@@ -26,7 +26,7 @@ body.gradient-background{background:var(--gradient-background)!important}
 body.gradient-primary .btn.primary{background:var(--gradient-primary)!important}
 body.gradient-secondary .store-card{background:var(--gradient-secondary)!important}
 body.gradient-text :is(h1,h2,h3,p,small,.eyebrow,.pill,strong,.store-intro,.store-detail){background-image:var(--gradient-text);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow">L&A Royal Store</div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><p id="storeStatus"></p><p><a id="bookingLink" class="btn primary" hidden>Solicitar horário online</a></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
+</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow" id="storeEyebrow"></div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><p id="storeStatus"></p><p><a id="bookingLink" class="btn primary" hidden>Solicitar horário online</a></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
 window.__laPublicStoreSettled = false;
 window.setTimeout(function () {
   if (window.__laPublicStoreSettled) return;
@@ -132,7 +132,8 @@ async function loadStore() {
       return;
     }
 
-    document.title = store.name + ' | L&A Royal Store';
+    document.title = store.name + ' | ' + (store.business_type || 'Loja');
+    document.getElementById('storeEyebrow').textContent = store.business_type || 'Sua empresa';
     document.body.style.background = store.background_color || '#FFFFFF';
     const gradients=store.design_settings?.themeGradients||{};
     for(const key of ['primary','secondary','background','text']){
