@@ -1,0 +1,27 @@
+name: SaaS Customer FK Embeds
+on:
+  pull_request:
+    paths:
+      - 'assets/js/vendas.js'
+      - 'assets/js/agenda.js'
+      - 'tests/saas-customer-embeds.test.mjs'
+      - '.github/workflows/saas-customer-embeds.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/vendas.js'
+      - 'assets/js/agenda.js'
+      - 'tests/saas-customer-embeds.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  customer-embeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-customer-embeds.test.mjs
