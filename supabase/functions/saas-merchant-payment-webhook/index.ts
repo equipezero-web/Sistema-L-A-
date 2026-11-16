@@ -78,7 +78,22 @@ Deno.serve(async(request:Request)=>{
   const payment=await upstream.json();
   const intentId=String(payment.external_reference||"");
   const paymentStatus=String(payment.status||"");
-  const preference=String(payment.preference_id||payment.metadata?.saas_preference_id||"");
+  // Checkout Pro may expose its preference through the merchant order rather than
+  // the payment payload. Confirm both belong to the same verified payment.
+  let preference=String(payment.preference_id||"");
+  const merchantOrderId=String(payment.order?.id||"");
+  if(!preference&&idPattern.test(merchantOrderId)){
+   const orderResponse=await fetch("https://api.mercadopago.com/merchant_orders/"+merchantOrderId,{
+    headers:{"Authorization":"Bearer "+seller.access_token},signal:AbortSignal.timeout(12000)
+   });
+   if(!orderResponse.ok)return json({error:"Não foi possível verificar o pedido comercial."},502);
+   const order=await orderResponse.json();
+   const includesPayment=Array.isArray(order.payments)&&order.payments.some((entry:{id?:unknown})=>String(entry.id||"")===paymentId);
+   if(String(order.id||"")!==merchantOrderId||!includesPayment||
+     String(order.external_reference||"")!==intentId)
+     return json({error:"Pedido comercial não corresponde ao pagamento."},422);
+   preference=String(order.preference_id||"");
+  }
   const amount=Number(payment.transaction_amount);
   const collector=String(payment.collector_id||payment.collector?.id||"");
   if(String(payment.id)!==paymentId||collector!==accountId||!uuid.test(intentId)||
