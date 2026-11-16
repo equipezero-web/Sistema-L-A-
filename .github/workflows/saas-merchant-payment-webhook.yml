@@ -1,0 +1,29 @@
+name: Merchant Payment Webhook Isolation
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_merchant_payment_webhook_20261116.sql'
+      - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
+      - 'tests/saas-merchant-payment-webhook.test.mjs'
+      - 'scripts/verify-merchant-payment-webhook-http.mjs'
+      - '.github/workflows/saas-merchant-payment-webhook.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_merchant_payment_webhook_20261116.sql'
+      - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
+      - 'tests/saas-merchant-payment-webhook.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  merchant-webhook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-merchant-payment-webhook.test.mjs tests/saas-online-order-intent.test.mjs
+      - run: node scripts/verify-merchant-payment-webhook-http.mjs
