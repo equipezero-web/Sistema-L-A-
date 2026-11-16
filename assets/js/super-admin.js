@@ -99,6 +99,42 @@ async function loadAudit(){
 }
 $('#auditPrevious').onclick=()=>{auditOffset=Math.max(0,auditOffset-AUDIT_PAGE_SIZE);void loadAudit()};
 $('#auditNext').onclick=()=>{auditOffset+=AUDIT_PAGE_SIZE;void loadAudit()};
+
+async function loadPlatformSupport(){
+ const host=$('#supportQueue'),status=$('#supportStatus');
+ host.replaceChildren();status.textContent='Consultando chamados...';
+ const {data,error}=await supabase.from('saas_support_tickets')
+  .select('id,tenant_id,title,description,category,status,created_at')
+  .order('created_at',{ascending:false}).limit(100);
+ if(error){status.textContent='Não foi possível carregar os chamados: '+error.message;return}
+ status.textContent=data?.length?'':'Nenhum chamado aberto na plataforma.';
+ const tenantsById=new Map(tenantsData.map(t=>[t.id,t.name]));
+ for(const ticket of data||[]){
+  const article=document.createElement('article');article.className='royal-tenant';
+  const title=document.createElement('h3');title.textContent=ticket.title;
+  const description=document.createElement('p');description.textContent=ticket.description;
+  const details=document.createElement('p');details.className='muted';
+  details.textContent=(tenantsById.get(ticket.tenant_id)||'Empresa')+' · '+ticket.category+' · '+new Date(ticket.created_at).toLocaleString('pt-BR',{timeZone:'America/Recife'});
+  const label=document.createElement('label');label.textContent='Situação ';
+  const choice=document.createElement('select');
+  choice.setAttribute('aria-label','Status do chamado '+ticket.title);
+  for(const [value,caption] of [['open','Aberto'],['in_progress','Em análise'],['resolved','Resolvido'],['closed','Encerrado']]){
+   const option=document.createElement('option');option.value=value;option.textContent=caption;choice.append(option);
+  }
+  choice.value=ticket.status;
+  choice.addEventListener('change',async()=>{
+   const previous=ticket.status;choice.disabled=true;
+   const {error:e}=await supabase.from('saas_support_tickets')
+    .update({status:choice.value,updated_at:new Date().toISOString()}).eq('id',ticket.id).eq('tenant_id',ticket.tenant_id);
+   if(e){choice.value=previous;status.textContent='Não foi possível atualizar o chamado: '+e.message}
+   else {ticket.status=choice.value;status.textContent='Situação do chamado atualizada.'}
+   choice.disabled=false;
+  });
+  label.append(choice);article.append(title,details,description,label);host.append(article);
+ }
+}
+$('#supportReload').addEventListener('click',()=>void loadPlatformSupport());
+
 async function boot() {
   const user = await getVerifiedUser();
   if (!user) { location.href = '../auth/login.html'; return; }
@@ -115,7 +151,7 @@ async function boot() {
   if (subError) throw subError;
   $('#adminName').textContent = profile.full_name || user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
-  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();document.body.classList.add('super-admin-ready');
+  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await Promise.all([loadAudit(),loadPlatformSupport()]);document.body.classList.add('super-admin-ready');
 }
 
 $('#logout')?.addEventListener('click', async () => { await signOut(); location.href = '../auth/login.html'; });
