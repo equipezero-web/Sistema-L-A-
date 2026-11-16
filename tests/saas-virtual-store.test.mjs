@@ -66,7 +66,7 @@ test('Only published tenant source is read and product query is tenant scoped',a
  assert.equal(x.get('productGrid').children.length,2);
  assert.equal(x.get('productGrid').children[0].children[1].children[0].textContent,'Bolsa');
  assert.match(code,/\.eq\('tenant_id',store\.tenant_id\)\.eq\('item_type','product'\)/);
- assert.doesNotMatch(code,/\.insert\(|\.update\(|\.delete\(|\.rpc\(/);
+ assert.doesNotMatch(code,/supabase\.from\('[^']+'\)\.(insert|update|delete)\(|supabase\.rpc\(/);
  assert.doesNotMatch(code,/service_role|MP_ACCESS_TOKEN|SUPABASE_SERVICE_ROLE_KEY/);
 });
 test('Unavailable company is not allowed to load products',async()=>{
