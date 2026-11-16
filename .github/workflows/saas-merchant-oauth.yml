@@ -5,6 +5,8 @@ on:
       - 'app/pagamentos-loja.html'
       - 'supabase/functions/saas-merchant-oauth/index.ts'
       - 'supabase/sql/saas_merchant_oauth_20261116.sql'
+      - 'supabase/sql/saas_merchant_oauth_disconnect_20261116.sql'
+      - 'tests/saas-merchant-oauth-disconnect.test.mjs'
       - 'tests/saas-merchant-oauth.test.mjs'
       - 'scripts/verify-saas-merchant-oauth-http.mjs'
       - '.github/workflows/saas-merchant-oauth.yml'
@@ -27,5 +29,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/saas-merchant-oauth.test.mjs tests/saas-merchant-payment-readiness.test.mjs
+      - run: node --test tests/saas-merchant-oauth.test.mjs tests/saas-merchant-oauth-disconnect.test.mjs tests/saas-merchant-payment-readiness.test.mjs
       - run: node scripts/verify-saas-merchant-oauth-http.mjs
