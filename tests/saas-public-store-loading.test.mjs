@@ -141,11 +141,13 @@ test('Published barbershop opens the complete original client experience instead
  assert.deepEqual(r.requests,['saas_public_stores']);
  assert.equal(r.browserWindow.__laPublicStoreSettled,true);
 });
-test('Virtual store receives its own storefront identity',async()=>{
+test('Published virtual store opens its complete tenant-specific storefront',async()=>{
  const r=await scenario({store:{...publishedStore,template_code:'virtual_store'}});
- assert.equal(r.doc.body.dataset.template,'virtual_store');
- assert.equal(r.node('storeModelLabel').textContent,'LOJA VIRTUAL');
- assert.match(r.node('storeIntro').textContent,/produtos/);
+ assert.deepEqual(r.redirects,[
+  'https://equipezero-web.github.io/Sistema-L-A-/store/loja-virtual.html?slug=lapis-servidor'
+ ]);
+ assert.deepEqual(r.requests,['saas_public_stores']);
+ assert.equal(r.browserWindow.__laPublicStoreSettled,true);
 });
 test('Instagram package storefront does not falsely claim submitted orders',async()=>{
  const r=await scenario({store:{...publishedStore,template_code:'instagram_orders'}});
