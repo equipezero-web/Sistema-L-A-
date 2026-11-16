@@ -107,8 +107,8 @@ Deno.serve(async req=>{
  catch{return error("Solicitação inválida.",400)}
  if(!body||typeof body!=="object"||Array.isArray(body))return error("Solicitação inválida.",400);
  if(body.action==="status")return reply({ok:true,oauth_ready:conf.ready===true,checkout_enabled:false});
- if(body.action!=="start")return error("Ação inválida.",400);
- if(!conf.ready)return error("Conexão Mercado Pago ainda não configurada pelo administrador da plataforma.",503);
+ if(body.action!=="start"&&body.action!=="disconnect")return error("Ação inválida.",400);
+ if(body.action==="start"&&!conf.ready)return error("Conexão Mercado Pago ainda não configurada pelo administrador da plataforma.",503);
  const tenantId=String(body.tenant_id||"");
  if(!uuid.test(tenantId))return error("Empresa inválida.",400);
  const [{data:membership,error:memberError},{data:tenant,error:tenantError},{data:access,error:accessError}]=await Promise.all([
@@ -118,6 +118,15 @@ Deno.serve(async req=>{
  ]);
  if(memberError||tenantError||accessError||access?.is_platform_super_admin===true||membership?.role!=="owner"||
     tenant?.template_code!=="virtual_store"||tenant?.active!==true)return error("Operação não autorizada.",403);
+ if(body.action==="disconnect"){
+  const {error:disconnectError}=await admin.rpc("saas_merchant_oauth_disconnect",{p_tenant_id:tenantId});
+  if(disconnectError){
+   console.error("Merchant disconnect failed");
+   return error("Não foi possível desvincular a conta com segurança.",503);
+  }
+  return reply({ok:true,disconnected:true,checkout_enabled:false,
+   message:"Credenciais locais excluídas. Revogue também a autorização no Mercado Pago, se desejar."});
+ }
  const state=random(),verifier=random();
  const {error:beginError}=await admin.rpc("saas_merchant_oauth_begin",{
   p_tenant_id:tenantId,p_owner_id:userData.user.id,p_state_hash:await hash(state),p_code_verifier:verifier
@@ -131,5 +140,6 @@ Deno.serve(async req=>{
  authorize.searchParams.set("state",state);
  authorize.searchParams.set("code_challenge",await challenge(verifier));
  authorize.searchParams.set("code_challenge_method","S256");
+ authorize.searchParams.set("scope","offline_access");
  return reply({ok:true,authorization_url:authorize.href,expires_in:600,checkout_enabled:false});
 });
