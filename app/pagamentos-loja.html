@@ -1,0 +1,84 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pagamentos da Loja | L&A Royal SaaS</title>
+<link rel="stylesheet" href="../assets/css/main.css">
+</head><body>
+<main class="module-shell" style="max-width:1000px">
+<header class="module-head"><div><a href="./configuracoes.html" class="back">← Configurações</a>
+<div class="eyebrow">Minha Loja · Integrações</div><h1>Pagamentos da Loja</h1>
+<p id="company" class="muted">Verificando empresa…</p></div></header>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<section class="card" style="margin-bottom:18px">
+<h2>Recebimento independente por empresa</h2>
+<p>As mensalidades da plataforma L&A Royal SaaS e as vendas realizadas por sua loja são operações diferentes. O dinheiro das vendas não deve ser direcionado automaticamente para a conta de assinatura do SaaS.</p>
+<p>O Mercado Pago prevê autorização por conta de vendedor. A conexão comercial só será liberada quando a integração OAuth, a identificação do recebedor e a validação de pagamentos forem concluídas e testadas.</p>
+</section>
+<section class="card" style="margin-bottom:18px">
+<div class="card-head"><div><div class="eyebrow">Mercado Pago</div><h2>Conexão de recebimentos</h2></div></div>
+<p><strong id="merchantState" role="status" aria-live="polite">Consultando…</strong></p>
+<p id="merchantDescription" class="muted">Aguarde a verificação.</p>
+<div id="merchantIdentity" hidden><p><strong>Conta identificada:</strong> <span id="merchantLabel"></span></p><p><strong>Última verificação:</strong> <time id="merchantVerified"></time></p></div>
+<div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
+<p class="muted" style="margin-top:14px">A plataforma ainda não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
+</section>
+<section class="card">
+<h2>Requisitos para habilitar checkout</h2>
+<ul style="line-height:1.8">
+<li>Autorização OAuth específica do vendedor com validação de identidade e estado de sessão.</li>
+<li>Tokens armazenados somente no backend, com proteção e renovação segura.</li>
+<li>Pedido e preço calculados no servidor; idempotência e controle de estoque.</li>
+<li>Webhook autenticado, confirmação de pagamento e auditoria.</li>
+<li>Testes por empresa e em ambiente de homologação, antes da operação real.</li>
+</ul>
+<p class="muted">Até lá, o carrinho da loja e a cotação no servidor são informativos. O botão de pagamento continua desabilitado.</p>
+</section>
+</main>
+<script type="module">
+import {supabase} from '../assets/js/supabase.js';
+import {getBusinessContext} from '../assets/js/business.js';
+const get=id=>document.getElementById(id);
+function message(text,error=false){get('status').textContent=text;get('status').className='status show '+(error?'error':'ok')}
+function disconnectState(text){
+ get('merchantState').textContent=text;
+ get('merchantIdentity').hidden=true;
+ get('merchantDescription').textContent='Nenhuma conta recebedora habilitada para esta loja. Pagamentos reais permanecem indisponíveis.';
+}
+async function boot(){
+ try{
+  const ctx=await getBusinessContext();
+  if(ctx.membership.role!=='owner'){location.replace('./index.html');return}
+  get('company').textContent=ctx.tenant.name;
+  if(ctx.tenant.template_code!=='virtual_store'){
+   get('merchantState').textContent='Não aplicável';
+   get('merchantDescription').textContent='Este módulo será liberado primeiro para o modelo Loja Virtual.';
+   get('connectMerchant').hidden=true;return;
+  }
+  const {data,error}=await supabase.from('saas_merchant_payment_connections')
+    .select('status,provider_account_label,last_verified_at')
+    .eq('tenant_id',ctx.tenant.id).eq('provider','mercado_pago').maybeSingle();
+  if(error)throw error;
+  if(!data){disconnectState('Não conectada');return}
+  const labels={disconnected:'Não conectada',pending:'Pendente de validação',
+    connected:'Conexão registrada',revoked:'Autorização revogada',error:'Conexão com falha'};
+  get('merchantState').textContent=labels[data.status]||'Conexão não confirmada';
+  // Status alone never enables checkout: payment provider and webhooks must be activated separately.
+  get('merchantDescription').textContent=data.status==='connected'
+    ?'Conexão registrada pelo backend. O checkout permanece inativo até a homologação dos pagamentos e webhooks.'
+    :'Nenhuma integração de pagamentos está ativa para receber compras nesta loja.';
+  if(data.status==='connected'&&data.provider_account_label&&data.last_verified_at){
+   get('merchantIdentity').hidden=false;
+   get('merchantLabel').textContent=data.provider_account_label;
+   const timestamp=new Date(data.last_verified_at);
+   if(Number.isFinite(timestamp.getTime())){
+    get('merchantVerified').textContent=timestamp.toLocaleString('pt-BR');
+    get('merchantVerified').dateTime=timestamp.toISOString();
+   }
+  }
+ }catch(error){
+  disconnectState('Conexão não verificada');
+  message('Não foi possível confirmar o estado da conta recebedora. Nenhum pagamento foi habilitado.',true);
+  console.warn('Merchant payment readiness status unavailable:',error);
+ }
+}
+void boot();
+</script></body></html>

@@ -1,0 +1,30 @@
+name: SaaS Merchant Payment Isolation
+on:
+  pull_request:
+    paths:
+      - 'app/pagamentos-loja.html'
+      - 'app/configuracoes.html'
+      - 'supabase/sql/saas_merchant_payment_readiness_68.sql'
+      - 'tests/saas-merchant-payment-readiness.test.mjs'
+      - '.github/workflows/saas-merchant-payment-readiness.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/pagamentos-loja.html'
+      - 'app/configuracoes.html'
+      - 'supabase/sql/saas_merchant_payment_readiness_68.sql'
+      - 'tests/saas-merchant-payment-readiness.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  merchant-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate merchant state permissions and no premature checkout
+        run: node --test tests/saas-merchant-payment-readiness.test.mjs tests/saas-settings-public-store.test.mjs

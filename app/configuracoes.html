@@ -33,6 +33,7 @@
 <div class="nav-actions">
 <a class="btn" href="./aparencia.html">Personalizar minha loja</a>
 <a class="btn" href="./plano.html">Plano e assinatura</a>
+<a class="btn" id="merchantPaymentsLink" href="./pagamentos-loja.html">Pagamentos da Loja</a>
 </div>
 <p class="muted">Os clientes acessam apenas a experiência pública correspondente ao tipo de empresa cadastrado. As funcionalidades disponíveis dependem da integração do modelo e de sua publicação.</p>
 </section>
@@ -60,6 +61,7 @@ async function boot(){
     location.replace('./index.html');return;
   }
   businessMode=context.tenant.business_mode;
+  get('merchantPaymentsLink').hidden=context.tenant.template_code!=='virtual_store';
   get('company').textContent=context.tenant.name;
   const tenantId=context.tenant.id;
   const [{data:settings,error},{data:subscription,error:subError},{data:theme,error:themeError},{data:tenant,error:slugError}]=await Promise.all([
