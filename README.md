@@ -51,6 +51,16 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 
 A antiga `store/reservar.html` redireciona barbearias para o agendamento integrado; links públicos da empresa devem preferir a entrada canônica. Ocultar um controle não substitui a verificação de autorização pelo servidor.
 
+## Payment Brick do Mercado Pago — integração controlada
+
+O componente de pagamento usa o SDK oficial `https://sdk.mercadopago.com/js/v2` e o **Payment Brick** para pagamentos na própria página. O SDK só é carregado caso o backend declare a empresa e o carrinho elegíveis; caso contrário, nenhum formulário de cartão é exibido nem dados de pagamento são capturados. Alterar o carrinho desmonta o Brick para impedir cotação desatualizada.
+
+- A migração `saas_checkout_brick_readiness_20261116.sql` armazena a **chave pública do vendedor** capturada pelo OAuth em tabela privada, associada ao vendedor e empresa. Não se usa chave pública genérica de outra loja, nem token privado no navegador.
+- A Edge Function `saas-transparent-checkout` consulta a prontidão por empresa e expõe apenas status público; a ação `submit` rejeita cobrança com HTTP 503. **O bloqueio `PAYMENT_PROCESSING_IMPLEMENTED=false` é proposital e não deve ser removido antes de existir criação idempotente do pagamento e liquidação transacional de pedido/estoque.**
+- Embora o Brick esteja preparado para cartões, Pix e boleto, o formulário e a submissão permanecem **inativos** enquanto não houver conta autorizada, loja publicada, backend Payments API e homologação de processamento/estornos. O comprador não deve considerar a cotação uma compra.
+- O backend deverá confirmar valores, elegibilidade, dados do comprador, a identidade do vendedor e a chave de idempotência em cada pagamento, reconciliar o webhook com o pedido e só então efetivar estoque. Não basta alterar `SAAS_TRANSPARENT_CHECKOUT_ENABLED` para cobrar.
+- Não registrar número de cartão ou CVV no SaaS; o Brick os processará pelo SDK Mercado Pago quando homologado.
+
 ## Checkout Transparente Mercado Pago — modelo escolhido
 
 O modelo `virtual_store` utiliza **Checkout Transparente no próprio site**, sem redirecionar compradores ao Checkout Pro. A experiência de pagamento final será implementada com componentes seguros do Mercado Pago (dados de cartão são tokenizados pelo provedor, nunca armazenados neste SaaS) e com conta recebedora OAuth de cada vendedor.
