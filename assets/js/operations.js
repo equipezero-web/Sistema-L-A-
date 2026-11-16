@@ -116,4 +116,7 @@ el('installButton').addEventListener('click',async()=>{
  const prompt=deferredInstall;deferredInstall=null;el('installButton').hidden=true;
  await prompt.prompt();el('installHelp').textContent='Confira a solicitação de instalação do navegador.';
 });
+if('serviceWorker' in navigator && location.protocol==='https:'){
+ void navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+}
 void boot().catch(error=>say(error.message||'Não foi possível abrir a central.',true));
