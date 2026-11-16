@@ -28,7 +28,7 @@ function makeNode(tag='div',id=''){
  return node;
 }
 async function scenario({store=published,items=products,slug='loja-teste'}={}){
- const els=new Map(),calls=[],warnings=[];
+ const els=new Map(),calls=[],warnings=[],quotes=[];
  const get=id=>{if(!els.has(id))els.set(id,makeNode('div',id));return els.get(id)};
  const document={
   getElementById:get,createElement:t=>makeNode(t),createTextNode:t=>makeNode('text','text-node-'+t),
@@ -36,7 +36,7 @@ async function scenario({store=published,items=products,slug='loja-teste'}={}){
   documentElement:{style:{setProperty(){}}},body:{style:{}}
  };
  get('sortProducts').value='name';
- const supabase={from(table){
+ const supabase={functions:{invoke:async(name,payload)=>{quotes.push({name,payload});return {data:{ok:true,currency:'BRL',subtotal_cents:4990,checkout_enabled:false},error:null}}},from(table){
   calls.push(table);
   let q={select(){return q},eq(){return q},
    maybeSingle:async()=>({data:store,error:null}),
@@ -49,10 +49,10 @@ async function scenario({store=published,items=products,slug='loja-teste'}={}){
  assert.doesNotThrow(()=>new vm.Script(executable));
  vm.runInNewContext(executable,context);
  await new Promise(r=>setImmediate(r));
- return {get,calls,warnings,context};
+ return {get,calls,warnings,quotes,context};
 }
 test('Dedicated storefront has accessible controls and checkout explicitly disabled',()=>{
- for(const id of ['brandName','productGrid','searchProducts','sortProducts','openCart','cartPanel','cartItems','cartCount','cartTotal','checkoutNotice'])
+ for(const id of ['brandName','productGrid','searchProducts','sortProducts','openCart','cartPanel','cartItems','cartCount','cartTotal','checkoutNotice','quoteStatus','validateCart'])
   assert.match(html,new RegExp('id="'+id+'"'),id);
  assert.match(html,/Finalizar compra — em integração/);
  assert.match(html,/disabled aria-describedby="checkoutNotice"/);
@@ -90,4 +90,30 @@ test('Client-side selection adds only in-stock products and cannot charge money'
 test('Router sends virtual_store to dedicated page and leaves other models untouched',()=>{
  assert.match(router,/store\.template_code==='barbershop'\?'barbearia\.html':'loja-virtual\.html'/);
  assert.match(router,/store\.template_code === 'barbershop' \|\| store\.template_code === 'virtual_store'/);
+});
+
+test('Cart quote calls read-only server validation and remains non-transactional',async()=>{
+ const x=await scenario();
+ const button=x.get('productGrid').children[1].children[1].children.at(-1);
+ x.get('productGrid').listeners.click({target:{closest:()=>button}});
+ assert.equal(x.get('validateCart').disabled,false);
+ await x.get('validateCart').listeners.click();
+ assert.equal(x.quotes.length,1);
+ assert.equal(x.quotes[0].name,'saas-store-quote');
+ assert.equal(x.quotes[0].payload.body.slug,'loja-teste');
+ assert.equal(x.quotes[0].payload.body.items[0].quantity,1);
+ assert.match(x.get('quoteStatus').textContent,/conferido/i);
+ assert.match(x.get('quoteStatus').textContent,/Checkout indisponível/);
+ assert.equal(x.get('cartTotal').textContent,'R$ 49,90');
+});
+test('Quote Edge Function only reads public tenant catalog with bounded inputs',()=>{
+ const source=readFileSync('supabase/functions/saas-store-quote/index.ts','utf8');
+ assert.match(source,/saas_public_stores/);
+ assert.match(source,/saas_public_catalog_items/);
+ assert.match(source,/store\.template_code!=="virtual_store"/);
+ assert.match(source,/item\.quantity/);
+ assert.match(source,/items\.length>20/);
+ assert.match(source,/checkout_enabled:false/);
+ assert.match(source,/subtotal_cents:subtotalCents/);
+ assert.doesNotMatch(source,/SUPABASE_SERVICE_ROLE_KEY|MP_ACCESS_TOKEN|\.insert\(|\.update\(|\.delete\(/);
 });
