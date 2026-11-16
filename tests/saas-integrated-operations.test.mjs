@@ -10,7 +10,7 @@ const adminPage=readFileSync('super-admin/index.html','utf8');
 const css=readFileSync('assets/css/operations.css','utf8');
 test('central has authenticated context and references existing business modules',()=>{
  assert.match(js,/getBusinessContext\(\)/);
- for(const name of ['Minha Loja','Funcionários','Financeiro','Royal AI','Pagamentos da loja','Plano e assinatura'])assert.ok(js.includes(name),name);
+ for(const name of ['Minha Loja','Equipe e funcionários','Financeiro','Royal AI','Pagamentos da loja','Plano e assinatura'])assert.ok(js.includes(name),name);
  assert.match(dash,/href="\.\/central\.html"/);
  assert.match(js,/saas_subscription_access/);
  assert.match(js,/encodeURIComponent\(context\.tenant\.slug\)/);
