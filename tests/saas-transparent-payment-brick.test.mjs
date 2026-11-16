@@ -49,3 +49,12 @@ test('Brick is deferred until explicit readiness and quote, not rendered automat
  assert.doesNotMatch(browser,/access_token|service_role|client_secret|\/v1\/payments/);
  assert.doesNotThrow(()=>new vm.Script(browser.replace(/^import\s*\{[^}]+\}\s*from\s*'[^']+';\s*$/gm,'')));
 });
+
+test('Expired quotes unmount the payment Brick and invalidate pending render',()=>{
+ assert.match(browser,/let quoteExpiryTimer=null/);
+ assert.match(browser,/clearTimeout\(quoteExpiryTimer\)/);
+ assert.match(browser,/expiresAt<=Date\.now\(\)/);
+ assert.match(browser,/quoteExpiryTimer=setTimeout/);
+ assert.match(browser,/void unmount\(\)/);
+ assert.match(browser,/Cotação expirada/);
+});

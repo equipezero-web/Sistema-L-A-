@@ -9,6 +9,7 @@ const message=document.getElementById('transparentPaymentStatus');
 let paymentController=null;
 let ready=null;
 let generation=0;
+let quoteExpiryTimer=null;
 function show(text){if(message)message.textContent=text}
 function validKey(key){return typeof key==='string'&&/^(APP_USR|TEST)-[A-Za-z0-9-]{10,160}$/.test(key)}
 function script(){
@@ -24,6 +25,7 @@ function script(){
 }
 async function unmount(){
  generation++;
+ if(quoteExpiryTimer!==null){clearTimeout(quoteExpiryTimer);quoteExpiryTimer=null;}
  if(paymentController){
   try{await paymentController.unmount()}catch{ /* reset on navigation */ }
   paymentController=null;
@@ -59,9 +61,13 @@ document.addEventListener('la:quote-validated',async event=>{
  }
  await unmount();
  const run=generation;
+ const expiresAt=Date.parse(quote.expires_at);
  try{
   await script();
-  if(run!==generation)return;
+  if(run!==generation||expiresAt<=Date.now()){
+   if(run===generation)show('Cotação expirada. Atualize o carrinho.');
+   return;
+  }
   const mp=new window.MercadoPago(ready.public_key,{locale:'pt-BR'});
   const settings={
    initialization:{amount:cents/100},
@@ -77,9 +83,19 @@ document.addEventListener('la:quote-validated',async event=>{
    }
   };
   const controller=await mp.bricks().create('payment','paymentBrick_container',settings);
-  if(run!==generation){await controller.unmount();return}
+  if(run!==generation||expiresAt<=Date.now()){
+   await controller.unmount();
+   if(run===generation)show('Cotação expirada. Atualize o carrinho.');
+   return;
+  }
   paymentController=controller;
   container.hidden=false;
+  quoteExpiryTimer=setTimeout(()=>{
+   if(run===generation){
+    void unmount();
+    show('Cotação expirada. Atualize o carrinho para tentar novamente.');
+   }
+  },Math.max(0,expiresAt-Date.now()));
  }catch{show('Pagamento indisponível. Nenhuma cobrança foi realizada.')}
 });
 void refreshReadiness();
