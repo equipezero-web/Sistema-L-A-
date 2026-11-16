@@ -59,6 +59,15 @@ A função `supabase/functions/saas-store-quote/index.ts` aceita apenas um slug 
 
 A Edge Function usa acesso público apenas para **consulta do catálogo já publicado**, portanto seu endpoint de cotação precisa ser implantado com `verify_jwt=false`, com o conteúdo de solicitação limitado e sem credenciais privadas.
 
+## Recebimentos por loja (integração em preparação)
+
+- `app/pagamentos-loja.html`: painel de prontidão visível somente ao proprietário de uma empresa do modelo `virtual_store`, com conexão desativada até a autorização de vendedor estar homologada.
+- `supabase/sql/saas_merchant_payment_readiness_68.sql`: estado por tenant e provedor. **Não armazena Access Token, Refresh Token, segredo OAuth nem chave de pagamentos**.
+- Consulta do estado protegida por RLS de proprietário; inserções/alterações não são permitidas a `anon` ou `authenticated`.
+- Status `connected` não habilita checkout sozinho. Para pagamentos reais ainda são obrigatórios: aplicativo OAuth registrado no Mercado Pago, callback seguro com `state`, armazenamento protegido dos tokens em backend, validação de recebedor e escopos, renovação e revogação, criação de pedidos com idempotência, notificação autenticada por webhook, controle transacional de estoque e homologação.
+- O fluxo de mensalidade do `saas-billing` continua exclusivamente para assinaturas da plataforma; **nunca reutilizar essa credencial para vendas das empresas**.
+- O Dashboard continua ilustrativo.
+
 ## Validação
 
 O projeto usa testes Node.js sem dependências npm obrigatórias para grande parte da suíte. A partir da raiz:
