@@ -15,7 +15,9 @@ create index if not exists saas_support_tenant_date_idx
  on public.saas_support_tickets(tenant_id,created_at desc);
 alter table public.saas_support_tickets enable row level security;
 revoke all on public.saas_support_tickets from public,anon;
-grant select,insert,update on public.saas_support_tickets to authenticated;
+grant select,insert on public.saas_support_tickets to authenticated;
+grant update(status,updated_at) on public.saas_support_tickets to authenticated;
+grant all on public.saas_support_tickets to service_role;
 drop policy if exists saas_support_read on public.saas_support_tickets;
 create policy saas_support_read on public.saas_support_tickets for select to authenticated
  using (public.saas_is_tenant_member(tenant_id) or public.saas_is_platform_super_admin());
@@ -47,6 +49,7 @@ create index if not exists saas_notification_inbox_idx
 alter table public.saas_notifications enable row level security;
 revoke all on public.saas_notifications from public,anon,authenticated;
 grant select on public.saas_notifications to authenticated;
+grant all on public.saas_notifications to service_role;
 drop policy if exists saas_notifications_read on public.saas_notifications;
 create policy saas_notifications_read on public.saas_notifications for select to authenticated
  using (recipient_user_id=(select auth.uid()) and public.saas_is_tenant_member(tenant_id));
