@@ -51,6 +51,18 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 
 A antiga `store/reservar.html` redireciona barbearias para o agendamento integrado; links públicos da empresa devem preferir a entrada canônica. Ocultar um controle não substitui a verificação de autorização pelo servidor.
 
+## Checkout Transparente Mercado Pago — modelo escolhido
+
+O modelo `virtual_store` utiliza **Checkout Transparente no próprio site**, sem redirecionar compradores ao Checkout Pro. A experiência de pagamento final será implementada com componentes seguros do Mercado Pago (dados de cartão são tokenizados pelo provedor, nunca armazenados neste SaaS) e com conta recebedora OAuth de cada vendedor.
+
+- Para marketplace com split via **Payments API**, a documentação oficial prevê `application_fee`, **não** `marketplace_fee`/preferências Checkout Pro. Nenhuma comissão automática foi configurada.
+- `private.saas_online_transparent_payments` guarda o vínculo entre um pagamento já criado pelo backend autorizado, uma intenção de pedido da empresa, o vendedor e o valor esperado.
+- O webhook valida assinatura e pagamento na API, depois usa `saas_online_transparent_payment_context` e `saas_online_transparent_record_verified` para registrar somente pagamentos vinculados previamente. A associação legada de preferências do Checkout Pro permanece no banco por compatibilidade, mas **não é usada pelo webhook novo**.
+- **Não está ativado:** formulário/Brick de pagamento real, criação de pagamentos via API do vendedor, registro seguro de idempotência de cobrança, liquidação de pedido e estoque, tratamento de estorno, testes de pagamento ponta a ponta. A ativação por empresa permanece desabilitada. A UI não coleta número de cartão, CVV, CPF ou dados financeiros.
+- Para entrar em produção será preciso confirmar as capacidades de split do aplicativo, selecionar e homologar a API Mercado Pago adequada, conectar conta(s) OAuth, configurar webhooks e concluir o ciclo transacional e de suporte.
+
+Referências oficiais: https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/how-tos/integrate-marketplace e https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/overview
+
 ## Confirmação de pagamentos dos lojistas — base de webhook (desativada)
 
 A migração `supabase/sql/saas_merchant_payment_webhook_20261116.sql` cria vínculos privados entre intenções e preferências do provedor e recibos de pagamentos verificados, com idempotência por identificador do pagamento, RLS e permissão exclusiva de serviço. A função `saas-merchant-payment-webhook` verifica a assinatura HMAC do evento, exige `x-request-id`, confere horário da assinatura, consulta o pagamento diretamente na API Mercado Pago usando apenas o token OAuth do **vendedor** (nunca o token de assinatura SaaS) e valida vendedor, moeda, valor, preferência e ID da intenção.
