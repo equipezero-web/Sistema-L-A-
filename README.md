@@ -24,7 +24,7 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 | Modelo | Situação do site público |
 | --- | --- |
 | `barbershop` | Redireciona para `store/barbearia.html`, com a interface de cliente e agendamento integrada |
-| `virtual_store` | Página pública dedicada `store/loja-virtual.html` inspirada na L&A Advisory; pesquisa, ordenação e seleção local de produtos sem pagamentos; checkout e pedidos transacionais continuam pendentes |
+| `virtual_store` | Página dedicada `store/loja-virtual.html`, catálogo por empresa, carrinho temporário e conferência de valores via função pública de cotação sem reservas ou cobrança; checkout e pedidos transacionais ainda pendentes |
 | `instagram_orders` | Apresentação pública de pacotes; pedido transacional integrado ainda requer implementação |
 | `business_communication` | Acesso público restrito; dados de CRM e mensagens não são expostos |
 | `generic` | Catálogo geral público de produtos/serviços |
@@ -50,6 +50,14 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 - Configurações: `app/configuracoes.html`
 
 A antiga `store/reservar.html` redireciona barbearias para o agendamento integrado; links públicos da empresa devem preferir a entrada canônica. Ocultar um controle não substitui a verificação de autorização pelo servidor.
+
+## Cotação segura de produtos na Loja Virtual
+
+A função `supabase/functions/saas-store-quote/index.ts` aceita apenas um slug válido de empresa publicada do modelo `virtual_store` e uma lista curta de identificadores UUID e quantidades. O servidor consulta novamente preços e disponibilidade em `saas_public_catalog_items`, calcula os subtotais em centavos e informa validade de até dois minutos. A operação é somente leitura, roda com privilégios anônimos sujeitos à publicação/RLS e não recebe preços enviados pelo navegador.
+
+**A cotação não reserva estoque, cria pedidos, realiza pagamentos nem dá garantia de disponibilidade futura.** O checkout continua propositalmente desabilitado. A credencial Mercado Pago usada para a assinatura do SaaS não deve ser usada para vendas das empresas. Uma fase comercial posterior precisará de contas recebedoras próprias, pagamentos verificados por webhook, idempotência, antifraude e redução de estoque em transação após confirmação.
+
+A Edge Function usa acesso público apenas para **consulta do catálogo já publicado**, portanto seu endpoint de cotação precisa ser implantado com `verify_jwt=false`, com o conteúdo de solicitação limitado e sem credenciais privadas.
 
 ## Validação
 
