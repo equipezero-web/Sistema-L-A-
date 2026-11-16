@@ -88,6 +88,17 @@ Deno.serve(async req=>{
     p_tenant_id:attempt.tenant_id,p_provider_account_id:accountId,
     p_access_token:access,p_refresh_token:refresh,p_expires_in:expires});
    if(saveError){console.error("Merchant credential storage failed");return trustedReturn("error")}
+   // Public key belongs to the seller. Do not fall back to the marketplace
+   // integrator's key, which could tokenize cards for the wrong merchant.
+   const sellerPublicKey=String(tokens?.public_key||"");
+   if(/^(APP_USR|TEST)-[A-Za-z0-9-]{10,160}$/.test(sellerPublicKey)){
+    const {data:publicKeySaved,error:publicKeyError}=await admin.rpc("saas_merchant_checkout_save_public_key",{
+     p_tenant_id:attempt.tenant_id,p_account_id:accountId,p_public_key:sellerPublicKey
+    });
+    if(publicKeyError||publicKeySaved!==true){
+     console.error("Merchant checkout public key persistence unavailable");
+    }
+   }
    return trustedReturn("connected");
   }catch(e){console.error("Merchant OAuth exchange failed",e instanceof Error?e.name:"unknown");return trustedReturn("error")}
  }

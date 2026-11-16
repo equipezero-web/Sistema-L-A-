@@ -12,6 +12,9 @@ const node=(tag,className='',content='')=>{const el=document.createElement(tag);
 const status=message=>{byId('status').textContent=message};
 let quoteInFlight=false,cartVersion=0;
 function invalidateQuote(){
+ if(typeof CustomEvent!=='undefined'&&typeof document.dispatchEvent==='function'){
+  document.dispatchEvent(new CustomEvent('la:cart-updated'));
+ }
  cartVersion++;
  byId('quoteStatus').textContent='Seleção alterada. Confira os valores atuais antes de prosseguir.';
 }
@@ -37,6 +40,9 @@ async function validateCart(){
   if(!Number.isSafeInteger(cents)||cents<0||data.currency!=='BRL'||data.checkout_enabled!==false)
     throw Error('Resposta de cotação inválida.');
   byId('quoteStatus').textContent='Subtotal conferido: '+money.format(cents/100)+'. Cotação informativa válida por até 2 minutos; estoque não reservado. Checkout indisponível.';
+  if(typeof CustomEvent!=='undefined'&&typeof document.dispatchEvent==='function'){
+   document.dispatchEvent(new CustomEvent('la:quote-validated',{detail:data}));
+  }
  }catch(error){
   if(version===cartVersion)byId('quoteStatus').textContent=error?.message||'Falha ao conferir valores.';
  }finally{

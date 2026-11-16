@@ -1,0 +1,34 @@
+name: SaaS Checkout Transparente Brick Guard
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_checkout_brick_readiness_20261116.sql'
+      - 'supabase/functions/saas-transparent-checkout/index.ts'
+      - 'supabase/functions/saas-merchant-oauth/index.ts'
+      - 'assets/js/transparent-payment.js'
+      - 'assets/js/virtual-storefront.js'
+      - 'store/loja-virtual.html'
+      - 'tests/saas-transparent-payment-brick.test.mjs'
+      - 'scripts/verify-transparent-brick-http.mjs'
+      - '.github/workflows/saas-transparent-payment-brick.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_checkout_brick_readiness_20261116.sql'
+      - 'supabase/functions/saas-transparent-checkout/index.ts'
+      - 'assets/js/transparent-payment.js'
+      - 'tests/saas-transparent-payment-brick.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  brick-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-transparent-payment-brick.test.mjs tests/saas-virtual-store.test.mjs tests/saas-checkout-transparente.test.mjs tests/saas-merchant-oauth.test.mjs
+      - run: node scripts/verify-transparent-brick-http.mjs
