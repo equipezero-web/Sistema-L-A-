@@ -6,6 +6,7 @@ on:
       - 'supabase/functions/saas-merchant-oauth/index.ts'
       - 'supabase/sql/saas_merchant_oauth_20261116.sql'
       - 'tests/saas-merchant-oauth.test.mjs'
+      - 'scripts/verify-saas-merchant-oauth-http.mjs'
       - '.github/workflows/saas-merchant-oauth.yml'
   push:
     branches: [main]
@@ -27,3 +28,4 @@ jobs:
         with:
           node-version: '22'
       - run: node --test tests/saas-merchant-oauth.test.mjs tests/saas-merchant-payment-readiness.test.mjs
+      - run: node scripts/verify-saas-merchant-oauth-http.mjs
