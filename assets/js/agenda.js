@@ -44,7 +44,7 @@ async function load(){
 }
 async function render(){
  const {data,error}=await supabase.from('saas_appointments')
-  .select('*,saas_customers(name),saas_services(name),saas_employees(name)')
+  .select('*,saas_customers!saas_appointments_tenant_customer_fkey(name),saas_services(name),saas_employees(name)')
   .eq('tenant_id',context.tenant.id).order('starts_at',{ascending:false});
  if(error)throw error;
  appointments=data||[];
