@@ -1,0 +1,26 @@
+name: SaaS Four Critical Flows
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_booking_concurrency_guard_20261116.sql'
+      - 'supabase/sql/saas_four_flow_healthcheck_20261116.sql'
+      - 'tests/saas-four-critical-flows.test.mjs'
+      - '.github/workflows/saas-four-critical-flows.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_booking_concurrency_guard_20261116.sql'
+      - 'supabase/sql/saas_four_flow_healthcheck_20261116.sql'
+      - 'tests/saas-four-critical-flows.test.mjs'
+permissions:
+  contents: read
+jobs:
+  four-flows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-four-critical-flows.test.mjs
