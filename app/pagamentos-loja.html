@@ -19,7 +19,7 @@
 <p id="merchantDescription" class="muted">Aguarde a verificação.</p>
 <div id="merchantIdentity" hidden><p><strong>Conta identificada:</strong> <span id="merchantLabel"></span></p><p><strong>Última verificação:</strong> <time id="merchantVerified"></time></p></div>
 <div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
-<p class="muted" style="margin-top:14px">A plataforma ainda não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
+<p class="muted" style="margin-top:14px">Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
 </section>
 <section class="card">
 <h2>Requisitos para habilitar checkout</h2>
@@ -53,6 +53,29 @@ async function boot(){
    get('merchantDescription').textContent='Este módulo será liberado primeiro para o modelo Loja Virtual.';
    get('connectMerchant').hidden=true;return;
   }
+  const urlState=new URL(location.href).searchParams.get('oauth');
+  if(urlState==='connected')message('Autorização recebida e conta validada. O checkout permanece indisponível até a homologação.');
+  else if(urlState==='denied')message('Conexão recusada pelo vendedor. Nenhuma cobrança foi criada.',true);
+  else if(urlState==='error')message('Não foi possível concluir a conexão. Revise a configuração do aplicativo e tente novamente.',true);
+  const connect=get('connectMerchant');
+  try{
+   const {data:readiness,error:readinessError}=await supabase.functions.invoke('saas-merchant-oauth',{body:{action:'status'}});
+   if(readinessError)throw readinessError;
+   const ready=readiness?.oauth_ready===true;
+   connect.disabled=!ready;
+   connect.textContent=ready?'Autorizar minha conta Mercado Pago':'Conectar conta — aguardando configuração';
+   if(ready)connect.onclick=async()=>{
+    connect.disabled=true;
+    try{
+     const {data:authorization,error:startError}=await supabase.functions.invoke('saas-merchant-oauth',{body:{action:'start',tenant_id:ctx.tenant.id}});
+     if(startError||authorization?.ok!==true)throw startError||new Error('Não foi possível iniciar a autorização.');
+     const target=new URL(authorization.authorization_url);
+     if(target.protocol!=='https:'||target.hostname!=='auth.mercadopago.com'||target.pathname!=='/authorization')
+      throw new Error('Endereço de autorização inválido.');
+     location.assign(target.href);
+    }catch(e){message('Não foi possível iniciar a conexão com Mercado Pago.',true);connect.disabled=false}
+   };
+  }catch(e){connect.disabled=true;connect.textContent='Conectar conta — indisponível';}
   const {data,error}=await supabase.from('saas_merchant_payment_connections')
     .select('status,provider_account_label,last_verified_at')
     .eq('tenant_id',ctx.tenant.id).eq('provider','mercado_pago').maybeSingle();
