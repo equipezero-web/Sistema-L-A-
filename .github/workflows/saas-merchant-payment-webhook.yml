@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'supabase/sql/saas_merchant_payment_webhook_20261116.sql'
+      - 'supabase/sql/saas_checkout_verified_attempt_reconciliation_20261116.sql'
+      - 'tests/saas-merchant-attempt-reconciliation.test.mjs'
       - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
       - 'tests/saas-merchant-payment-webhook.test.mjs'
       - 'scripts/verify-merchant-payment-webhook-http.mjs'
@@ -11,6 +13,8 @@ on:
     branches: [main]
     paths:
       - 'supabase/sql/saas_merchant_payment_webhook_20261116.sql'
+      - 'supabase/sql/saas_checkout_verified_attempt_reconciliation_20261116.sql'
+      - 'tests/saas-merchant-attempt-reconciliation.test.mjs'
       - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
       - 'tests/saas-merchant-payment-webhook.test.mjs'
   workflow_dispatch:
@@ -25,5 +29,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/saas-merchant-payment-webhook.test.mjs tests/saas-online-order-intent.test.mjs
+      - run: node --test tests/saas-merchant-payment-webhook.test.mjs tests/saas-online-order-intent.test.mjs tests/saas-merchant-attempt-reconciliation.test.mjs
       - run: node scripts/verify-merchant-payment-webhook-http.mjs
