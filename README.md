@@ -51,6 +51,12 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 
 A antiga `store/reservar.html` redireciona barbearias para o agendamento integrado; links públicos da empresa devem preferir a entrada canônica. Ocultar um controle não substitui a verificação de autorização pelo servidor.
 
+## Confirmação de pagamentos dos lojistas — base de webhook (desativada)
+
+A migração `supabase/sql/saas_merchant_payment_webhook_20261116.sql` cria vínculos privados entre intenções e preferências do provedor e recibos de pagamentos verificados, com idempotência por identificador do pagamento, RLS e permissão exclusiva de serviço. A função `saas-merchant-payment-webhook` verifica a assinatura HMAC do evento, exige `x-request-id`, confere horário da assinatura, consulta o pagamento diretamente na API Mercado Pago usando apenas o token OAuth do **vendedor** (nunca o token de assinatura SaaS) e valida vendedor, moeda, valor, preferência e ID da intenção.
+
+**O webhook está publicado, mas inativo** até configurar `MP_MERCHANT_WEBHOOK_SECRET` e `MP_MERCHANT_WEBHOOK_ENABLED=true` após homologação. **Não habilitar o webhook como fluxo comercial isolado**: ainda faltam criação segura da preferência de pagamento, vínculo transacional da compra, pedido confirmado, baixa de estoque, estorno/reversão e testes ponta a ponta com vendedor autorizado. Até essas peças existirem e serem homologadas, `private.saas_online_order_activation.enabled` deve permanecer `false` para todas as empresas. Nenhum pedido nem cobrança será feito por essa etapa. Nem redirecionamentos de retorno nem mensagens do navegador comprovam pagamentos.
+
 ## Preparação transacional de pedidos online (desativada por padrão)
 
 A migração `supabase/sql/saas_online_order_intents_20261116.sql` cria uma fila **privada** de intenções de pedido com isolamento por empresa, prevenção de repetição via `(tenant_id, request_key)`, verificação de produtos publicados, disponibilidade, quantidades, preços calculados no banco e expiração curta. A função `saas_online_order_prepare` é **exclusiva de `service_role`**. O acesso de clientes (`anon`/`authenticated`) a essas tabelas e função é explicitamente revogado.
