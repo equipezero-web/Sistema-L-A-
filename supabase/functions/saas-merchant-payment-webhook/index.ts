@@ -91,7 +91,7 @@ Deno.serve(async(request:Request)=>{
     String(context[0].provider_account_id)!==accountId||
     Math.round(Number(context[0].subtotal)*100)!==Math.round(amount*100))
     return json({error:"Pagamento não corresponde ao pedido autorizado."},422);
-  const {data:recorded,error:saveError}=await db.rpc("saas_online_transparent_record_verified",{
+  const {data:recorded,error:saveError}=await db.rpc("saas_online_transparent_reconcile_attempt",{
    p_intent_id:intentId,p_payment_id:paymentId,p_account_id:accountId,
    p_amount:amount,p_currency:"BRL",p_status:paymentStatus
   });
