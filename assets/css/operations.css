@@ -1,0 +1,29 @@
+/* Shared operational center: accessible controls on small and large screens. */
+.operations{width:min(1240px,calc(100% - 24px));margin:24px auto 72px}
+.operations .card{margin-block:16px;min-width:0}
+.ops-intro,.ops-section-head,.ops-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.ops-intro p{max-width:680px;margin-bottom:0;color:var(--muted);line-height:1.6}
+.ops-identity{display:grid;gap:7px;font-size:.78rem;color:var(--gold-bright)}
+.ops-search{display:grid;gap:6px;width:min(300px,100%);color:var(--muted)}
+.ops-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-top:18px}
+.ops-module{display:flex;flex-direction:column;gap:7px;min-height:134px;border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.025);transition:background .15s,border-color .15s}
+.ops-module:hover,.ops-module:focus-visible{background:rgba(213,180,91,.08);border-color:var(--line-gold)}
+.ops-module strong{color:var(--gold-bright)}
+.ops-module span{color:var(--muted);font-size:.8rem;line-height:1.5}
+.ops-module em{font-size:.66rem;color:#b8c0ce;font-style:normal;margin-top:auto}
+.ops-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.ops-columns>.card{margin-block:0;min-width:0}
+.ops-list{padding:0;margin:16px 0 0;list-style:none;display:grid;gap:10px}
+.ops-list li{border:1px solid var(--line);border-radius:10px;padding:13px;overflow-wrap:anywhere}
+.ops-list li strong,.ops-list li small{display:block}
+.ops-list li small{color:var(--muted);margin-top:5px}
+.ops-list .btn{margin-top:9px}
+.ops-form{display:grid;gap:12px}
+.ops-form label{display:grid;gap:6px}
+.ops-form button{justify-self:start}
+.ops-actions{justify-content:flex-start;margin-top:12px}
+.ops-actions .btn{min-height:44px}
+.operations .module-head{gap:12px;flex-wrap:wrap}
+.operations input,.operations textarea,.operations select{max-width:100%;min-width:0}
+@media(max-width:780px){.ops-columns{grid-template-columns:1fr}.operations{margin-top:12px}.ops-search{width:100%}.ops-section-head{align-items:stretch}}
+@media(max-width:480px){.operations{width:calc(100% - 16px)}.operations .card{padding:16px;border-radius:14px}.ops-grid{grid-template-columns:1fr}.ops-actions>*{width:100%}.ops-form button{width:100%}}

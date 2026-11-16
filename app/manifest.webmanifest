@@ -1,0 +1,17 @@
+{
+  "name": "L&A Royal SaaS — Painel Empresarial",
+  "short_name": "L&A Royal",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080a0e",
+  "theme_color": "#d5b45b",
+  "icons": [
+    {
+      "src": "./icons/royal-app.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

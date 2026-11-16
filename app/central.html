@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central operacional | L&A Royal SaaS</title>
+<link rel="stylesheet" href="../assets/css/main.css"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#080a0e">
+<link rel="stylesheet" href="../assets/css/operations.css">
+</head>
+<body>
+<main class="module-shell operations">
+ <header class="module-head">
+  <div><a class="back" href="./index.html">← Painel</a>
+   <div class="eyebrow">L&A Royal SaaS</div>
+   <h1>Central operacional</h1>
+   <p class="muted" id="company">Validando a sessão e a empresa…</p>
+  </div>
+  <a id="publicStore" class="btn primary" hidden target="_blank" rel="noopener noreferrer">Abrir minha loja</a>
+ </header>
+ <div id="status" class="status" role="status" aria-live="polite"></div>
+ <section class="card ops-intro" aria-label="Acesso por empresa">
+  <div><h2>Controle da sua empresa</h2>
+   <p>Atalhos para os módulos existentes, notificações privadas e chamados de suporte. O acesso depende das permissões verificadas pelo servidor.</p>
+  </div>
+  <div class="ops-identity"><span id="model">Modelo: verificando</span><span id="role">Permissão: verificando</span></div>
+ </section>
+ <section class="card" aria-labelledby="toolsTitle">
+  <div class="ops-section-head"><div><h2 id="toolsTitle">Ferramentas e configurações</h2><p class="muted">Selecione uma área para abrir sua tela original.</p></div>
+   <label class="ops-search">Buscar módulo<input id="moduleSearch" type="search" placeholder="Ex.: funcionários, relatórios" autocomplete="off"></label>
+  </div>
+  <div id="modules" class="ops-grid"></div>
+ </section>
+ <div class="ops-columns">
+  <section class="card" aria-labelledby="notificationsTitle">
+   <div class="ops-section-head"><div><h2 id="notificationsTitle">Notificações</h2><p class="muted">Somente avisos destinados à sua conta nesta empresa.</p></div><button id="reloadNotifications" class="btn" type="button">Atualizar</button></div>
+   <ul id="notificationList" class="ops-list"><li>Carregando avisos…</li></ul>
+  </section>
+  <section class="card" aria-labelledby="supportTitle">
+   <h2 id="supportTitle">Suporte</h2><p class="muted">Abra um chamado para a equipe da plataforma. Não informe senhas ou dados de cartão.</p>
+   <form id="supportForm" class="ops-form" hidden>
+    <label>Assunto<input name="title" minlength="5" maxlength="160" required></label>
+    <label>Categoria<select name="category"><option value="general">Geral</option><option value="technical">Problema técnico</option><option value="store">Minha loja</option><option value="billing">Assinatura</option><option value="security">Segurança</option></select></label>
+    <label>Descrição<textarea name="description" minlength="10" maxlength="4000" required rows="4"></textarea></label>
+    <button class="btn primary" type="submit">Abrir chamado</button>
+   </form>
+   <h3>Meus chamados</h3>
+   <ul id="ticketsList" class="ops-list"><li>Carregando chamados…</li></ul>
+  </section>
+ </div>
+ <section class="card" aria-labelledby="publicationTitle">
+  <h2 id="publicationTitle">Publicação e instalação</h2>
+  <p class="muted">O link abre sempre o modelo ativo da empresa. Domínios personalizados só funcionam depois da configuração técnica e verificação de posse.</p>
+  <div class="ops-actions">
+   <a id="storeLink" class="btn" hidden target="_blank" rel="noopener noreferrer">Visualizar site publicado</a>
+   <a class="btn" id="customizeLink" href="./aparencia.html">Personalizar identidade</a>
+   <button class="btn" id="installButton" type="button" hidden>Instalar aplicativo</button>
+  </div>
+  <p id="installHelp" class="muted" role="status">O botão de instalação depende do navegador, do manifesto e da publicação em HTTPS.</p>
+ </section>
+</main>
+<script type="module" src="../assets/js/operations.js"></script>
+</body>
+</html>

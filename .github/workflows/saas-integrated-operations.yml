@@ -1,0 +1,36 @@
+name: SaaS Integrated Operations
+on:
+  pull_request:
+    paths:
+      - 'app/central.html'
+      - 'app/index.html'
+      - 'assets/js/operations.js'
+      - 'assets/js/super-admin.js'
+      - 'assets/css/operations.css'
+      - 'super-admin/index.html'
+      - 'supabase/sql/saas_operational_*.sql'
+      - 'supabase/sql/saas_support_*.sql'
+      - 'tests/saas-integrated-operations.test.mjs'
+      - '.github/workflows/saas-integrated-operations.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/central.html'
+      - 'assets/js/operations.js'
+      - 'supabase/sql/saas_operational_*.sql'
+      - 'supabase/sql/saas_support_*.sql'
+      - 'tests/saas-integrated-operations.test.mjs'
+permissions:
+  contents: read
+jobs:
+  operations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/operations.js
+      - run: node --check assets/js/super-admin.js
+      - run: node --test tests/saas-integrated-operations.test.mjs
