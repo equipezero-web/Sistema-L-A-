@@ -1,0 +1,24 @@
+name: Merchant Payment Request Contract
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/merchant-payment-contract.mjs'
+      - 'tests/saas-merchant-payment-contract.test.mjs'
+      - '.github/workflows/saas-merchant-payment-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/_shared/merchant-payment-contract.mjs'
+      - 'tests/saas-merchant-payment-contract.test.mjs'
+permissions:
+  contents: read
+jobs:
+  payment-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-merchant-payment-contract.test.mjs
