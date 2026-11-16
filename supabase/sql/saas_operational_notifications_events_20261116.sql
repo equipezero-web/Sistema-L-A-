@@ -4,7 +4,9 @@ create or replace function private.saas_notify_tenant_managers()
 returns trigger language plpgsql security definer set search_path='' as $$
 declare v_title text;v_message text;v_category text;v_status text;
 begin
- if tg_op='UPDATE' and old.status::text is not distinct from new.status::text then return new; end if;
+ if tg_op='UPDATE' then
+  if old.status::text is not distinct from new.status::text then return new; end if;
+ end if;
  v_status:=new.status::text;
  case tg_table_name
   when 'saas_orders' then
