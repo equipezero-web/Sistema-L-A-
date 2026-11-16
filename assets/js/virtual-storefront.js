@@ -10,6 +10,41 @@ const color=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:
 const safeImage=value=>{try{const url=new URL(value);return url.protocol==='https:'?url.href:null}catch{return null}};
 const node=(tag,className='',content='')=>{const el=document.createElement(tag);if(className)el.className=className;if(content!==undefined)el.textContent=String(content);return el};
 const status=message=>{byId('status').textContent=message};
+let quoteInFlight=false,cartVersion=0;
+function invalidateQuote(){
+ cartVersion++;
+ byId('quoteStatus').textContent='Seleção alterada. Confira os valores atuais antes de prosseguir.';
+}
+async function validateCart(){
+ if(quoteInFlight||!cart.size)return;
+ const version=cartVersion;
+ const items=[...cart].map(([id,quantity])=>({id,quantity}));
+ const button=byId('validateCart');
+ button.disabled=true;quoteInFlight=true;
+ byId('quoteStatus').textContent='Conferindo valores e disponibilidade...';
+ try{
+  const {data,error}=await supabase.functions.invoke('saas-store-quote',{body:{slug,items}});
+  if(version!==cartVersion)return;
+  if(error||!data?.ok){
+   let detail=typeof data?.error==='string'?data.error:'';
+   if(!detail&&error?.context?.json){
+    const body=await error.context.json().catch(()=>null);
+    detail=typeof body?.error==='string'?body.error:'';
+   }
+   throw Error(detail||'Não foi possível confirmar os valores. Atualize o catálogo.');
+  }
+  const cents=Number(data.subtotal_cents);
+  if(!Number.isSafeInteger(cents)||cents<0||data.currency!=='BRL'||data.checkout_enabled!==false)
+    throw Error('Resposta de cotação inválida.');
+  byId('quoteStatus').textContent='Subtotal conferido: '+money.format(cents/100)+'. Cotação informativa válida por até 2 minutos; estoque não reservado. Checkout indisponível.';
+ }catch(error){
+  if(version===cartVersion)byId('quoteStatus').textContent=error?.message||'Falha ao conferir valores.';
+ }finally{
+  quoteInFlight=false;button.disabled=!cart.size;
+ }
+}
+byId('validateCart').addEventListener('click',validateCart);
+
 function applyTheme(store){
  const root=document.documentElement.style;
  const primary=color(store.primary_color)||'#D4AF37';
@@ -79,6 +114,7 @@ function renderCart(){
  byId('cartTotal').textContent=money.format(total);
  byId('cartCount').textContent=String(count);
  byId('clearCart').disabled=count===0;
+ byId('validateCart').disabled=count===0||quoteInFlight;
 }
 function openCart(){lastFocus=document.activeElement;byId('cartBackdrop').hidden=false;byId('cartPanel').hidden=false;document.body.style.overflow='hidden';byId('closeCart').focus();renderCart()}
 function closeCart(){byId('cartPanel').hidden=true;byId('cartBackdrop').hidden=true;document.body.style.overflow='';lastFocus?.focus?.()}
@@ -91,7 +127,7 @@ byId('sortProducts').addEventListener('change',renderProducts);
 byId('productGrid').addEventListener('click',event=>{
  const button=event.target.closest('button[data-product-id]');if(!button||button.disabled)return;
  const id=button.dataset.productId,item=products.find(x=>x.id===id&&x.in_stock);
- if(!item)return;cart.set(id,Math.min(99,(cart.get(id)||0)+1));renderCart();openCart();
+ if(!item)return;cart.set(id,Math.min(99,(cart.get(id)||0)+1));invalidateQuote();renderCart();openCart();
 });
 byId('cartItems').addEventListener('click',event=>{
  const button=event.target.closest('button[data-cart-action]');if(!button)return;
@@ -99,9 +135,9 @@ byId('cartItems').addEventListener('click',event=>{
  const qty=cart.get(id);if(!qty)return;
  if(action==='remove'||action==='minus'&&qty===1)cart.delete(id);
  else cart.set(id,action==='plus'?Math.min(99,qty+1):Math.max(1,qty-1));
- renderCart();
+ invalidateQuote();renderCart();
 });
-byId('clearCart').addEventListener('click',()=>{cart.clear();renderCart()});
+byId('clearCart').addEventListener('click',()=>{cart.clear();invalidateQuote();renderCart()});
 async function boot(){
  try{
   if(!slug||!/^[a-z0-9][a-z0-9-]{0,79}$/.test(slug)){status('Endereço inválido. Utilize o link público da empresa.');return}
