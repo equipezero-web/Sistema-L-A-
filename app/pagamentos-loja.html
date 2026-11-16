@@ -18,8 +18,8 @@
 <p><strong id="merchantState" role="status" aria-live="polite">Consultando…</strong></p>
 <p id="merchantDescription" class="muted">Aguarde a verificação.</p>
 <div id="merchantIdentity" hidden><p><strong>Conta identificada:</strong> <span id="merchantLabel"></span></p><p><strong>Última verificação:</strong> <time id="merchantVerified"></time></p></div>
-<div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
-<p class="muted" style="margin-top:14px">Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
+<div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><button class="btn" type="button" id="disconnectMerchant" hidden>Desvincular esta conta</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
+<p class="muted" style="margin-top:14px">Desvincular elimina o acesso armazenado pelo SaaS, mas não garante revogação da autorização no provedor. Revogue também nas configurações do Mercado Pago, caso deseje. Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
 </section>
 <section class="card">
 <h2>Requisitos para habilitar checkout</h2>
@@ -88,6 +88,25 @@ async function boot(){
   get('merchantDescription').textContent=data.status==='connected'
     ?'Conexão registrada pelo backend. O checkout permanece inativo até a homologação dos pagamentos e webhooks.'
     :'Nenhuma integração de pagamentos está ativa para receber compras nesta loja.';
+  if(data.status==='connected'){
+   const unlink=get('disconnectMerchant');
+   unlink.hidden=false;
+   unlink.onclick=async()=>{
+    if(!window.confirm('Desvincular esta conta do L&A Royal SaaS? Os tokens locais serão apagados e novos acessos exigirão autorização novamente. A autorização no Mercado Pago pode precisar ser revogada separadamente.'))return;
+    unlink.disabled=true;
+    try{
+     const {data:result,error:unlinkError}=await supabase.functions.invoke('saas-merchant-oauth',{
+      body:{action:'disconnect',tenant_id:ctx.tenant.id}
+     });
+     if(unlinkError||result?.ok!==true||result.disconnected!==true)throw new Error('Não foi possível confirmar a desvinculação.');
+     disconnectState('Desvinculada do SaaS');
+     unlink.hidden=true;
+     message('Conta desvinculada. As credenciais locais foram apagadas. Para revogar o acesso também no Mercado Pago, consulte as autorizações da sua conta.');
+    }catch(e){
+     message('Não foi possível desvincular a conta. Tente novamente.',true);
+    }finally{unlink.disabled=false}
+   };
+  }
   if(data.status==='connected'&&data.provider_account_label&&data.last_verified_at){
    get('merchantIdentity').hidden=false;
    get('merchantLabel').textContent=data.provider_account_label;
