@@ -14,9 +14,10 @@ test('Sales embed identifies the tenant-scoped customer FK explicitly',()=>{
 test('Appointments embed identifies the tenant-scoped customer FK explicitly',()=>{
  assert.match(appointments,/saas_customers!saas_appointments_tenant_customer_fkey\(name\)/);
  assert.doesNotMatch(appointments,/saas_customers\(name\)/);
- assert.match(appointments,/\.eq\('tenant_id',/);
+ assert.match(appointments,/\.eq\('tenant_id',context\.tenant\.id\)/);
 });
 test('Both scripts are valid JavaScript',()=>{
  for(const source of [sales,appointments])
-  assert.doesNotThrow(()=>new vm.Script(source.replace(/^import\s*.*?;\s*$/gm,'')));
+  assert.doesNotThrow(()=>new vm.Script(source.replace(/import\s*\{?[^;]*?from\s*'[^']+';?/g,'')));
+
 });
