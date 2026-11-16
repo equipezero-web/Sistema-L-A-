@@ -118,3 +118,24 @@ end;
 $$;
 revoke all on function public.saas_online_payment_record_verified(uuid,text,text,numeric,text,text,text) from public,anon,authenticated;
 grant execute on function public.saas_online_payment_record_verified(uuid,text,text,numeric,text,text,text) to service_role;
+
+-- Provider webhook only knows the merchant user_id and payment id initially.
+-- Return a seller token to service-role code only after validating signed notification.
+create or replace function public.saas_online_payment_seller_token(p_account_id text)
+returns table(provider_account_id text,access_token text)
+language plpgsql security definer set search_path=''
+as $$
+begin
+ if p_account_id !~ '^[0-9]{5,30}$' then return; end if;
+ return query select c.provider_account_id,v.decrypted_secret
+ from private.saas_merchant_oauth_credentials c
+ join private.saas_online_order_activation a on a.tenant_id=c.tenant_id and a.enabled
+ join public.saas_merchant_payment_connections p on p.tenant_id=c.tenant_id and p.provider='mercado_pago' and p.status='connected'
+ join public.saas_tenants t on t.id=c.tenant_id and t.active and t.template_code='virtual_store'
+ join vault.decrypted_secrets v on v.id=c.access_secret_id
+ where c.provider_account_id=p_account_id and c.token_expires_at>now()+interval '30 seconds'
+ order by c.updated_at desc limit 1;
+end;
+$$;
+revoke all on function public.saas_online_payment_seller_token(text) from public,anon,authenticated;
+grant execute on function public.saas_online_payment_seller_token(text) to service_role;
