@@ -69,15 +69,15 @@ begin
  end loop;
  if v_total_qty>200 then raise exception 'Quantidade máxima excedida.'; end if;
  select count(*) into v_count from (
-   select (x->>'product_id')::uuid
-   from jsonb_array_elements(p_items) x
-   group by (x->>'product_id')::uuid
+   select (e.value->>'product_id')::uuid
+   from jsonb_array_elements(p_items) as e(value)
+   group by (e.value->>'product_id')::uuid
  ) i;
  if v_count<>jsonb_array_length(p_items) then raise exception 'Produto duplicado.'; end if;
 
- select jsonb_agg(jsonb_build_object('product_id',(x->>'product_id')::uuid,
-   'quantity',(x->>'quantity')::integer) order by (x->>'product_id')::uuid)
- into v_normalized from jsonb_array_elements(p_items) x;
+ select jsonb_agg(jsonb_build_object('product_id',(e.value->>'product_id')::uuid,
+   'quantity',(e.value->>'quantity')::integer) order by (e.value->>'product_id')::uuid)
+ into v_normalized from jsonb_array_elements(p_items) as e(value);
  v_fingerprint:=md5(v_normalized::text);
 
  select * into v_existing from private.saas_online_order_intents i
