@@ -1,0 +1,54 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+const sql=readFileSync('supabase/sql/saas_merchant_token_refresh_20261116.sql','utf8');
+const edge=readFileSync('supabase/functions/saas-merchant-refresh/index.ts','utf8');
+const html=readFileSync('app/pagamentos-loja.html','utf8');
+const inline=html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1]||'';
+test('Refresh claim is service-only, time-limited and tenant scoped',()=>{
+ assert.match(sql,/refresh_lease_id uuid/);
+ assert.match(sql,/refresh_lease_until timestamptz/);
+ assert.match(sql,/v\.token_expires_at>now\(\)\+interval '7 days'/);
+ assert.match(sql,/v\.refresh_lease_until>now\(\)/);
+ assert.match(sql,/v_lease:=gen_random_uuid\(\)/);
+ assert.match(sql,/now\(\)\+interval '90 seconds'/);
+ assert.match(sql,/vault\.decrypted_secrets/);
+ assert.match(sql,/status='connected'/);
+ assert.match(sql,/revoke all on function public\.saas_merchant_refresh_claim\(uuid\) from public,anon,authenticated/);
+ assert.match(sql,/grant execute on function public\.saas_merchant_refresh_claim\(uuid\) to service_role/);
+});
+test('Both rotated tokens and expiration are saved atomically to Vault with matching lease and seller',()=>{
+ assert.match(sql,/v\.refresh_lease_id is distinct from p_lease_id/);
+ assert.match(sql,/v\.provider_account_id<>p_account_id/);
+ assert.match(sql,/vault\.update_secret\(v\.access_secret_id,p_access_token\)/);
+ assert.match(sql,/vault\.update_secret\(v\.refresh_secret_id,p_refresh_token\)/);
+ assert.match(sql,/refresh_lease_id=null,refresh_lease_until=null/);
+ assert.match(sql,/grant execute on function public\.saas_merchant_refresh_commit\(uuid,uuid,text,text,text,integer\) to service_role/);
+ assert.match(sql,/grant execute on function public\.saas_merchant_refresh_release\(uuid,uuid\) to service_role/);
+});
+test('Refresh endpoint authenticates owner and MFA, checks tenant, provider and token rotation',()=>{
+ assert.match(edge,/userClient\.auth\.getUser\(\)/);
+ assert.match(edge,/userClient\.auth\.mfa\.getAuthenticatorAssuranceLevel\(\)/);
+ assert.match(edge,/member\?\.role!=="owner"/);
+ assert.match(edge,/tenant\?\.template_code!=="virtual_store"/);
+ assert.match(edge,/MP_MERCHANT_OAUTH_ENABLED/);
+ assert.match(edge,/grant_type:"refresh_token"/);
+ assert.match(edge,/https:\/\/api\.mercadopago\.com\/oauth\/token/);
+ assert.match(edge,/returnedAccount!==accountId/);
+ assert.match(edge,/scope\.split\(\/\\s\+\/\)\.includes\("offline_access"\)/);
+ assert.match(edge,/saas_merchant_refresh_claim/);
+ assert.match(edge,/saas_merchant_refresh_commit/);
+ assert.match(edge,/saas_merchant_refresh_release/);
+ assert.match(edge,/checkout_enabled:false/);
+ assert.doesNotMatch(edge,/saas_subscriptions|MP_ACCESS_TOKEN|window\.|localStorage|service_role_key/);
+});
+test('Owner interface can request refresh without receiving tokens or enabling checkout',()=>{
+ assert.match(html,/id="refreshMerchant" hidden/);
+ assert.match(inline,/action:'refresh',tenant_id:ctx\.tenant\.id/);
+ assert.match(inline,/renew\.disabled=true/);
+ assert.match(inline,/result\.renewed===true/);
+ assert.match(inline,/renew\.hidden=true/);
+ assert.doesNotMatch(inline,/refresh_token|access_token|client_secret/);
+ assert.doesNotThrow(()=>new vm.Script(inline.replace(/^import\s*\{[^}]+\}\s*from\s*'[^']+';\s*$/gm,'')));
+});
