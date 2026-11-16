@@ -51,6 +51,12 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 
 A antiga `store/reservar.html` redireciona barbearias para o agendamento integrado; links públicos da empresa devem preferir a entrada canônica. Ocultar um controle não substitui a verificação de autorização pelo servidor.
 
+## Preparação transacional de pedidos online (desativada por padrão)
+
+A migração `supabase/sql/saas_online_order_intents_20261116.sql` cria uma fila **privada** de intenções de pedido com isolamento por empresa, prevenção de repetição via `(tenant_id, request_key)`, verificação de produtos publicados, disponibilidade, quantidades, preços calculados no banco e expiração curta. A função `saas_online_order_prepare` é **exclusiva de `service_role`**. O acesso de clientes (`anon`/`authenticated`) a essas tabelas e função é explicitamente revogado.
+
+**A ativação comercial exige uma configuração privada habilitada por empresa**, ausente por padrão. Isso é infraestrutura para futura confirmação de pagamentos; não cria `saas_orders`, não gera cobranças, não reserva/baixa estoque, não recolhe dados pessoais e não liga o checkout da loja pública. A futura integração só poderá converter uma intenção em pedido real quando houver webhook de pagamento autenticado, conta recebedora validada, antifraude/idempotência e regras de estoque transacionais.
+
 ## Cotação segura de produtos na Loja Virtual
 
 A função `supabase/functions/saas-store-quote/index.ts` aceita apenas um slug válido de empresa publicada do modelo `virtual_store` e uma lista curta de identificadores UUID e quantidades. O servidor consulta novamente preços e disponibilidade em `saas_public_catalog_items`, calcula os subtotais em centavos e informa validade de até dois minutos. A operação é somente leitura, roda com privilégios anônimos sujeitos à publicação/RLS e não recebe preços enviados pelo navegador.
