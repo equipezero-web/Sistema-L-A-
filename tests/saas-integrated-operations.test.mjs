@@ -47,3 +47,19 @@ test('central does not activate merchant checkout or modify illustrative dashboa
  assert.match(dash,/Gráfico ilustrativo/);
  assert.doesNotMatch(js,/MP_ACCESS_TOKEN|service_role|from\('saas_subscriptions'\)\.update/);
 });
+
+test('support status changes notify creator and record administrative audit',()=>{
+ const sql=readFileSync('supabase/sql/saas_support_status_notifications_audit_20261116.sql','utf8');
+ assert.match(sql,/new\.created_by,'support'/);
+ assert.match(sql,/insert into public\.saas_audit_logs/);
+ assert.match(sql,/old\.status is not distinct from new\.status/);
+ assert.match(sql,/after update of status on public\.saas_support_tickets/);
+});
+test('PWA never caches private requests or cookies',()=>{
+ const manifest=JSON.parse(readFileSync('app/manifest.webmanifest','utf8'));
+ const worker=readFileSync('app/sw.js','utf8');
+ assert.equal(manifest.scope,'./');
+ assert.equal(manifest.start_url,'./index.html');
+ assert.match(worker,/No.*cache|Never cache/);
+ assert.doesNotMatch(worker,/caches\.open|cache\.put|CacheStorage/);
+});
