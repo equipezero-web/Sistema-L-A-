@@ -9,6 +9,7 @@ on:
       - 'assets/css/operations.css'
       - 'super-admin/index.html'
       - 'supabase/sql/saas_operational_*.sql'
+      - 'supabase/sql/saas_support_*.sql'
       - 'tests/saas-integrated-operations.test.mjs'
       - '.github/workflows/saas-integrated-operations.yml'
   push:
@@ -17,6 +18,7 @@ on:
       - 'app/central.html'
       - 'assets/js/operations.js'
       - 'supabase/sql/saas_operational_*.sql'
+      - 'supabase/sql/saas_support_*.sql'
       - 'tests/saas-integrated-operations.test.mjs'
 permissions:
   contents: read
