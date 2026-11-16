@@ -48,7 +48,8 @@ Deno.serve(async req=>{
  const admin=createClient(conf.url,conf.service,{auth:{autoRefreshToken:false,persistSession:false}});
  if(req.method==="GET"){
   const incoming=new URL(req.url);
-  if(incoming.pathname!==new URL(conf.redirect||new URL("/functions/v1/saas-merchant-oauth",conf.url)).pathname)return error("Rota inválida.",404);
+  // Supabase routes this function at /functions/v1/saas-merchant-oauth. The internal
+  // request pathname can be rewritten by the Edge gateway; do not compare it here.
   const state=incoming.searchParams.get("state")||"";
   if(!statePattern.test(state))return error("Autorização inválida.",400);
   // Consume the one-time state even on denial; a replay cannot exchange a code.
