@@ -1,0 +1,33 @@
+name: SaaS Checkout Transparente Security
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_checkout_transparente_payment_binding_20261116.sql'
+      - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
+      - 'store/loja-virtual.html'
+      - 'app/pagamentos-loja.html'
+      - 'tests/saas-checkout-transparente.test.mjs'
+      - 'tests/saas-merchant-payment-webhook.test.mjs'
+      - '.github/workflows/saas-checkout-transparente.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_checkout_transparente_payment_binding_20261116.sql'
+      - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
+      - 'store/loja-virtual.html'
+      - 'app/pagamentos-loja.html'
+      - 'tests/saas-checkout-transparente.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  transparent-checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-checkout-transparente.test.mjs tests/saas-merchant-payment-webhook.test.mjs tests/saas-virtual-store.test.mjs tests/saas-merchant-payment-readiness.test.mjs
+      - run: node scripts/verify-merchant-payment-webhook-http.mjs
