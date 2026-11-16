@@ -10,6 +10,7 @@
 <div id="status" class="status" role="status" aria-live="polite"></div>
 <section class="card" style="margin-bottom:18px">
 <h2>Recebimento independente por empresa</h2>
+<p><strong>Modelo escolhido: Checkout Transparente (dentro da Loja Virtual).</strong> O cliente finalizará o pagamento na própria página da loja, sem Checkout Pro. Na etapa comercial, usaremos componentes seguros do Mercado Pago para os dados de cartão e um backend separado para cobrar o vendedor autorizado via OAuth.</p>
 <p>As mensalidades da plataforma L&A Royal SaaS e as vendas realizadas por sua loja são operações diferentes. O dinheiro das vendas não deve ser direcionado automaticamente para a conta de assinatura do SaaS.</p>
 <p>O Mercado Pago prevê autorização por conta de vendedor. A conexão comercial só será liberada quando a integração OAuth, a identificação do recebedor e a validação de pagamentos forem concluídas e testadas.</p>
 </section>
@@ -22,7 +23,8 @@
 <p class="muted" style="margin-top:14px">A renovação é feita apenas quando o token está próximo do vencimento, sem revelar credenciais. Desvincular elimina o acesso armazenado pelo SaaS, mas não garante revogação da autorização no provedor. Revogue também nas configurações do Mercado Pago, caso deseje. Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
 </section>
 <section class="card">
-<h2>Requisitos para habilitar checkout</h2>
+<h2>Requisitos para habilitar o Checkout Transparente</h2>
+<p class="muted">O pagamento permanecerá no site, mas sua liberação depende da conclusão da integração e homologação.</p>
 <ul style="line-height:1.8">
 <li>Autorização OAuth específica do vendedor com validação de identidade e estado de sessão.</li>
 <li>Tokens armazenados somente no backend, com proteção e renovação segura.</li>
