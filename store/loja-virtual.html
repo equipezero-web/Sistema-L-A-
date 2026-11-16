@@ -60,6 +60,8 @@ footer{border-top:1px solid var(--line);padding:24px 0 45px;font-size:13px;opaci
  <div id="cartItems" class="cart-items"></div><div class="cart-total"><span>Subtotal estimado</span><span id="cartTotal">R$ 0,00</span></div>
  <p class="cart-warning">Esta seleção existe somente enquanto esta página estiver aberta. Preços e disponibilidade podem mudar. Nenhum pedido ou pagamento foi realizado.</p>
  <button class="btn" id="clearCart" type="button">Limpar seleção</button>
+ <button class="btn btn-primary" id="validateCart" type="button" disabled>Conferir valores no servidor</button>
+ <p id="quoteStatus" class="cart-warning" role="status" aria-live="polite">Selecione produtos para conferir os valores atuais. Nenhuma compra será realizada.</p>
  <button class="btn btn-primary" type="button" disabled aria-describedby="checkoutNotice">Finalizar compra — em integração</button>
  <span id="checkoutNotice" class="sr-only">O checkout ainda não está disponível; nenhum pedido será criado.</span>
 </aside>
