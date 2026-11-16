@@ -18,8 +18,8 @@
 <p><strong id="merchantState" role="status" aria-live="polite">Consultando…</strong></p>
 <p id="merchantDescription" class="muted">Aguarde a verificação.</p>
 <div id="merchantIdentity" hidden><p><strong>Conta identificada:</strong> <span id="merchantLabel"></span></p><p><strong>Última verificação:</strong> <time id="merchantVerified"></time></p></div>
-<div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><button class="btn" type="button" id="disconnectMerchant" hidden>Desvincular esta conta</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
-<p class="muted" style="margin-top:14px">Desvincular elimina o acesso armazenado pelo SaaS, mas não garante revogação da autorização no provedor. Revogue também nas configurações do Mercado Pago, caso deseje. Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
+<div class="nav-actions"><button class="btn primary" type="button" id="connectMerchant" disabled>Conectar conta — em preparação</button><button class="btn" type="button" id="disconnectMerchant" hidden>Desvincular esta conta</button><button class="btn" type="button" id="refreshMerchant" hidden>Verificar renovação do token</button><a class="btn" href="./plano.html">Assinatura do SaaS</a></div>
+<p class="muted" style="margin-top:14px">A renovação é feita apenas quando o token está próximo do vencimento, sem revelar credenciais. Desvincular elimina o acesso armazenado pelo SaaS, mas não garante revogação da autorização no provedor. Revogue também nas configurações do Mercado Pago, caso deseje. Conecte-se somente pela página oficial de autorização do Mercado Pago. A plataforma não solicita Access Token, senha ou chave do Mercado Pago neste painel. Não informe credenciais por mensagens, formulários improvisados ou campos de texto.</p>
 </section>
 <section class="card">
 <h2>Requisitos para habilitar checkout</h2>
@@ -89,6 +89,21 @@ async function boot(){
     ?'Conexão registrada pelo backend. O checkout permanece inativo até a homologação dos pagamentos e webhooks.'
     :'Nenhuma integração de pagamentos está ativa para receber compras nesta loja.';
   if(data.status==='connected'){
+   const renew=get('refreshMerchant');
+   renew.hidden=false;
+   renew.onclick=async()=>{
+    renew.disabled=true;
+    try{
+     const {data:result,error:renewError}=await supabase.functions.invoke('saas-merchant-refresh',{
+      body:{action:'refresh',tenant_id:ctx.tenant.id}
+     });
+     if(renewError||result?.ok!==true)throw new Error('Não foi possível confirmar a renovação.');
+     message(result.renewed===true
+      ?'Token renovado e guardado no servidor. O checkout permanece indisponível.'
+      :'A renovação não foi necessária ou já está sendo processada. Nenhuma cobrança foi feita.');
+    }catch(e){message('Falha na renovação. Verifique a configuração ou autorize novamente sua conta.',true)}
+    finally{renew.disabled=false}
+   };
    const unlink=get('disconnectMerchant');
    unlink.hidden=false;
    unlink.onclick=async()=>{
@@ -101,6 +116,7 @@ async function boot(){
      if(unlinkError||result?.ok!==true||result.disconnected!==true)throw new Error('Não foi possível confirmar a desvinculação.');
      disconnectState('Desvinculada do SaaS');
      unlink.hidden=true;
+     renew.hidden=true;
      message('Conta desvinculada. As credenciais locais foram apagadas. Para revogar o acesso também no Mercado Pago, consulte as autorizações da sua conta.');
     }catch(e){
      message('Não foi possível desvincular a conta. Tente novamente.',true);
