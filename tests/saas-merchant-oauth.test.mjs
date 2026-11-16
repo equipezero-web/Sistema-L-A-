@@ -30,6 +30,8 @@ test('OAuth Edge Function is feature gated, verifies owner, strict callback and 
  assert.match(source,/MP_MERCHANT_CLIENT_SECRET/);
  assert.match(source,/redirect!==expected/);
  assert.match(source,/client\.auth\.getUser\(\)/);
+ assert.match(source,/client\.auth\.mfa\.getAuthenticatorAssuranceLevel\(\)/);
+ assert.match(source,/aal\.currentLevel==="aal1"&&aal\.nextLevel==="aal2"/);
  assert.match(source,/membership\?\.role!=="owner"/);
  assert.match(source,/tenant\?\.template_code!=="virtual_store"/);
  assert.match(source,/statePattern\.test\(state\)/);
