@@ -16,4 +16,10 @@ console.log('Unauthenticated OAuth start HTTP status:',withoutSession.status);
 assert.equal(withoutSession.status,401,'Unauthenticated merchant authorization must be rejected');
 const body=await withoutSession.text();
 assert.doesNotMatch(body,/authorization_url|access_token|refresh_token|client_secret/);
-console.log('OAuth endpoint rejects invalid callback and unauthenticated start, without leaking credentials.');
+const withoutUnlinkSession=await fetch(endpoint,{method:'POST',headers,
+ body:JSON.stringify({action:'disconnect',tenant_id:'00000000-0000-4000-8000-000000000000'}),
+ signal:AbortSignal.timeout(20000)});
+assert.equal(withoutUnlinkSession.status,401,'Unauthenticated merchant disconnect must be rejected');
+const unlinkBody=await withoutUnlinkSession.text();
+assert.doesNotMatch(unlinkBody,/access_token|refresh_token|client_secret/);
+console.log('OAuth endpoint rejects invalid callback, unauthenticated start and unauthenticated disconnect.');
