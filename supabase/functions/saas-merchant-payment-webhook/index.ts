@@ -57,7 +57,7 @@ Deno.serve(async(request:Request)=>{
  const data=payload.data as {id?:unknown}|undefined;
  const accountId=String(payload.user_id||"");
  if(payload.type!=="payment"||String(data?.id||"")!==paymentId||!idPattern.test(accountId))
-  return json({error:"Evento não corresponde à assinatura."},400);
+  return json({error:"Evento não corresponde a pagamento de loja."},400);
 
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:sellers,error:sellerError}=await db.rpc("saas_online_payment_seller_token",{p_account_id:accountId});
@@ -78,37 +78,22 @@ Deno.serve(async(request:Request)=>{
   const payment=await upstream.json();
   const intentId=String(payment.external_reference||"");
   const paymentStatus=String(payment.status||"");
-  // Checkout Pro may expose its preference through the merchant order rather than
-  // the payment payload. Confirm both belong to the same verified payment.
-  let preference=String(payment.preference_id||"");
-  const merchantOrderId=String(payment.order?.id||"");
-  if(!preference&&idPattern.test(merchantOrderId)){
-   const orderResponse=await fetch("https://api.mercadopago.com/merchant_orders/"+merchantOrderId,{
-    headers:{"Authorization":"Bearer "+seller.access_token},signal:AbortSignal.timeout(12000)
-   });
-   if(!orderResponse.ok)return json({error:"Não foi possível verificar o pedido comercial."},502);
-   const order=await orderResponse.json();
-   const includesPayment=Array.isArray(order.payments)&&order.payments.some((entry:{id?:unknown})=>String(entry.id||"")===paymentId);
-   if(String(order.id||"")!==merchantOrderId||!includesPayment||
-     String(order.external_reference||"")!==intentId)
-     return json({error:"Pedido comercial não corresponde ao pagamento."},422);
-   preference=String(order.preference_id||"");
-  }
+  // Checkout Transparente uses the payment itself, not Checkout Pro preferences.
+  // This payment must already be bound to a tenant intent by the trusted backend.
   const amount=Number(payment.transaction_amount);
   const collector=String(payment.collector_id||payment.collector?.id||"");
   if(String(payment.id)!==paymentId||collector!==accountId||!uuid.test(intentId)||
     !validStatus.has(paymentStatus)||!Number.isFinite(amount)||amount<0||amount>1_000_000||
-    String(payment.currency_id)!=="BRL"||preference.length<8)
+    String(payment.currency_id)!=="BRL")
     return json({error:"Pagamento não corresponde ao pedido da loja."},422);
-  const {data:context,error:contextError}=await db.rpc("saas_online_payment_context",{p_intent_id:intentId});
+  const {data:context,error:contextError}=await db.rpc("saas_online_transparent_payment_context",{p_intent_id:intentId,p_payment_id:paymentId});
   if(contextError||!Array.isArray(context)||context.length!==1||
     String(context[0].provider_account_id)!==accountId||
-    String(context[0].preference_id)!==preference||
     Math.round(Number(context[0].subtotal)*100)!==Math.round(amount*100))
     return json({error:"Pagamento não corresponde ao pedido autorizado."},422);
-  const {data:recorded,error:saveError}=await db.rpc("saas_online_payment_record_verified",{
+  const {data:recorded,error:saveError}=await db.rpc("saas_online_transparent_record_verified",{
    p_intent_id:intentId,p_payment_id:paymentId,p_account_id:accountId,
-   p_amount:amount,p_currency:"BRL",p_status:paymentStatus,p_preference_id:preference
+   p_amount:amount,p_currency:"BRL",p_status:paymentStatus
   });
   if(saveError||recorded!==true)return json({error:"Não foi possível confirmar o registro."},503);
   return json({ok:true,recorded:true,fulfillment_enabled:false});
