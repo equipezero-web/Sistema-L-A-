@@ -97,6 +97,10 @@ Deno.serve(async req=>{
   auth:{autoRefreshToken:false,persistSession:false}});
  const {data:userData,error:userError}=await client.auth.getUser();
  if(userError||!userData?.user)return error("Sessão inválida.",401);
+ const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+ if(aalError||!aal)return error("Não foi possível validar a autenticação da conta.",403);
+ if(aal.currentLevel==="aal1"&&aal.nextLevel==="aal2")
+  return error("Confirme o segundo fator de autenticação antes de conectar uma conta de pagamentos.",403);
  let body:Record<string,unknown>;
  try{const raw=await req.text();if(raw.length>2048)return error("Solicitação muito grande.",413);body=JSON.parse(raw)}
  catch{return error("Solicitação inválida.",400)}
