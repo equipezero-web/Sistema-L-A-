@@ -151,7 +151,8 @@ async function boot() {
   if (subError) throw subError;
   $('#adminName').textContent = profile.full_name || user.email || 'Super Admin';
   $('#tenantCount').textContent = tenants ?? 0;
-  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await Promise.all([loadAudit(),loadPlatformSupport()]);document.body.classList.add('super-admin-ready');
+  $('#subscriptionCount').textContent = subscriptions ?? 0;await loadTenants();await loadAudit();document.body.classList.add('super-admin-ready');
+  void loadPlatformSupport().catch(err=>{ $('#supportStatus').textContent='Não foi possível carregar o suporte: '+(err?.message||'Erro desconhecido.'); });
 }
 
 $('#logout')?.addEventListener('click', async () => { await signOut(); location.href = '../auth/login.html'; });
