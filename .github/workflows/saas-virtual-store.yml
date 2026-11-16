@@ -5,6 +5,7 @@ on:
       - 'store/index.html'
       - 'store/loja-virtual.html'
       - 'assets/js/virtual-storefront.js'
+      - 'supabase/functions/saas-store-quote/index.ts'
       - 'tests/saas-public-store-loading.test.mjs'
       - 'tests/saas-virtual-store.test.mjs'
       - '.github/workflows/saas-virtual-store.yml'
