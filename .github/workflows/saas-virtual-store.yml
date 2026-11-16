@@ -6,6 +6,7 @@ on:
       - 'store/loja-virtual.html'
       - 'assets/js/virtual-storefront.js'
       - 'supabase/functions/saas-store-quote/index.ts'
+      - 'scripts/verify-saas-store-quote-http.mjs'
       - 'tests/saas-public-store-loading.test.mjs'
       - 'tests/saas-virtual-store.test.mjs'
       - '.github/workflows/saas-virtual-store.yml'
@@ -31,3 +32,5 @@ jobs:
           node-version: '22'
       - name: Public tenant experience and safe cart regression
         run: node --test tests/saas-virtual-store.test.mjs tests/saas-public-store-loading.test.mjs
+      - name: Confirm deployed public quote is read-only and rejects invalid tenants
+        run: node scripts/verify-saas-store-quote-http.mjs
