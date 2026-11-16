@@ -24,7 +24,7 @@ async function runCase({
           add(value){classes.add(value)},remove(value){classes.delete(value)},
           contains(value){return classes.has(value)}
         },
-        addEventListener(){},setAttribute(k,v){this.attributes.set(k,v)}
+        addEventListener(){},querySelectorAll(){return []},querySelector(){return null},focus(){},setAttribute(k,v){this.attributes.set(k,v)}
       });
     }
     return elements.get(key);
@@ -47,14 +47,15 @@ async function runCase({
     }
   };
   const document={
-    querySelector:node,querySelectorAll(){return []}
+    querySelector:node,querySelectorAll(){return []},
+    addEventListener(){},body:{classList:{add(){},remove(){},contains(){return false}}}
   };
   const context={
     supabase,
     getVerifiedUser:async()=>session?{id:'test-user',email:'new@example.invalid'}:null,
     getAAL:async()=>aal,signOut:async()=>{},
     document,location,
-    Intl,Date,console,window:{},
+    Intl,Date,console,window:{innerWidth:1280,addEventListener(){}},
     setInterval(){return 1},clearInterval(){}
   };
   const promise=vm.runInNewContext(executable+'\nboot();',context);

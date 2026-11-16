@@ -1,0 +1,41 @@
+name: SaaS Core Priorities Safety
+on:
+  pull_request:
+    paths:
+      - 'assets/js/vendas.js'
+      - 'assets/js/financeiro.js'
+      - 'assets/js/agenda.js'
+      - 'assets/js/appearance.js'
+      - 'app/vendas.html'
+      - 'app/financeiro.html'
+      - 'app/relatorios.html'
+      - 'app/aparencia.html'
+      - 'app/index.html'
+      - 'tests/saas-core-priorities.test.mjs'
+      - '.github/workflows/saas-core-priorities.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/vendas.js'
+      - 'assets/js/financeiro.js'
+      - 'assets/js/agenda.js'
+      - 'assets/js/appearance.js'
+      - 'app/financeiro.html'
+      - 'app/relatorios.html'
+      - 'app/aparencia.html'
+      - 'app/index.html'
+      - 'tests/saas-core-priorities.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test security hardening, exports and dashboard presentation
+        run: node --test tests/saas-core-priorities.test.mjs tests/saas-customer-embeds.test.mjs tests/saas-ui-consistency.test.mjs

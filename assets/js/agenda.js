@@ -36,7 +36,7 @@ async function load(){
  fillSelect('employee',employees.filter(x=>x.status==='active'),'Atendimento geral');
  if(context.tenant.template_code==='barbershop'&&context.canManage){
   get('barberAdmin').classList.remove('hidden');
-  get('publicBookingLink').href=new URL('../../store/reservar.html?slug='+
+  get('publicBookingLink').href=new URL('../../store/?slug='+
     encodeURIComponent(context.tenant.slug),import.meta.url).href;
   await Promise.all([loadBookingHours(),loadRequests()]);
  }
