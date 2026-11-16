@@ -67,9 +67,12 @@ footer{border-top:1px solid var(--line);padding:24px 0 45px;font-size:13px;opaci
   <h3 id="transparentCheckoutTitle" style="margin:8px 0">Pagamento dentro da loja</h3>
   <p style="font-size:13px;line-height:1.6">A integração será feita aqui, sem redirecionar para o Checkout Pro. Os meios previstos são Pix, cartão e boleto, conforme disponibilidade do vendedor e homologação.</p>
   <p style="font-size:13px;line-height:1.6"><strong>Pagamentos ainda indisponíveis.</strong> Nenhum dado de cartão é solicitado, nenhum pedido é criado e não há cobrança.</p>
+  <p id="transparentPaymentStatus" class="cart-warning" role="status" aria-live="polite">Verificando disponibilidade do pagamento integrado…</p>
+  <div id="paymentBrick_container" hidden aria-label="Formulário protegido do Mercado Pago"></div>
  </section>
  <button class="btn btn-primary" type="button" disabled aria-describedby="checkoutNotice">Finalizar compra — em integração</button>
  <span id="checkoutNotice" class="sr-only">O checkout ainda não está disponível; nenhum pedido será criado.</span>
 </aside>
 <script type="module" src="../assets/js/virtual-storefront.js"></script>
+<script type="module" src="../assets/js/transparent-payment.js"></script>
 </body></html>
