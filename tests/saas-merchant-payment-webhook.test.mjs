@@ -47,7 +47,7 @@ test('Signed callback only records provider-confirmed payments with disabled ful
  assert.ok(!webhook.includes('https://api.mercadopago.com/merchant_orders/'));
  assert.ok(!webhook.includes('payment.preference_id'));
  assert.match(webhook,/saas_online_transparent_payment_context/);
- assert.match(webhook,/saas_online_transparent_record_verified/);
+ assert.match(webhook,/saas_online_transparent_reconcile_attempt/);
  assert.match(webhook,/String\(payment\.currency_id\)!=="BRL"/);
  assert.doesNotMatch(webhook,/saas_online_payment_record_verified/);
  assert.match(webhook,/fulfillment_enabled:false/);
