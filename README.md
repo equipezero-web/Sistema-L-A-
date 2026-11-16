@@ -24,7 +24,7 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 | Modelo | Situação do site público |
 | --- | --- |
 | `barbershop` | Redireciona para `store/barbearia.html`, com a interface de cliente e agendamento integrada |
-| `virtual_store` | Catálogo público disponível; carrinho, checkout e pedidos de cliente ainda requerem integração específica |
+| `virtual_store` | Página pública dedicada `store/loja-virtual.html` inspirada na L&A Advisory; pesquisa, ordenação e seleção local de produtos sem pagamentos; checkout e pedidos transacionais continuam pendentes |
 | `instagram_orders` | Apresentação pública de pacotes; pedido transacional integrado ainda requer implementação |
 | `business_communication` | Acesso público restrito; dados de CRM e mensagens não são expostos |
 | `generic` | Catálogo geral público de produtos/serviços |
@@ -44,6 +44,7 @@ O modelo (`template_code`) é escolhido na criação da empresa. **Não há sele
 
 - Site da empresa: `store/?slug=<slug>`
 - Barbearia pública moderna: `store/barbearia.html?slug=<slug>`
+- Loja virtual pública: `store/loja-virtual.html?slug=<slug>` (acessada pela entrada canônica)
 - Edição da loja: `app/aparencia.html`
 - Administração: `app/index.html`
 - Configurações: `app/configuracoes.html`
@@ -55,7 +56,7 @@ A antiga `store/reservar.html` redireciona barbearias para o agendamento integra
 O projeto usa testes Node.js sem dependências npm obrigatórias para grande parte da suíte. A partir da raiz:
 
 ```sh
-node --test tests/saas-ui-consistency.test.mjs
+node --test tests/saas-ui-consistency.test.mjs tests/saas-virtual-store.test.mjs
 node --test tests/saas-settings-public-store.test.mjs tests/saas-business-templates.test.mjs tests/saas-original-barber-template.test.mjs tests/saas-barber-designer.test.mjs tests/saas-public-store-loading.test.mjs
 ```
 

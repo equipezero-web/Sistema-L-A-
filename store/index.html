@@ -127,8 +127,9 @@ async function loadStore() {
 
     // Canonical public entry point; a tenant's template is chosen at creation and
     // cannot be changed from the settings panel. Preserve existing tenant data.
-    if (store.template_code === 'barbershop') {
-      location.replace(new URL('./barbearia.html?slug=' + encodeURIComponent(slug), location.href).href);
+    if (store.template_code === 'barbershop' || store.template_code === 'virtual_store') {
+      const target=store.template_code==='barbershop'?'barbearia.html':'loja-virtual.html';
+      location.replace(new URL('./'+target+'?slug='+encodeURIComponent(slug), location.href).href);
       return;
     }
 
