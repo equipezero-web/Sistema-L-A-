@@ -18,6 +18,6 @@ test('Appointments embed identifies the tenant-scoped customer FK explicitly',()
 });
 test('Both scripts are valid JavaScript',()=>{
  for(const source of [sales,appointments])
-  assert.doesNotThrow(()=>new vm.Script(source.replace(/import\s*\{?[^;]*?from\s*'[^']+';?/g,'')));
+  assert.doesNotThrow(()=>new vm.Script(source.replace(/import\s*\{?[^;]*?from\s*'[^']+';?/g,'').replace(/import\.meta\.url/g,"'https://example.invalid/app/agenda.html'")));
 
 });
