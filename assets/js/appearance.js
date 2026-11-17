@@ -14,11 +14,13 @@ let modelBannerUrl='';
 const modelTextIds=['heroHeadline','heroDescription','modelNotice'];
 function modelEditorPreview(){
  $('#modelGapLabel').textContent=$('#modelSectionGap').value+'px';
+ $('#modelCardRadiusLabel').textContent=$('#modelCardRadius').value+'px';
  const headline=$('#heroHeadline').value.trim();
  if(headline)$('#previewName').textContent=headline;
  else if(ctx)$('#previewName').textContent=ctx.tenant.name;
 }
 $('#modelSectionGap').addEventListener('input',modelEditorPreview);
+$('#modelCardRadius').addEventListener('input',modelEditorPreview);
 for(const id of modelTextIds)$('#'+id).addEventListener('input',modelEditorPreview);
 
 function readGrad(){const k=$('#gradientTarget').value,g=gradientState[k];g.mode=$('#gradientMode').value;g.start=$('#gradientStart').value;g.end=$('#gradientEnd').value;g.angle=+$('#gradientAngle').value;if(g.mode==='solid')$('#'+solidField[k]).value=g.start;}
@@ -36,6 +38,7 @@ async function load(){try{ctx=await getBusinessContext();if(!['owner','admin'].i
  $('#heroDescription').value=String(modelDesign.description||'').slice(0,350);
  $('#modelNotice').value=String(modelDesign.notice||'').slice(0,200);
  $('#modelSectionGap').value=String(Math.max(12,Math.min(80,Number(modelDesign.sectionGap)||28)));
+ $('#modelCardRadius').value=String(Math.max(0,Math.min(40,Number(modelDesign.cardRadius??20))));
  modelBannerUrl=typeof modelDesign.bannerUrl==='string'?modelDesign.bannerUrl:'';
  $('#modelEditorNotice').textContent=ctx.tenant.template_code==='business_communication'?'O portal de comunicação exibe somente apresentação pública; CRM e conversas continuam privados.':ctx.tenant.template_code==='instagram_orders'?'Não solicite senhas do Instagram; este modelo apresenta pacotes sem confirmar compras automaticamente.':'Os pagamentos e serviços dependem das integrações autorizadas para este modelo.';
  modelEditorPreview();preview();if(!subscriptionActive)msg('Prévia liberada. Para publicar a loja, ative o plano Royal 30 de R$ 30/mês.',true)}catch(e){msg(e.message,true)}}
@@ -56,5 +59,5 @@ $('#logoFile').addEventListener('change',()=>{const f=$('#logoFile').files[0];if
 $('#themeForm').addEventListener('input',e=>{if(e.target.id!=='logoFile')preview()});
 $('#themeForm').addEventListener('submit',async e=>{e.preventDefault();try{if(!ctx||!['owner','admin'].includes(ctx.membership.role))throw new Error('Seu perfil não pode alterar a aparência.');const button=e.submitter;button.disabled=true;button.textContent='Salvando...';if($('#published').checked&&!subscriptionActive)throw new Error('Ative o plano Royal 30 para publicar sua loja.');let logo=$('#logoUrl').value.trim()||null;const file=$('#logoFile').files[0];if(file){msg('Enviando logo...');logo=await uploadTenantAsset(ctx.tenant.id,file,'branding');$('#logoUrl').value=logo}const row={logo_url:logo,primary_color:$('#primary').value.toUpperCase(),secondary_color:$('#secondary').value.toUpperCase(),background_color:$('#background').value.toUpperCase(),text_color:$('#textColor').value.toUpperCase(),font_style:$('#font').value,published:subscriptionActive&&$('#published').checked};const existing=await supabase.from('saas_store_themes').select('design_settings').eq('tenant_id',ctx.tenant.id).single();if(existing.error)throw existing.error;const bannerFile=$('#modelBannerFile').files[0];
  if(bannerFile){msg('Enviando banner...');modelBannerUrl=await uploadTenantAsset(ctx.tenant.id,bannerFile,'branding')}
- const modelContent={headline:$('#heroHeadline').value.trim().slice(0,100),description:$('#heroDescription').value.trim().slice(0,350),notice:$('#modelNotice').value.trim().slice(0,200),sectionGap:Math.max(12,Math.min(80,Number($('#modelSectionGap').value)||28)),bannerUrl:modelBannerUrl};
+ const modelContent={headline:$('#heroHeadline').value.trim().slice(0,100),description:$('#heroDescription').value.trim().slice(0,350),notice:$('#modelNotice').value.trim().slice(0,200),sectionGap:Math.max(12,Math.min(80,Number($('#modelSectionGap').value)||28)),cardRadius:Math.max(0,Math.min(40,Number($('#modelCardRadius').value)||0)),bannerUrl:modelBannerUrl};
  row.design_settings={...(existing.data?.design_settings||{}),themeGradients:gradientState,modelContent};const{error}=await supabase.from('saas_store_themes').update(row).eq('tenant_id',ctx.tenant.id);if(error)throw error;preview();msg(row.published?'Aparência salva e loja publicada.':'Aparência salva como prévia privada.');$('#logoFile').value='';$('#modelBannerFile').value=''}catch(e){msg(e.message,true)}finally{const b=$('#themeForm button[type="submit"]');b.disabled=false;b.textContent='Salvar aparência'}});load();
