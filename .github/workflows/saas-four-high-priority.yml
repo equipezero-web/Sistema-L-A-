@@ -1,0 +1,41 @@
+name: SaaS Four High Priority Areas
+on:
+  pull_request:
+    paths:
+      - 'app/aparencia.html'
+      - 'app/seguranca.html'
+      - 'app/operacao-modelo.html'
+      - 'assets/js/appearance.js'
+      - 'assets/js/operations.js'
+      - 'assets/js/account-security.js'
+      - 'assets/js/model-workflow.js'
+      - 'assets/js/password-recovery.js'
+      - 'store/index.html'
+      - 'auth/login.html'
+      - 'auth/recuperar.html'
+      - 'supabase/functions/saas-reception-admin/index.ts'
+      - 'supabase/sql/saas_model_work_items_20261117.sql'
+      - 'tests/saas-high-priority-four-areas.test.mjs'
+      - '.github/workflows/saas-four-high-priority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/saas-high-priority-four-areas.test.mjs'
+      - 'supabase/sql/saas_model_work_items_20261117.sql'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/appearance.js
+      - run: node --check assets/js/operations.js
+      - run: node --check assets/js/account-security.js
+      - run: node --check assets/js/password-recovery.js
+      - run: node --check assets/js/model-workflow.js
+      - run: node --test tests/saas-high-priority-four-areas.test.mjs

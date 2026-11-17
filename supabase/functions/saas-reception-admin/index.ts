@@ -39,6 +39,13 @@ Deno.serve(async(req:Request)=>{
   const {data:identity,error:identityError}=await service.auth.getUser(jwt);
   const user=identity?.user;
   if(identityError||!user)return response({error:'Sessão inválida.'},401,origin);
+  // The identity above was verified against Supabase Auth. The signed JWT's
+  // AAL is trusted only after getUser(jwt) has succeeded.
+  let assurance='aal1';
+  try {
+   const claims=JSON.parse(atob(jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+   if(claims.sub===user.id&&claims.aal==='aal2')assurance='aal2';
+  } catch { /* fail closed for sensitive actions */ }
   const raw=await req.text();
   if(raw.length>2000)return response({error:'Solicitação muito grande.'},413,origin);
   const body=JSON.parse(raw);
@@ -61,6 +68,10 @@ Deno.serve(async(req:Request)=>{
   if(listError)throw listError;
   const known=Array.isArray(accounts)?accounts:[];
   if(action==='list')return response({ok:true,accounts:known},200,origin);
+  if(!['create','disable','reset-password'].includes(action))
+   return response({error:'Ação inválida.'},400,origin);
+  if(assurance!=='aal2')
+   return response({error:'Confirme o segundo fator (MFA) antes de gerenciar as contas da recepção.'},403,origin);
 
   if(action==='create'){
    const username=String(body.username||'').trim().toLowerCase();
