@@ -26,7 +26,7 @@ body.gradient-background{background:var(--gradient-background)!important}
 body.gradient-primary .btn.primary{background:var(--gradient-primary)!important}
 body.gradient-secondary .store-card{background:var(--gradient-secondary)!important}
 body.gradient-text :is(h1,h2,h3,p,small,.eyebrow,.pill,strong,.store-intro,.store-detail){background-image:var(--gradient-text);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow" id="storeEyebrow"></div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><p id="storeStatus"></p><p><a id="bookingLink" class="btn primary" hidden>Solicitar horário online</a></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
+</style></head><body><main class="shell"><header class="store-head"><img id="logo" class="store-logo" hidden alt="Logo da empresa"><div class="eyebrow" id="storeEyebrow"></div><h1 id="storeName">Carregando loja...</h1><p id="storeType"></p><span class="template-pill" id="storeModelLabel" hidden></span><p class="store-intro" id="storeIntro"></p><figure id="modelBanner" hidden style="margin:12px 0 20px"><img id="modelBannerImage" alt="Banner da empresa" loading="lazy" style="max-width:100%;width:100%;max-height:340px;object-fit:cover;border-radius:16px"></figure><p id="storeStatus"></p><p><a id="bookingLink" class="btn primary" hidden>Solicitar horário online</a></p><p class="template-note" id="templateNotice"></p></header><section id="catalog" class="catalog"></section></main><script>
 window.__laPublicStoreSettled = false;
 window.setTimeout(function () {
   if (window.__laPublicStoreSettled) return;
@@ -161,14 +161,26 @@ async function loadStore() {
       introEl.textContent=definition.intro;
       noticeEl.textContent=definition.notice;
     }
+    const content=store.design_settings?.modelContent||{};
+    const allowedBanner=safeImageUrl(content.bannerUrl);
+    if(allowedBanner){
+      document.getElementById('modelBannerImage').src=allowedBanner;
+      document.getElementById('modelBanner').hidden=false;
+    }
+    if(typeof content.sectionGap==='number'&&content.sectionGap>=12&&content.sectionGap<=80){
+      catalogEl.style.rowGap=content.sectionGap+'px';
+    }
+    if(typeof content.description==='string'&&content.description.trim())introEl.textContent=content.description.slice(0,350);
+    if(typeof content.notice==='string'&&content.notice.trim())noticeEl.textContent=content.notice.slice(0,200);
+    const publicHeadline=typeof content.headline==='string'?content.headline.trim().slice(0,100):'';
     if (model==='business_communication') {
-      nameEl.textContent=store.name;
+      nameEl.textContent=publicHeadline||store.name;
       typeEl.textContent=store.business_type || 'Comunicação empresarial';
       statusEl.textContent='Acesso restrito aos membros autorizados da empresa.';
       catalogEl.hidden=true;
       return;
     }
-    nameEl.textContent = store.name;
+    nameEl.textContent = publicHeadline||store.name;
     typeEl.textContent = store.business_type || '';
     if (safeImageUrl(store.logo_url)) {
       logoEl.src = safeImageUrl(store.logo_url);
