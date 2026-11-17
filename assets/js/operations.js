@@ -7,6 +7,8 @@ const channels=[
  {name:'Minha Loja',hint:'Cores, gradientes, fonte, logo e seções',href:'./aparencia.html',roles:['owner','admin']},
  {name:'Configurações empresariais',hint:'Módulos e permissões',href:'./configuracoes.html',roles:['owner']},
  {name:'Modelos de empresa',hint:'Configurações do modelo escolhido no cadastro',href:'./aparencia.html',roles:['owner','admin']},
+ {name:'Segurança da conta',hint:'Segundo fator e encerramento de sessões',href:'./seguranca.html',roles:['owner','admin','employee']},
+ {name:'Acessos da recepção',hint:'Criar e desativar usuários da recepção',href:'./recepcao-contas.html',roles:['owner','admin'],template:'barbershop'},
  {name:'Equipe e funcionários',hint:'Cadastro de equipe; acesso de usuário é uma etapa separada',href:'./funcionarios.html',roles:['owner','admin']},
  {name:'Clientes',hint:'Cadastros e histórico permitido',href:'./clientes.html',roles:['owner','admin','employee']},
  {name:'Agenda',hint:'Agendamentos e confirmações',href:'./agenda.html',roles:['owner','admin','employee'],module:'appointments'},
