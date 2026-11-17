@@ -157,6 +157,22 @@ async function boot(){
   byId('brandName').textContent=store.name;byId('footerBrand').textContent=store.name;
   byId('heroTitle').replaceChildren(document.createTextNode('Descubra '),node('em','','nossos produtos.'));
   byId('heroSubtitle').textContent='Conheça o catálogo de '+store.name+'. Selecione seus favoritos e acompanhe o subtotal estimado.';
+  const content=store.design_settings?.modelContent||{};
+  if(typeof content.headline==='string'&&content.headline.trim())
+    byId('heroTitle').textContent=content.headline.trim().slice(0,100);
+  if(typeof content.description==='string'&&content.description.trim())
+    byId('heroSubtitle').textContent=content.description.trim().slice(0,350);
+  if(typeof content.sectionGap==='number'&&content.sectionGap>=12&&content.sectionGap<=80)
+    byId('productGrid').style.gap=content.sectionGap+'px';
+  if(typeof content.cardRadius==='number'&&content.cardRadius>=0&&content.cardRadius<=40)
+    document.documentElement.style.setProperty('--product-radius',content.cardRadius+'px');
+  const banner=safeImage(content.bannerUrl);
+  if(banner){
+    const image=document.createElement('img');
+    image.src=banner;image.alt='Banner da empresa';image.loading='lazy';
+    image.style.cssText='width:100%;max-height:320px;object-fit:cover;border-radius:16px;margin-top:18px';
+    byId('heroSubtitle').after(image);
+  }
   const logo=safeImage(store.logo_url);if(logo){byId('logo').src=logo;byId('logo').hidden=false}
   const {data,error}=await supabase.from('saas_public_catalog_items')
    .select('id,item_type,name,description,price,image_url,in_stock')
