@@ -30,7 +30,7 @@ test('All transparent payment functions deny browser users',()=>{
 });
 test('Webhook no longer requires Pro preferences and verifies the actual payment',()=>{
  assert.match(webhook,/saas_online_transparent_payment_context/);
- assert.match(webhook,/saas_online_transparent_record_verified/);
+ assert.match(webhook,/saas_online_transparent_reconcile_attempt/);
  assert.match(webhook,/payment\.external_reference/);
  assert.match(webhook,/collector!==accountId/);
  assert.match(webhook,/String\(payment\.currency_id\)!=="BRL"/);
