@@ -5,7 +5,7 @@ export async function submitMerchantPayment({
 }){
  if(typeof merchantAccessToken!=='string'||merchantAccessToken.length<20)
   throw new Error('Merchant OAuth access token not available');
- if(typeof idempotencyKey!=='string'||!/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(idempotencyKey))
+ if(typeof idempotencyKey!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idempotencyKey))
   throw new Error('Invalid stable idempotency key');
  if(!payload||typeof payload!=='object'||!Number.isFinite(payload.transaction_amount)||
     payload.transaction_amount<=0||!payload.external_reference||!payload.payment_method_id)
