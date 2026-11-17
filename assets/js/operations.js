@@ -10,6 +10,8 @@ const channels=[
  {name:'Segurança da conta',hint:'Segundo fator e encerramento de sessões',href:'./seguranca.html',roles:['owner','admin','employee']},
  {name:'Acessos da recepção',hint:'Criar e desativar usuários da recepção',href:'./recepcao-contas.html',roles:['owner','admin'],template:'barbershop'},
  {name:'Equipe e funcionários',hint:'Cadastro de equipe; acesso de usuário é uma etapa separada',href:'./funcionarios.html',roles:['owner','admin']},
+ {name:'Operação Instagram',hint:'Acompanhar solicitações registradas pela equipe',href:'./operacao-modelo.html',roles:['owner','admin','employee'],template:'instagram_orders'},
+ {name:'Comunicação empresarial',hint:'Projetos e atividades internas da equipe',href:'./operacao-modelo.html',roles:['owner','admin','employee'],template:'business_communication'},
  {name:'Clientes',hint:'Cadastros e histórico permitido',href:'./clientes.html',roles:['owner','admin','employee']},
  {name:'Agenda',hint:'Agendamentos e confirmações',href:'./agenda.html',roles:['owner','admin','employee'],module:'appointments'},
  {name:'Vendas',hint:'Pedidos e acompanhamento',href:'./vendas.html',roles:['owner','admin','employee']},
