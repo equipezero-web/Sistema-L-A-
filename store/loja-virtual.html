@@ -20,7 +20,7 @@ a{color:inherit;text-decoration:none}button:focus-visible,input:focus-visible,se
 .catalog-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:45px 0 20px}.catalog-head h2{font-family:"Playfair Display",Georgia,serif;font-size:clamp(27px,3vw,39px);margin:6px 0}
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.controls input,.controls select{background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:13px 16px;border-radius:12px;min-height:48px}.controls input{flex:1 1 240px;min-width:0}.controls select{flex:0 1 210px}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding-bottom:45px}
-.product{border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.product{border:1px solid var(--line);border-radius:var(--product-radius,20px);background:var(--surface);overflow:hidden;min-width:0;display:flex;flex-direction:column}
 .photo{aspect-ratio:4/3;background:color-mix(in srgb,var(--secondary) 60%,var(--surface));display:grid;place-items:center;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover}.placeholder{opacity:.6;font-size:14px}
 .product-body{padding:20px;display:flex;flex:1;flex-direction:column;gap:11px}.product h3{font-family:"Playfair Display",Georgia,serif;font-size:21px;margin:0;overflow-wrap:anywhere}
 .product p{font-size:14px;line-height:1.5;opacity:.75;margin:0;overflow-wrap:anywhere}.price{font-size:22px;font-weight:800}.product .btn{margin-top:auto}
