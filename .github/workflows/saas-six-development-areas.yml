@@ -1,0 +1,40 @@
+name: SaaS Six Development Areas
+on:
+  pull_request:
+    paths:
+      - 'app/crm.html'
+      - 'app/entregas.html'
+      - 'app/acessos-equipe.html'
+      - 'assets/js/crm.js'
+      - 'assets/js/fulfillment.js'
+      - 'assets/js/staff-links.js'
+      - 'assets/js/virtual-storefront.js'
+      - 'assets/js/appearance.js'
+      - 'assets/js/operations.js'
+      - 'supabase/sql/saas_crm_conversations_20261117.sql'
+      - 'supabase/sql/saas_order_fulfillment_20261117.sql'
+      - 'supabase/sql/saas_employee_login_link_20261117.sql'
+      - 'supabase/functions/_shared/merchant-payment-transport.mjs'
+      - 'supabase/functions/_shared/meta-webhook-contract.mjs'
+      - 'tests/saas-six-development-areas.test.mjs'
+      - '.github/workflows/saas-six-development-areas.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/saas-six-development-areas.test.mjs'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/crm.js
+      - run: node --check assets/js/fulfillment.js
+      - run: node --check assets/js/staff-links.js
+      - run: node --check assets/js/virtual-storefront.js
+      - run: node --test tests/saas-six-development-areas.test.mjs
