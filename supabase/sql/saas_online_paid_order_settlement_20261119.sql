@@ -27,7 +27,9 @@ returns boolean language sql stable security invoker set search_path='' as $$
    and coalesce(pg_catalog.current_setting('app.saas_verified_commerce',true),'')='allowed';
 $$;
 revoke all on function private.saas_verified_commerce_context() from public,anon,authenticated;
-grant execute on function private.saas_verified_commerce_context() to service_role;
+grant execute on function private.saas_verified_commerce_context() to service_role,authenticated;
+-- Read-only boolean used inside existing invoker triggers for manual orders.
+-- The service-only JWT claim remains required for true.
 
 create or replace function public.saas_guard_operational_status()
 returns trigger language plpgsql set search_path='' as $$
