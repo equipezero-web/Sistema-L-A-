@@ -1,0 +1,27 @@
+name: SaaS Verified Paid Orders and Refunds
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_online_paid_order_settlement_20261119.sql'
+      - 'supabase/sql/saas_online_verified_refund_restocks_20261119.sql'
+      - 'supabase/functions/saas-merchant-payment-webhook/index.ts'
+      - 'tests/saas-online-paid-order-settlement.test.mjs'
+      - '.github/workflows/saas-paid-orders-refunds.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_online_paid_order_settlement_20261119.sql'
+      - 'supabase/sql/saas_online_verified_refund_restocks_20261119.sql'
+      - 'tests/saas-online-paid-order-settlement.test.mjs'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-online-paid-order-settlement.test.mjs
