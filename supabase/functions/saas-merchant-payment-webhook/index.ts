@@ -96,7 +96,37 @@ Deno.serve(async(request:Request)=>{
    p_amount:amount,p_currency:"BRL",p_status:paymentStatus
   });
   if(saveError||recorded!==true)return json({error:"Não foi possível confirmar o registro."},503);
-  return json({ok:true,recorded:true,fulfillment_enabled:false});
+  // Commercial order/stock settlement is separately opt-in, after staging
+  // reconciliation and end-to-end charge/refund testing. Both flags are
+  // necessary: the current public checkout remains hard-disabled.
+  const fulfillmentEnabled=Deno.env.get("SAAS_MERCHANT_FULFILLMENT_ENABLED")==="true"
+    && Deno.env.get("SAAS_TRANSPARENT_CHECKOUT_ENABLED")==="true";
+  if(!fulfillmentEnabled)
+    return json({ok:true,recorded:true,fulfillment_enabled:false});
+  if(paymentStatus==="approved"){
+    const {data:result,error:fulfillmentError}=await db.rpc("saas_online_settle_verified_payment",{
+      p_intent_id:intentId
+    });
+    if(fulfillmentError){
+      console.error("Verified payment order finalization unavailable",fulfillmentError.code);
+      return json({error:"Pagamento registrado; conclusão do pedido pendente de repetição."},503);
+    }
+    return json({ok:true,recorded:true,fulfillment_enabled:true,
+      settlement:result,manual_review:result==="needs_review"});
+  }
+  if(paymentStatus==="refunded"||paymentStatus==="charged_back"){
+    const {data:result,error:refundError}=await db.rpc("saas_online_reverse_verified_payment",{
+      p_intent_id:intentId
+    });
+    if(refundError){
+      console.error("Verified refund reconciliation unavailable",refundError.code);
+      return json({error:"Estorno registrado; conciliação de estoque pendente."},503);
+    }
+    return json({ok:true,recorded:true,fulfillment_enabled:true,
+      settlement:result,manual_review:result==="refund_review"});
+  }
+  return json({ok:true,recorded:true,fulfillment_enabled:true,
+    settlement:"awaiting_payment_approval"});
  }catch(err){
   console.error("Merchant payment webhook failure",err instanceof Error?err.name:"unknown");
   return json({error:"Falha ao verificar pagamento."},503);
