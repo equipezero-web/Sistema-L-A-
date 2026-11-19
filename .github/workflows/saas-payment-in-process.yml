@@ -1,0 +1,24 @@
+name: SaaS Payment In Process Reconciliation
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_payment_reconcile_in_process_fix_20261119.sql'
+      - 'tests/saas-reconciliation-in-process.test.mjs'
+      - '.github/workflows/saas-payment-in-process.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_payment_reconcile_in_process_fix_20261119.sql'
+      - 'tests/saas-reconciliation-in-process.test.mjs'
+permissions:
+  contents: read
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-reconciliation-in-process.test.mjs
