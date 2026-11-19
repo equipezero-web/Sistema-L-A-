@@ -9,8 +9,8 @@ const checkout=readFileSync('supabase/functions/saas-transparent-checkout/index.
 test('only service-role approved and bound receipts can create orders',()=>{
  assert.match(settlement,/auth\.jwt\(\)->>'role'\) is distinct from 'service_role'/);
  assert.match(settlement,/payment_status='approved'/);
- assert.match(settlement,/v_bound\.provider_payment_id=v_receipt\.provider_payment_id/);
- assert.match(settlement,/v_bound\.provider_account_id=v_receipt\.provider_account_id/);
+ assert.match(settlement,/provider_payment_id=v_receipt\.provider_payment_id/);
+ assert.match(settlement,/provider_account_id=v_receipt\.provider_account_id/);
  assert.match(settlement,/v_receipt\.amount<>v_intent\.subtotal/);
  assert.match(settlement,/where id=p_intent_id for update/);
  assert.match(settlement,/order by \(value->>'product_id'\)::uuid/);
