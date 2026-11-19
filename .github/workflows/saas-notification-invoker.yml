@@ -1,0 +1,24 @@
+name: SaaS Notification RLS Invoker
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_notification_read_invoker_20261119.sql'
+      - 'tests/saas-notification-invoker.test.mjs'
+      - '.github/workflows/saas-notification-invoker.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/sql/saas_notification_read_invoker_20261119.sql'
+      - 'tests/saas-notification-invoker.test.mjs'
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/saas-notification-invoker.test.mjs
