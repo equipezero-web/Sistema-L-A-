@@ -79,7 +79,8 @@ Deno.serve(async request=>{
  const seller=sellers[0];
  const delivery=input.delivery as Record<string,unknown>;
  const form=input.formData as Record<string,unknown>;
- if(String(form?.payer?.email||"").trim().toLowerCase()!==String(delivery.email||"").trim().toLowerCase())
+ const payer=form.payer as Record<string,unknown>|undefined;
+ if(String(payer?.email||"").trim().toLowerCase()!==String(delivery.email||"").trim().toLowerCase())
   return reply({ok:false,error:"E-mail do comprador inconsistente."},400);
  let req;
  try{
