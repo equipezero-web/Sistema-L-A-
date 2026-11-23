@@ -89,7 +89,7 @@ document.addEventListener('la:quote-validated',async event=>{
   const settings={
    initialization:{amount:cents/100},
    customization:{paymentMethods:{
-    creditCard:'all',debitCard:'all',bankTransfer:['pix'],ticket:['bolbradesco']
+    creditCard:'all',debitCard:'all',bankTransfer:['pix']
    }},
    callbacks:{
     onReady:()=>show('Meios de pagamento carregados.'),
