@@ -12,12 +12,29 @@ async function load(){
   .select('order_id,state,carrier,tracking_reference,shipping_notes')
   .eq('tenant_id',ctx.tenant.id);
  if(recordError)throw recordError;
+ const {data:shipping,error:shippingError}=await supabase.from('saas_order_delivery_details')
+  .select('order_id,recipient_name,email,phone,mode,postal_code,street,street_number,complement,neighborhood,city,region')
+  .eq('tenant_id',ctx.tenant.id);
+ if(shippingError)throw shippingError;
+ const deliveryByOrder=new Map((shipping||[]).map(d=>[d.order_id,d]));
  const map=new Map((records||[]).map(f=>[f.order_id,f]));
  if(!orders?.length){host.textContent='Nenhum pedido confirmado ou concluído.';return}
  for(const o of orders){
   const current=map.get(o.id);
   const card=document.createElement('article');card.className='dash-card';
   const h=document.createElement('h3');h.textContent='Pedido '+o.id.slice(0,8)+' · '+o.status;card.append(h);
+  const destination=deliveryByOrder.get(o.id);
+  if(destination){
+    const details=document.createElement('details');
+    const summary=document.createElement('summary');summary.textContent='Dados do destinatário e entrega';
+    details.append(summary);
+    const p=document.createElement('p');
+    const place=destination.mode==='pickup'?'Retirada no estabelecimento':
+      [destination.street,destination.street_number,destination.complement,destination.neighborhood,
+       destination.city,destination.region,destination.postal_code].filter(Boolean).join(', ');
+    p.textContent=destination.recipient_name+' · '+destination.phone+' · '+destination.email+' · '+place;
+    details.append(p);card.append(details);
+  }
   const form=document.createElement('form');form.className='form-grid';
   const field=(label,type,value='',options=[])=>{
    const wrapper=document.createElement('label');wrapper.className='field';

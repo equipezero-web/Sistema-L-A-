@@ -22,12 +22,12 @@ test('Public seller key saved only by service role and checkout activation remai
  assert.match(oauth,/saas_merchant_checkout_save_public_key/);
  assert.doesNotMatch(store,/APP_USR-|MP_MERCHANT_CLIENT_SECRET|SUPABASE_SERVICE_ROLE_KEY/);
 });
-test('Readiness function keeps real payments off despite possible seller setup',()=>{
+test('Readiness keeps production off and requires double-gated TEST seller sandbox',()=>{
  assert.match(backend,/PAYMENT_PROCESSING_IMPLEMENTED=false/);
  assert.match(backend,/SAAS_TRANSPARENT_CHECKOUT_ENABLED/);
  assert.match(backend,/saas_transparent_checkout_readiness/);
- assert.match(backend,/if\(input\.action==="submit"\)/);
- assert.match(backend,/Pagamentos ainda não habilitados/);
+ assert.match(backend,/if\(!sandboxReady\)/);
+ assert.match(backend,/Cobranças bloqueadas até homologação/);
  assert.match(backend,/checkout_enabled:false/);
  assert.doesNotMatch(backend,/v1\/payments|fetch\("https:\/\/api\.mercadopago/);
 });
@@ -36,13 +36,13 @@ test('Brick is deferred until explicit readiness and quote, not rendered automat
  assert.match(store,/id="transparentPaymentStatus"/);
  assert.match(store,/assets\/js\/transparent-payment\.js/);
  assert.match(browser,/data\.checkout_enabled===true&&validKey\(data\.public_key\)/);
- assert.match(browser,/quote\?\.checkout_enabled!==true/);
+ assert.match(browser,/!ready\.sandbox_only/);
  assert.match(browser,/quote\.currency!=='BRL'/);
  assert.match(browser,/sdk\.mercadopago\.com\/js\/v2/);
  assert.match(browser,/window\.MercadoPago\(ready\.public_key/);
  assert.match(browser,/locale:'pt-BR'/);
  assert.match(browser,/mp\.bricks\(\)\.create\('payment','paymentBrick_container',settings\)/);
- assert.match(browser,/onSubmit:\(\)=>Promise\.reject/);
+ assert.match(browser,/onSubmit:async\(\{formData\}\)/);
  assert.match(browser,/controller\.unmount\(\)/);
  assert.match(cart,/la:cart-updated/);
  assert.match(cart,/la:quote-validated/);

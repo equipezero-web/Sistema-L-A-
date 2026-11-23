@@ -25,5 +25,5 @@ test('Reconciliation is private and writes only persisted verified statuses',()=
 });
 test('Real checkout remains explicitly disabled',()=>{
  assert.match(checkout,/PAYMENT_PROCESSING_IMPLEMENTED=false/);
- assert.match(checkout,/if\(input\.action==="submit"\)/);
+ assert.match(checkout,/SAAS_CHECKOUT_SANDBOX_ENABLED/);
 });
