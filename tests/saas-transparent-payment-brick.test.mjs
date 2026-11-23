@@ -22,12 +22,12 @@ test('Public seller key saved only by service role and checkout activation remai
  assert.match(oauth,/saas_merchant_checkout_save_public_key/);
  assert.doesNotMatch(store,/APP_USR-|MP_MERCHANT_CLIENT_SECRET|SUPABASE_SERVICE_ROLE_KEY/);
 });
-test('Readiness function keeps real payments off despite possible seller setup',()=>{
+test('Readiness keeps production off and requires double-gated TEST seller sandbox',()=>{
  assert.match(backend,/PAYMENT_PROCESSING_IMPLEMENTED=false/);
  assert.match(backend,/SAAS_TRANSPARENT_CHECKOUT_ENABLED/);
  assert.match(backend,/saas_transparent_checkout_readiness/);
  assert.match(backend,/if\(input\.action==="submit"\)/);
- assert.match(backend,/Pagamentos ainda não habilitados/);
+ assert.match(backend,/Cobranças bloqueadas até homologação/);
  assert.match(backend,/checkout_enabled:false/);
  assert.doesNotMatch(backend,/v1\/payments|fetch\("https:\/\/api\.mercadopago/);
 });
