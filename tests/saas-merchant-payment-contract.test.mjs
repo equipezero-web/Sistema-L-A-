@@ -39,7 +39,7 @@ test('payment provider response must match merchant, intent, currency, amount',(
   assert.equal(verifyMerchantPaymentResult({...p,...change},{intentId,accountId,subtotalCents:12750}),null);
  }
 });
-test('current submit endpoint stays disabled and no API call lives in request helper',()=>{
+test('production remains fail-closed and payment helper never calls network',()=>{
  const backend=readFileSync('supabase/functions/saas-transparent-checkout/index.ts','utf8');
  const helper=readFileSync('supabase/functions/_shared/merchant-payment-contract.mjs','utf8');
  assert.match(backend,/PAYMENT_PROCESSING_IMPLEMENTED=false/);
