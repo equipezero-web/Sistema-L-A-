@@ -17,7 +17,8 @@ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 // Production stays fail-closed. Sandbox requires an explicit env gate, TEST
 // public key, TEST seller access token, and the existing tenant activation.
 const PAYMENT_PROCESSING_IMPLEMENTED=false;
-const sandboxEnabled=()=>Deno.env.get("SAAS_CHECKOUT_SANDBOX_ENABLED")==="true";
+const sandboxEnabled=()=>Deno.env.get("SAAS_CHECKOUT_SANDBOX_ENABLED")==="true"
+  && Deno.env.get("SAAS_TRANSPARENT_CHECKOUT_ENABLED")==="true";
 const isTestKey=(value:unknown)=>typeof value==="string"&&/^TEST-[A-Za-z0-9-]{10,160}$/.test(value);
 const isTestToken=(value:unknown)=>typeof value==="string"&&value.startsWith("TEST-")&&value.length>=20;
 const validSlug=(s:unknown)=>typeof s==="string"&&slugPattern.test(s);
