@@ -6,11 +6,25 @@ import {supabase} from './supabase.js';
 const slug=new URLSearchParams(location.search).get('slug');
 const container=document.getElementById('paymentBrick_container');
 const message=document.getElementById('transparentPaymentStatus');
+const shippingForm=document.getElementById('shippingForm');
+const shippingMode=document.getElementById('shippingMode');
+const shippingAddress=document.getElementById('shippingAddress');
+let currentQuote=null,requestKey=null,submissionStarted=false;
 let paymentController=null;
 let ready=null;
 let generation=0;
 let quoteExpiryTimer=null;
 function show(text){if(message)message.textContent=text}
+shippingMode?.addEventListener('change',()=>{
+ const address=shippingMode.value==='delivery';shippingAddress.hidden=!address;
+ for(const name of ['postal_code','street','street_number','neighborhood','city','region'])
+  shippingForm.elements[name].required=address;
+});
+function deliveryPayload(){
+ if(!shippingForm?.reportValidity())throw new Error('Preencha e confirme os dados de entrega.');
+ const names=['recipient_name','email','phone','mode','postal_code','street','street_number','complement','neighborhood','city','region'];
+ return Object.fromEntries(names.map(name=>[name,shippingForm.elements[name].value.trim()]));
+}
 function validKey(key){return typeof key==='string'&&/^(APP_USR|TEST)-[A-Za-z0-9-]{10,160}$/.test(key)}
 function script(){
  if(typeof window.MercadoPago==='function')return Promise.resolve();
@@ -31,6 +45,7 @@ async function unmount(){
   paymentController=null;
  }
  if(container){container.hidden=true;container.replaceChildren()}
+ if(shippingForm)shippingForm.hidden=true;
 }
 async function refreshReadiness(){
  if(!slug||!/^[a-z0-9][a-z0-9-]{0,79}$/.test(slug)){
@@ -48,10 +63,10 @@ async function refreshReadiness(){
   ready=null;show('Pagamentos indisponíveis. Nenhuma cobrança foi iniciada.');
  }
 }
-document.addEventListener('la:cart-updated',()=>{void unmount()});
+document.addEventListener('la:cart-updated',()=>{currentQuote=null;requestKey=null;submissionStarted=false;void unmount()});
 document.addEventListener('la:quote-validated',async event=>{
  const quote=event.detail;
- if(!ready||quote?.checkout_enabled!==true){
+ if(!ready||!ready.sandbox_only||!Array.isArray(quote?.items)){
   await unmount();return;
  }
  const cents=Number(quote.subtotal_cents);
@@ -60,6 +75,8 @@ document.addEventListener('la:quote-validated',async event=>{
   await unmount();show('Atualize a cotação para iniciar o pagamento.');return;
  }
  await unmount();
+ currentQuote=quote;requestKey=crypto.randomUUID();submissionStarted=false;
+ if(shippingForm)shippingForm.hidden=false;
  const run=generation;
  const expiresAt=Date.parse(quote.expires_at);
  try{
@@ -76,9 +93,30 @@ document.addEventListener('la:quote-validated',async event=>{
    }},
    callbacks:{
     onReady:()=>show('Meios de pagamento carregados.'),
-    // Intentionally fail-closed until a real idempotent Payments API processor
-    // and complete financial/order fulfillment are implemented.
-    onSubmit:()=>Promise.reject(new Error('Processamento de pagamentos ainda não homologado.')),
+    // Sandbox-only. The backend recomputes prices, binds payments to seller
+    // and keeps a stable idempotency key for this validated cart.
+    onSubmit:async({formData})=>{
+      if(submissionStarted||!requestKey||!currentQuote||run!==generation||expiresAt<=Date.now())
+        throw new Error('Atualize a cotação antes de tentar pagar novamente.');
+      const delivery=deliveryPayload();
+      submissionStarted=true;
+      show('Confirmando o pagamento de homologação...');
+      const items=currentQuote.items.map(item=>({id:item.id,quantity:item.quantity}));
+      try{
+        const {data,error}=await supabase.functions.invoke('saas-transparent-checkout',{
+          body:{action:'submit',slug,request_key:requestKey,items,delivery,formData}
+        });
+        if(error||data?.ok!==true){
+          show(data?.error||'Pagamento não confirmado. Não repita a cobrança sem consultar a situação.');
+          throw new Error('Não foi possível confirmar o pagamento. Confira o status antes de tentar novamente.');
+        }
+        show(data.message||'Pagamento registrado. Aguarde a confirmação antes de tentar novamente.');
+        return data;
+      }catch(error){
+        if(!error?.message?.includes('confirmar o pagamento'))show('Resultado não confirmado. Consulte o pagamento antes de tentar novamente.');
+        throw error;
+      }
+    },
     onError:()=>show('Falha no componente do provedor. Atualize a cotação.')
    }
   };
