@@ -43,6 +43,6 @@ test('production remains fail-closed and payment helper never calls network',()=
  const backend=readFileSync('supabase/functions/saas-transparent-checkout/index.ts','utf8');
  const helper=readFileSync('supabase/functions/_shared/merchant-payment-contract.mjs','utf8');
  assert.match(backend,/PAYMENT_PROCESSING_IMPLEMENTED=false/);
- assert.match(backend,/if\(input\.action==="submit"\)/);
+ assert.match(backend,/if\(!sandboxReady\)/);
  assert.doesNotMatch(helper,/fetch\(|Deno\.serve\(|https:\/\/api\.mercadopago\.com/);
 });
