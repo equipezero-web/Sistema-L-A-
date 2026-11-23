@@ -30,6 +30,11 @@ footer{border-top:1px solid var(--line);padding:24px 0 45px;font-size:13px;opaci
 .cart-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.cart-head h2{margin:0;font-family:Georgia,serif}.cart-items{flex:1;overflow:auto;min-height:0;display:grid;align-content:start;gap:10px}
 .cart-item{border:1px solid var(--line);border-radius:12px;padding:13px;display:grid;gap:9px}.cart-item-line{display:flex;justify-content:space-between;gap:12px}
 .cart-item small{opacity:.75}.qty{display:flex;gap:8px;align-items:center}.qty button{min-height:36px;min-width:36px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px}
+.shipping-form{display:grid;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+.shipping-form label{display:grid;gap:5px;font-size:13px}.shipping-form input,.shipping-form select{width:100%;min-width:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:10px;border-radius:10px}
+.shipping-form fieldset{border:1px solid var(--line);border-radius:12px;min-width:0;display:grid;gap:10px}.shipping-form legend{padding:0 6px}
+.shipping-form .shipping-consent{display:flex;gap:9px;align-items:start;line-height:1.5}.shipping-form .shipping-consent input{width:auto;margin-top:3px}
+@media(max-width:520px){.shipping-form{padding:12px}.shipping-form fieldset{padding:10px}}
 .cart-total{border-top:1px solid var(--line);padding-top:15px;display:flex;justify-content:space-between;font-weight:800;font-size:20px}
 .cart-warning{font-size:13px;opacity:.85;line-height:1.55}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 @media(max-width:960px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -68,7 +73,26 @@ footer{border-top:1px solid var(--line);padding:24px 0 45px;font-size:13px;opaci
   <p style="font-size:13px;line-height:1.6">A integração será feita aqui, sem redirecionar para o Checkout Pro. Os meios previstos são Pix, cartão e boleto, conforme disponibilidade do vendedor e homologação.</p>
   <p style="font-size:13px;line-height:1.6"><strong>Pagamentos ainda indisponíveis.</strong> Nenhum dado de cartão é solicitado, nenhum pedido é criado e não há cobrança.</p>
   <p id="transparentPaymentStatus" class="cart-warning" role="status" aria-live="polite">Verificando disponibilidade do pagamento integrado…</p>
-  <div id="paymentBrick_container" hidden aria-label="Formulário protegido do Mercado Pago"></div>
+  <form id="shippingForm" class="shipping-form" hidden>
+  <h3>Dados do comprador e entrega</h3>
+  <p class="cart-warning">Os dados serão utilizados somente para processar esta compra e a entrega. Não informe números de cartão aqui.</p>
+  <label>Nome do destinatário<input name="recipient_name" autocomplete="name" minlength="2" maxlength="120" required></label>
+  <label>E-mail do comprador<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+  <label>Telefone<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required></label>
+  <label>Modalidade<select name="mode" id="shippingMode"><option value="pickup">Retirada no estabelecimento (sem frete)</option><option value="delivery">Entrega local (frete não cobrado)</option></select></label>
+  <fieldset id="shippingAddress" hidden>
+   <legend>Endereço completo</legend>
+   <label>CEP<input name="postal_code" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}-?[0-9]{3}" maxlength="9"></label>
+   <label>Rua/Avenida<input name="street" autocomplete="address-line1" maxlength="160"></label>
+   <label>Número<input name="street_number" maxlength="20"></label>
+   <label>Complemento<input name="complement" autocomplete="address-line2" maxlength="160"></label>
+   <label>Bairro<input name="neighborhood" maxlength="100"></label>
+   <label>Cidade<input name="city" autocomplete="address-level2" maxlength="100"></label>
+   <label>UF<input name="region" autocomplete="address-level1" pattern="[A-Za-z]{2}" maxlength="2"></label>
+  </fieldset>
+  <label class="shipping-consent"><input name="consent" type="checkbox" required> Autorizo o uso dos meus dados para pagamento e entrega desta compra.</label>
+ </form>
+ <div id="paymentBrick_container" hidden aria-label="Formulário protegido do Mercado Pago"></div>
  </section>
  <button class="btn btn-primary" type="button" disabled aria-describedby="checkoutNotice">Finalizar compra — em integração</button>
  <span id="checkoutNotice" class="sr-only">O checkout ainda não está disponível; nenhum pedido será criado.</span>
