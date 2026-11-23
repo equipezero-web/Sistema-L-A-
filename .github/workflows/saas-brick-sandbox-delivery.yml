@@ -1,0 +1,31 @@
+name: SaaS Checkout Brick Sandbox and Delivery
+on:
+  pull_request:
+    paths:
+      - 'supabase/sql/saas_checkout_brick_delivery_prepare_20261123.sql'
+      - 'supabase/sql/saas_order_delivery_merchant_view_20261123.sql'
+      - 'supabase/functions/saas-transparent-checkout/index.ts'
+      - 'assets/js/transparent-payment.js'
+      - 'assets/js/fulfillment.js'
+      - 'store/loja-virtual.html'
+      - 'tests/saas-brick-delivery-sandbox-flow.test.mjs'
+      - '.github/workflows/saas-brick-sandbox-delivery.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/saas-brick-delivery-sandbox-flow.test.mjs'
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/transparent-payment.js
+      - run: node --check assets/js/fulfillment.js
+      - run: node --test tests/saas-brick-delivery-sandbox-flow.test.mjs
+      - run: node --test tests/saas-merchant-payment-contract.test.mjs
